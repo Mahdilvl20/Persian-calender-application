@@ -1,0 +1,191 @@
+package com.example.ui.screens
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.SearchOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.data.CalendarEvent
+import com.example.ui.components.CategoryChip
+import com.example.ui.components.EventCard
+import com.example.ui.components.GlassCard
+import com.example.ui.components.GlassIconButton
+import com.example.ui.components.GlassInput
+import com.example.ui.theme.AccentElectricBlue
+import com.example.ui.theme.GlassSurfaceUltraLight
+import com.example.ui.theme.TextWhiteMuted
+import com.example.ui.theme.TextWhitePrimary
+import com.example.ui.theme.TextWhiteSecondary
+import com.example.ui.viewmodel.AvailableCategories
+import com.example.util.CalendarType
+import com.example.util.DateUtils
+
+@Composable
+fun SearchScreen(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    selectedCategory: String,
+    onCategoryChange: (String) -> Unit,
+    searchResults: List<CalendarEvent>,
+    calendarType: CalendarType = CalendarType.GREGORIAN,
+    onEventClick: (CalendarEvent) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val groupedResults = remember(searchResults) {
+        searchResults.groupBy { it.date }
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
+        // Title
+        Text(
+            text = "Search Events",
+            style = MaterialTheme.typography.headlineLarge.copy(
+                fontWeight = FontWeight.Bold,
+                color = TextWhitePrimary,
+                fontSize = 32.sp
+            ),
+            modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
+        )
+
+        // Translucent search input
+        GlassInput(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+            placeholder = "Search by title, location, or notes...",
+            leadingIcon = Icons.Default.Search,
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    GlassIconButton(
+                        icon = Icons.Default.Close,
+                        onClick = { onSearchQueryChange("") },
+                        contentDescription = "Clear search",
+                        size = 28.dp,
+                        testTag = "btn_clear_search"
+                    )
+                }
+            },
+            testTag = "input_search_events"
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Category Filter Chips
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(bottom = 12.dp)
+        ) {
+            item {
+                CategoryChip(
+                    name = "All",
+                    color = AccentElectricBlue,
+                    isSelected = selectedCategory == "All",
+                    onSelect = { onCategoryChange("All") },
+                    testTag = "chip_search_all"
+                )
+            }
+            items(AvailableCategories) { cat ->
+                CategoryChip(
+                    name = cat.name,
+                    color = cat.color,
+                    isSelected = selectedCategory == cat.name,
+                    onSelect = { onCategoryChange(cat.name) },
+                    testTag = "chip_search_${cat.name.lowercase()}"
+                )
+            }
+        }
+
+        // Search Results grouped by date
+        if (groupedResults.isEmpty()) {
+            GlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp),
+                cornerRadius = 20.dp,
+                surfaceColor = GlassSurfaceUltraLight
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(36.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = if (searchQuery.isEmpty()) Icons.Default.Search else Icons.Outlined.SearchOff,
+                        contentDescription = null,
+                        tint = TextWhiteMuted,
+                        modifier = Modifier.size(44.dp)
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(
+                        text = if (searchQuery.isEmpty()) "Find any event instantly" else "No matching events",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = TextWhiteSecondary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = if (searchQuery.isEmpty()) "Type keywords above or tap a category filter" else "Try searching for another keyword or clearing filters",
+                        style = MaterialTheme.typography.bodySmall.copy(color = TextWhiteMuted)
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                groupedResults.forEach { (dateStr, dayEvents) ->
+                    item(key = "search_header_$dateStr") {
+                        Text(
+                            text = DateUtils.formatMonthDay(dateStr, calendarType = calendarType),
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = AccentElectricBlue
+                            ),
+                            modifier = Modifier.padding(start = 4.dp, top = 6.dp)
+                        )
+                    }
+
+                    items(dayEvents, key = { it.id }) { ev ->
+                        EventCard(
+                            event = ev,
+                            onClick = { onEventClick(ev) }
+                        )
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(100.dp))
+                }
+            }
+        }
+    }
+}
