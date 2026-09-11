@@ -344,6 +344,12 @@ fun CalendarTypeSegmentedControl(
                 val isSelected = selectedType == type
                 val itemShape = RoundedCornerShape(13.dp)
 
+                val (persianLabel, englishLabel) = when (type) {
+                    CalendarType.JALALI -> "شمسی" to "(Jalali)"
+                    CalendarType.GREGORIAN -> "میلادی" to "(Gregorian)"
+                    CalendarType.HIJRI -> "قمری" to "(Hijri)"
+                }
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -372,22 +378,40 @@ fun CalendarTypeSegmentedControl(
                             } else Modifier
                         )
                         .clickable { onTypeSelected(type) }
-                        .padding(vertical = 6.dp, horizontal = 4.dp)
+                        .padding(vertical = 5.dp, horizontal = 2.dp)
                         .testTag("btn_cal_type_${type.name.lowercase()}"),
                     contentAlignment = Alignment.Center
                 ) {
-                    val strings = LocalAppStrings.current
-                    Text(
-                        text = LocalizationManager.getCalendarTypeName(type, strings),
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                            fontSize = 13.sp,
-                            color = if (isSelected) TextWhitePrimary else TextWhiteMuted,
-                            letterSpacing = 0.sp
-                        ),
-                        maxLines = 1,
-                        softWrap = false
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = persianLabel,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                                fontSize = 13.sp,
+                                color = if (isSelected) TextWhitePrimary else TextWhiteMuted,
+                                letterSpacing = 0.sp
+                            ),
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                        Spacer(modifier = Modifier.height(1.dp))
+                        Text(
+                            text = englishLabel,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 10.sp,
+                                color = if (isSelected) TextWhiteSecondary.copy(alpha = 0.85f) else TextWhiteMuted.copy(alpha = 0.60f),
+                                letterSpacing = 0.sp
+                            ),
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
                 }
             }
         }
