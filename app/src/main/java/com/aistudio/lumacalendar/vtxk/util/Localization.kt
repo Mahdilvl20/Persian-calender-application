@@ -295,7 +295,7 @@ data class AppStrings(
             timeLabel = "زمان",
             calendarLabel = "تقویم",
             deleteDialogTitle = "حذف این رویداد؟",
-            deleteDialogMessage = "این رویداد به صورت دائمی حذف خواهد شد و غیرقابل بازگشت است.",
+            deleteDialogMessage = "این رویداد به صورت دائمی حذف خواهد شد و قابلبازگشت نیست.",
             deleteDialogConfirm = "حذف",
             deleteDialogCancel = "انصراف"
         )
