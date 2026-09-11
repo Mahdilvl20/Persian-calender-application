@@ -26,9 +26,19 @@ class EventRepository(private val eventDao: EventDao) {
     suspend fun deleteById(id: Long) =
         eventDao.deleteById(id)
 
+    suspend fun removeDemoDataIfPresent() {
+        val demoTitles = listOf(
+            "Design Review", "Lunch with Sarah", "Gym & Mobility",
+            "Weekly Architecture Sync", "Podcast Recording", "Morning Trail Run",
+            "Farmers Market & Brunch", "Product Keynote Prep", "Dentist Checkup",
+            "Team Dinner & Celebration", "Project Meeting", "Flight to San Francisco",
+            "Design Systems Summit"
+        )
+        eventDao.deleteByTitles(demoTitles)
+    }
+
     suspend fun seedInitialData() {
         eventDao.clearAll()
-        eventDao.insertEvents(LumaDatabase.initialSampleEvents)
     }
 
     suspend fun clearAll() =

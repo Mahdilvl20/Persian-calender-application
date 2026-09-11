@@ -1,5 +1,6 @@
 package com.example.util
 
+import com.example.data.holiday.HolidayService
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -11,7 +12,9 @@ data class CalendarDay(
     val isCurrentMonth: Boolean,
     val isToday: Boolean,
     val isSelected: Boolean,
-    val displayNumber: String = dayOfMonth.toString()
+    val displayNumber: String = dayOfMonth.toString(),
+    val isHoliday: Boolean = false,
+    val holidayName: String? = null
 )
 
 data class WeekDayInfo(
@@ -20,7 +23,9 @@ data class WeekDayInfo(
     val dayOfMonth: Int,
     val isToday: Boolean,
     val isSelected: Boolean,
-    val displayNumber: String = dayOfMonth.toString()
+    val displayNumber: String = dayOfMonth.toString(),
+    val isHoliday: Boolean = false,
+    val holidayName: String? = null
 )
 
 object DateUtils {
@@ -84,7 +89,7 @@ object DateUtils {
 
     /**
      * Generates a 42-day (6x7) grid for a given year and month (1-indexed).
-     * Returns list of CalendarDay items with accurate day numbers, localized numerals, current month flags.
+     * Returns list of CalendarDay items with accurate day numbers, localized numerals, current month flags and holiday info.
      */
     fun getMonthDays(
         year: Int,
@@ -92,7 +97,8 @@ object DateUtils {
         selectedDate: String,
         todayDate: String = DEFAULT_TODAY,
         calendarType: CalendarType = CalendarType.GREGORIAN,
-        firstDaySunday: Boolean = true
+        firstDaySunday: Boolean = true,
+        holidayService: HolidayService? = HolidayService.default
     ): List<CalendarDay> {
         val daysData = CalendarConverter.getMonthDays(
             year = year,
@@ -103,13 +109,16 @@ object DateUtils {
             firstDayMonday = !firstDaySunday
         )
         return daysData.map {
+            val holiday = holidayService?.getHoliday(it.dateString, calendarType)
             CalendarDay(
                 dateString = it.dateString,
                 dayOfMonth = it.dayNumber,
                 isCurrentMonth = it.isCurrentMonth,
                 isToday = it.isToday,
                 isSelected = it.isSelected,
-                displayNumber = it.displayNumber
+                displayNumber = it.displayNumber,
+                isHoliday = holiday?.isOfficialHoliday == true,
+                holidayName = holiday?.name
             )
         }
     }
@@ -122,7 +131,8 @@ object DateUtils {
         selectedDate: String,
         todayDate: String = DEFAULT_TODAY,
         calendarType: CalendarType = CalendarType.GREGORIAN,
-        firstDaySunday: Boolean = false
+        firstDaySunday: Boolean = false,
+        holidayService: HolidayService? = HolidayService.default
     ): List<WeekDayInfo> {
         val weekData = CalendarConverter.getWeekDays(
             selectedDate = targetDateStr,
@@ -131,13 +141,16 @@ object DateUtils {
             firstDayMonday = !firstDaySunday
         )
         return weekData.map {
+            val holiday = holidayService?.getHoliday(it.dateString, calendarType)
             WeekDayInfo(
                 dateString = it.dateString,
                 dayOfWeekName = it.dayOfWeekName,
                 dayOfMonth = it.dayNumberString.toIntOrNull() ?: 1,
                 isToday = it.isToday,
                 isSelected = it.isSelected,
-                displayNumber = it.dayNumberString
+                displayNumber = it.dayNumberString,
+                isHoliday = holiday?.isOfficialHoliday == true,
+                holidayName = holiday?.name
             )
         }
     }

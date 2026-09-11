@@ -56,11 +56,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.CalendarEvent
+import com.example.data.holiday.Holiday
+import com.example.data.holiday.HolidayService
 import com.example.ui.components.CalendarCell
 import com.example.ui.components.EventCard
 import com.example.ui.components.GlassButton
 import com.example.ui.components.GlassCard
 import com.example.ui.components.GlassIconButton
+import com.example.ui.components.HolidayCard
 import com.example.ui.theme.AccentElectricBlue
 import com.example.ui.theme.AccentRoyalViolet
 import com.example.ui.theme.CanvasBlack
@@ -230,6 +233,10 @@ fun CalendarScreen(
             },
             label = "calendar_content_transition"
         ) { (activeType, activeMode) ->
+            val selectedHoliday = remember(selectedDate, activeType) {
+                HolidayService.default.getHoliday(selectedDate, activeType)
+            }
+
             when (activeMode) {
                 "Month" -> {
                     MonthViewContent(
@@ -239,6 +246,7 @@ fun CalendarScreen(
                         calendarType = activeType,
                         events = events,
                         selectedDayEvents = selectedDayEvents,
+                        holiday = selectedHoliday,
                         firstDayMonday = firstDayMonday,
                         onDateSelect = onDateSelect,
                         onEventClick = onEventClick,
@@ -250,6 +258,7 @@ fun CalendarScreen(
                         selectedDate = selectedDate,
                         calendarType = activeType,
                         events = events,
+                        holiday = selectedHoliday,
                         firstDayMonday = firstDayMonday,
                         onDateSelect = onDateSelect,
                         onEventClick = onEventClick,
@@ -261,6 +270,7 @@ fun CalendarScreen(
                         selectedDate = selectedDate,
                         calendarType = activeType,
                         events = selectedDayEvents,
+                        holiday = selectedHoliday,
                         onEventClick = onEventClick,
                         onAddEventClick = onAddEventClick
                     )
@@ -445,6 +455,7 @@ private fun MonthViewContent(
     calendarType: CalendarType = CalendarType.GREGORIAN,
     events: List<CalendarEvent>,
     selectedDayEvents: List<CalendarEvent>,
+    holiday: Holiday?,
     firstDayMonday: Boolean,
     onDateSelect: (String) -> Unit,
     onEventClick: (CalendarEvent) -> Unit,
@@ -574,8 +585,18 @@ private fun MonthViewContent(
             }
         }
 
+        // Official Holiday Card (if selected date is a holiday)
+        if (holiday != null) {
+            item {
+                HolidayCard(
+                    holiday = holiday,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+            }
+        }
+
         // AGENDA EVENT LIST FOR SELECTED DAY
-        if (selectedDayEvents.isEmpty()) {
+        if (selectedDayEvents.isEmpty() && holiday == null) {
             item {
                 val strings = LocalAppStrings.current
                 GlassCard(
@@ -635,6 +656,7 @@ private fun WeekViewContent(
     selectedDate: String,
     calendarType: CalendarType = CalendarType.GREGORIAN,
     events: List<CalendarEvent>,
+    holiday: Holiday?,
     firstDayMonday: Boolean,
     onDateSelect: (String) -> Unit,
     onEventClick: (CalendarEvent) -> Unit,
@@ -697,8 +719,12 @@ private fun WeekViewContent(
                         Text(
                             text = wDay.displayNumber.ifEmpty { wDay.dayOfMonth.toString() },
                             style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = if (isSelected || wDay.isToday) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isSelected) Color.White else TextWhitePrimary,
+                                fontWeight = if (isSelected || wDay.isToday || wDay.isHoliday) FontWeight.SemiBold else FontWeight.Normal,
+                                color = when {
+                                    wDay.isHoliday -> Color(0xFFFF453A)
+                                    isSelected -> Color.White
+                                    else -> TextWhitePrimary
+                                },
                                 letterSpacing = 0.sp
                             )
                         )
@@ -707,7 +733,15 @@ private fun WeekViewContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Official Holiday Card in Week View
+        if (holiday != null) {
+            HolidayCard(
+                holiday = holiday,
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
+        }
 
         // Hourly timeline for the selected day in week view
         LazyColumn(
@@ -786,6 +820,7 @@ private fun DayViewContent(
     selectedDate: String,
     calendarType: CalendarType = CalendarType.GREGORIAN,
     events: List<CalendarEvent>,
+    holiday: Holiday?,
     onEventClick: (CalendarEvent) -> Unit,
     onAddEventClick: (String) -> Unit
 ) {
@@ -841,6 +876,14 @@ private fun DayViewContent(
                     )
                 }
             }
+        }
+
+        // Official Holiday Card in Day View
+        if (holiday != null) {
+            HolidayCard(
+                holiday = holiday,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
         }
 
         // Timeline

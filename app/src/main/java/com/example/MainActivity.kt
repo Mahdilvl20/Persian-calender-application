@@ -25,11 +25,13 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import com.example.ui.components.AddEditEventSheet
@@ -45,10 +47,12 @@ import com.example.ui.screens.SearchScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.theme.LumaCalendarTheme
 import com.example.ui.viewmodel.AccentPresets
+import com.example.util.DynamicIconManager
 import com.example.util.LocalAppStrings
 import com.example.util.LocalCalendarType
 import com.example.util.LocalizationManager
 import com.example.ui.viewmodel.LumaViewModel
+import com.example.widget.LumaCalendarWidgetProvider
 
 class MainActivity : ComponentActivity() {
     private val viewModel: LumaViewModel by viewModels()
@@ -62,10 +66,17 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        DynamicIconManager.syncToToday(this, viewModel.calendarType.value)
+        LumaCalendarWidgetProvider.updateAllWidgets(this)
+    }
 }
 
 @Composable
 fun LumaApp(viewModel: LumaViewModel) {
+    val context = LocalContext.current
     val currentTab by viewModel.currentTab.collectAsState()
     val year by viewModel.selectedYear.collectAsState()
     val month by viewModel.selectedMonth.collectAsState()
@@ -73,6 +84,11 @@ fun LumaApp(viewModel: LumaViewModel) {
     val calendarViewMode by viewModel.calendarViewMode.collectAsState()
     val calendarType by viewModel.calendarType.collectAsState()
     val allEvents by viewModel.allEvents.collectAsState()
+
+    LaunchedEffect(calendarType) {
+        DynamicIconManager.syncToToday(context, calendarType)
+        LumaCalendarWidgetProvider.updateAllWidgets(context)
+    }
     val selectedDayEvents by viewModel.selectedDateEvents.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchCategory by viewModel.selectedCategoryFilter.collectAsState()

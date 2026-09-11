@@ -30,11 +30,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,6 +48,8 @@ import com.example.ui.components.GlassButton
 import com.example.ui.components.GlassCard
 import com.example.ui.components.GlassToggle
 import com.example.ui.components.SectionHeader
+import com.example.util.DynamicIconManager
+import com.example.widget.LumaCalendarWidgetProvider
 import com.example.ui.theme.AccentElectricBlue
 import com.example.ui.theme.CategoryHealth
 import com.example.ui.theme.CategoryPersonal
@@ -391,6 +398,207 @@ fun SettingsScreen(
                             )
                         }
                         GlassToggle(checked = holidaysVisible, onCheckedChange = { onToggleHolidays() })
+                    }
+                }
+            }
+        }
+
+        // DYNAMIC LAUNCHER ICON & HOME WIDGET
+        item {
+            val context = LocalContext.current
+            var previewDay by remember { mutableIntStateOf(DynamicIconManager.getActiveDay(context)) }
+            val isSupported = remember { DynamicIconManager.isDynamicSupported(context) }
+
+            SectionHeader(title = if (strings.tabCalendar == "تقویم") "آیکون پویا و ابزارک" else "Dynamic Icon & Widget")
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Outlined.DateRange,
+                                contentDescription = null,
+                                tint = AccentElectricBlue,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = if (strings.tabCalendar == "تقویم") "آیکون پویای تقویم" else "Dynamic Calendar Icon",
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        color = TextWhitePrimary,
+                                        fontWeight = FontWeight.Medium,
+                                        letterSpacing = 0.sp
+                                    )
+                                )
+                                Text(
+                                    text = if (strings.tabCalendar == "تقویم") "نمایش روز جاری ماه روی آیکون" else "Reflects current day of month (1–31)",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = TextWhiteSecondary,
+                                        letterSpacing = 0.sp
+                                    )
+                                )
+                            }
+                        }
+
+                        // Active day badge
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(AccentElectricBlue.copy(alpha = 0.15f))
+                                .border(0.8.dp, AccentElectricBlue.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = if (strings.tabCalendar == "تقویم") "روز $previewDay" else "Day $previewDay",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = AccentElectricBlue,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Visual Icon Previews: Single-Digit vs Double-Digit
+                    Text(
+                        text = if (strings.tabCalendar == "تقویم") "پیش‌نمایش ارقام تک‌رقمی و دورقمی:" else "Single & Double Digit Icon Rendering:",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            color = TextWhiteMuted,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Single Digit Example (Day 7)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color(0xFF13172B))
+                                .border(
+                                    1.dp,
+                                    if (previewDay <= 9) AccentElectricBlue else GlassBorderSubtle,
+                                    RoundedCornerShape(16.dp)
+                                )
+                                .clickable {
+                                    previewDay = 7
+                                    DynamicIconManager.updateLauncherIcon(context, 7)
+                                    LumaCalendarWidgetProvider.updateAllWidgets(context)
+                                }
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Brush.verticalGradient(listOf(Color(0xFF242A4A), Color(0xFF13172B))))
+                                        .border(0.8.dp, Color(0xFF38BDF8), RoundedCornerShape(10.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "7",
+                                        style = MaterialTheme.typography.titleLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = if (strings.tabCalendar == "تقویم") "تک‌رقمی (۷)" else "Single (7)",
+                                    style = MaterialTheme.typography.labelSmall.copy(color = TextWhiteSecondary)
+                                )
+                            }
+                        }
+
+                        // Double Digit Example (Day 24)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color(0xFF13172B))
+                                .border(
+                                    1.dp,
+                                    if (previewDay > 9) AccentElectricBlue else GlassBorderSubtle,
+                                    RoundedCornerShape(16.dp)
+                                )
+                                .clickable {
+                                    previewDay = 24
+                                    DynamicIconManager.updateLauncherIcon(context, 24)
+                                    LumaCalendarWidgetProvider.updateAllWidgets(context)
+                                }
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Brush.verticalGradient(listOf(Color(0xFF242A4A), Color(0xFF13172B))))
+                                        .border(0.8.dp, Color(0xFF38BDF8), RoundedCornerShape(10.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "24",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = if (strings.tabCalendar == "تقویم") "دورقمی (۲۴)" else "Double (24)",
+                                    style = MaterialTheme.typography.labelSmall.copy(color = TextWhiteSecondary)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Sync & Home Screen Widget Info
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                            Text(
+                                text = if (strings.tabCalendar == "تقویم")
+                                    "همگام‌سازی با روز امروز و ابزارک صفحه اصلی"
+                                else
+                                    "Sync with today & Home Widget",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = TextWhiteSecondary,
+                                    lineHeight = 16.sp
+                                )
+                            )
+                        }
+
+                        GlassButton(
+                            text = if (strings.tabCalendar == "تقویم") "همگام‌سازی امروز" else "Sync Today",
+                            icon = Icons.Outlined.CheckCircle,
+                            onClick = {
+                                DynamicIconManager.syncToToday(context)
+                                previewDay = DynamicIconManager.getActiveDay(context)
+                                LumaCalendarWidgetProvider.updateAllWidgets(context)
+                            },
+                            testTag = "btn_sync_dynamic_icon"
+                        )
                     }
                 }
             }

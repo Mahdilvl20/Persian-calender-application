@@ -61,6 +61,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.CalendarEvent
+import com.example.data.holiday.Holiday
+import com.example.util.CalendarType
 import com.example.ui.theme.AccentCyan
 import com.example.ui.theme.AccentDeepViolet
 import com.example.ui.theme.AccentElectricBlue
@@ -476,6 +478,9 @@ fun CalendarCell(
         label = "cell_scale"
     )
 
+    val holidayRed = Color(0xFFFF453A)
+    val holidayRedSelected = Color(0xFFFF6B6B)
+
     Box(
         modifier = modifier
             .height(50.dp)
@@ -542,29 +547,42 @@ fun CalendarCell(
                 Text(
                     text = day.displayNumber.ifEmpty { day.dayOfMonth.toString() },
                     style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = if (day.isSelected || day.isToday) FontWeight.SemiBold else FontWeight.Normal,
+                        fontWeight = if (day.isSelected || day.isToday || day.isHoliday) FontWeight.SemiBold else FontWeight.Normal,
                         color = when {
+                            day.isHoliday && day.isSelected -> holidayRedSelected
                             day.isSelected -> Color.White
+                            day.isHoliday && day.isToday -> holidayRedSelected
                             day.isToday -> Color.White
+                            day.isHoliday && day.isCurrentMonth -> holidayRed
+                            day.isHoliday && !day.isCurrentMonth -> holidayRed.copy(alpha = 0.5f)
                             day.isCurrentMonth -> TextWhitePrimary
                             else -> TextWhiteMuted.copy(alpha = 0.4f)
                         },
-                        fontSize = 15.sp
+                        fontSize = 15.sp,
+                        letterSpacing = 0.sp
                     )
                 )
             }
 
             Spacer(modifier = Modifier.height(2.dp))
 
-            // Event indicator dots beneath date
-            if (hasEvents) {
+            // Event and holiday indicator dots beneath date
+            val displayDots = remember(day.isHoliday, hasEvents, eventColors) {
+                when {
+                    day.isHoliday && hasEvents -> listOf(holidayRed) + eventColors.take(2)
+                    day.isHoliday -> listOf(holidayRed)
+                    hasEvents -> eventColors.take(3).ifEmpty { listOf(AccentElectricBlue) }
+                    else -> emptyList()
+                }
+            }
+
+            if (displayDots.isNotEmpty()) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.5.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.height(4.dp)
                 ) {
-                    val displayColors = eventColors.take(3).ifEmpty { listOf(AccentElectricBlue) }
-                    displayColors.forEach { dotColor ->
+                    displayDots.forEach { dotColor ->
                         Box(
                             modifier = Modifier
                                 .size(4.dp)
@@ -714,6 +732,107 @@ fun EventCard(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Elegant Liquid Glass card displaying an official Holiday.
+ */
+@Composable
+fun HolidayCard(
+    holiday: Holiday,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
+) {
+    val holidayRed = Color(0xFFFF453A)
+    val badgeText = if (holiday.calendarType == CalendarType.GREGORIAN) "Federal Holiday" else "تعطیل رسمی"
+
+    GlassCard(
+        modifier = modifier.fillMaxWidth(),
+        cornerRadius = 16.dp,
+        surfaceColor = GlassSurfaceDefault,
+        borderColor = holidayRed.copy(alpha = 0.45f),
+        onClick = onClick,
+        testTag = "holiday_card_${holiday.id}"
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Holiday Red Accent Bar
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(44.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                holidayRed,
+                                holidayRed.copy(alpha = 0.6f)
+                            )
+                        )
+                    )
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = holiday.name,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = TextWhitePrimary,
+                            letterSpacing = 0.sp
+                        ),
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Red Badge
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(holidayRed.copy(alpha = 0.18f))
+                            .border(0.8.dp, holidayRed.copy(alpha = 0.45f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = badgeText,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = holidayRed,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 11.sp,
+                                letterSpacing = 0.sp
+                            )
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = holiday.description.ifEmpty {
+                        if (holiday.calendarType == CalendarType.GREGORIAN) "Official Public Holiday" else "مناسبت تقویم رسمی کشور"
+                    },
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = TextWhiteSecondary.copy(alpha = 0.85f),
+                        fontSize = 12.sp,
+                        letterSpacing = 0.sp
+                    )
+                )
             }
         }
     }
