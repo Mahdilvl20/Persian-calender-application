@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
@@ -620,6 +621,35 @@ fun SettingsScreen(
                             icon = Icons.Outlined.Refresh,
                             onClick = onResetSampleData,
                             testTag = "btn_reset_sample"
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(GlassBorderSubtle))
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Text(
+                        text = strings.clearAllTitle,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = TextWhitePrimary,
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 0.sp
+                        )
+                    )
+                    Text(
+                        text = strings.clearAllDesc,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = TextWhiteSecondary,
+                            letterSpacing = 0.sp
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        GlassButton(
+                            text = strings.clearAllTitle,
+                            icon = Icons.Outlined.DeleteSweep,
+                            onClick = onClearAllData,
+                            testTag = "btn_clear_all_data"
                         )
                     }
                 }

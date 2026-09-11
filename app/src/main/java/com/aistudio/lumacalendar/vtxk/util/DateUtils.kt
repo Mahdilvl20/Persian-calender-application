@@ -204,4 +204,12 @@ object DateUtils {
         cal.add(Calendar.DAY_OF_MONTH, delta)
         return ymdFormat.format(cal.time)
     }
+
+    fun getWeekOfYear(dateStr: String, firstDayMonday: Boolean): Int {
+        val cal = Calendar.getInstance()
+        cal.firstDayOfWeek = if (firstDayMonday) Calendar.MONDAY else Calendar.SUNDAY
+        cal.minimalDaysInFirstWeek = 4
+        cal.time = parseDate(dateStr)
+        return cal.get(Calendar.WEEK_OF_YEAR)
+    }
 }

@@ -114,7 +114,8 @@ fun LumaApp(viewModel: LumaViewModel) {
         LocalAppStrings provides appStrings,
         LocalCalendarType provides calendarType
     ) {
-        AmbientBackground(accentGlow = currentAccent) {
+        val isOledTheme = themeName.contains("OLED", ignoreCase = true)
+        AmbientBackground(accentGlow = currentAccent, isOled = isOledTheme) {
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxSize()
@@ -148,6 +149,7 @@ fun LumaApp(viewModel: LumaViewModel) {
                                 events = allEvents,
                                 selectedDayEvents = selectedDayEvents,
                                 firstDayMonday = firstDayMonday,
+                                showWeekNumbers = showWeekNumbers,
                                 onDateSelect = { viewModel.selectDate(it) },
                                 onPrevMonth = { viewModel.changeMonth(-1) },
                                 onNextMonth = { viewModel.changeMonth(1) },

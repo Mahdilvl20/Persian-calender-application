@@ -94,6 +94,7 @@ import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
 fun AmbientBackground(
     modifier: Modifier = Modifier,
     accentGlow: Color = AccentRoyalViolet,
+    isOled: Boolean = false,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
@@ -105,10 +106,14 @@ fun AmbientBackground(
             val canvasW = size.width
             val canvasH = size.height
 
-            // Base deep navy-black atmospheric gradient
+            // Base deep navy-black atmospheric gradient (or pure black for OLED)
             drawRect(
                 brush = Brush.verticalGradient(
-                    colors = listOf(
+                    colors = if (isOled) listOf(
+                        CanvasBlack,
+                        CanvasBlack,
+                        CanvasBlack
+                    ) else listOf(
                         CanvasBlack,
                         CanvasNavy.copy(alpha = 0.85f),
                         CanvasBlack
@@ -120,8 +125,8 @@ fun AmbientBackground(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        accentGlow.copy(alpha = 0.35f),
-                        AmbientGlowPurple.copy(alpha = 0.15f),
+                        accentGlow.copy(alpha = if (isOled) 0.18f else 0.35f),
+                        AmbientGlowPurple.copy(alpha = if (isOled) 0.08f else 0.15f),
                         Color.Transparent
                     ),
                     center = Offset(canvasW * 0.85f, canvasH * 0.15f),
@@ -133,8 +138,8 @@ fun AmbientBackground(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        AmbientGlowCyan.copy(alpha = 0.28f),
-                        AmbientGlowCyan.copy(alpha = 0.08f),
+                        AmbientGlowCyan.copy(alpha = if (isOled) 0.14f else 0.28f),
+                        AmbientGlowCyan.copy(alpha = if (isOled) 0.04f else 0.08f),
                         Color.Transparent
                     ),
                     center = Offset(canvasW * 0.1f, canvasH * 0.48f),
@@ -146,8 +151,8 @@ fun AmbientBackground(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        AmbientGlowIndigo.copy(alpha = 0.30f),
-                        AmbientGlowRose.copy(alpha = 0.10f),
+                        AmbientGlowIndigo.copy(alpha = if (isOled) 0.15f else 0.30f),
+                        AmbientGlowRose.copy(alpha = if (isOled) 0.05f else 0.10f),
                         Color.Transparent
                     ),
                     center = Offset(canvasW * 0.75f, canvasH * 0.82f),

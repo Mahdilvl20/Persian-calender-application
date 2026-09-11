@@ -92,6 +92,7 @@ fun CalendarScreen(
     events: List<CalendarEvent>,
     selectedDayEvents: List<CalendarEvent>,
     firstDayMonday: Boolean,
+    showWeekNumbers: Boolean = false,
     onDateSelect: (String) -> Unit,
     onPrevMonth: () -> Unit,
     onNextMonth: () -> Unit,
@@ -271,6 +272,7 @@ fun CalendarScreen(
                         selectedDayEvents = selectedDayEvents,
                         holiday = selectedHoliday,
                         firstDayMonday = firstDayMonday,
+                        showWeekNumbers = showWeekNumbers,
                         onDateSelect = onDateSelect,
                         onEventClick = onEventClick,
                         onAddEventClick = onAddEventClick,
@@ -506,6 +508,7 @@ private fun MonthViewContent(
     selectedDayEvents: List<CalendarEvent>,
     holiday: Holiday?,
     firstDayMonday: Boolean,
+    showWeekNumbers: Boolean = false,
     onDateSelect: (String) -> Unit,
     onEventClick: (CalendarEvent) -> Unit,
     onAddEventClick: (String) -> Unit,
@@ -558,8 +561,21 @@ private fun MonthViewContent(
                     // Weekday headers
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        if (showWeekNumbers) {
+                            Text(
+                                text = "W#",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = TextWhiteMuted.copy(alpha = 0.5f),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp,
+                                    letterSpacing = 0.sp
+                                ),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.width(24.dp)
+                            )
+                        }
                         weekdayLabels.forEach { label ->
                             Text(
                                 text = label,
@@ -579,10 +595,28 @@ private fun MonthViewContent(
 
                     // 6 rows of 7 days
                     for (row in 0 until 6) {
+                        val firstDayInRowIndex = row * 7
+                        val rowWeekNumber = if (showWeekNumbers && firstDayInRowIndex < days.size) {
+                            DateUtils.getWeekOfYear(days[firstDayInRowIndex].dateString, firstDayMonday)
+                        } else null
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceAround
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
+                            if (showWeekNumbers) {
+                                Text(
+                                    text = rowWeekNumber?.toString() ?: "",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = TextWhiteMuted.copy(alpha = 0.5f),
+                                        fontWeight = FontWeight.Normal,
+                                        fontSize = 10.sp,
+                                        letterSpacing = 0.sp
+                                    ),
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.width(24.dp)
+                                )
+                            }
                             for (col in 0 until 7) {
                                 val dayIndex = row * 7 + col
                                 if (dayIndex < days.size) {
