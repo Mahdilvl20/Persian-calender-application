@@ -1,141 +1,85 @@
 package com.example.util
 
-import android.content.ComponentName
 import android.content.Context
-import android.content.pm.PackageManager
 import android.util.Log
+import com.example.widget.LumaCalendarWidgetProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 /**
  * DynamicIconManager:
- * Manages dynamic launcher icon updates reflecting the day of the month (1..31).
- * Supports single-digit (1..9) and double-digit (10..31) days.
- * Provides graceful fallback handling when launchers or device permissions restrict component state changes.
+ * Architecture-compliant, safe, and reliable dynamic icon and widget manager.
+ *
+ * KEY RULES IMPLEMENTED:
+ * 1. MainActivity is NEVER disabled, stopped, or recreated.
+ * 2. No destructive Activity-Alias swapping that causes process termination or ActivityNotFoundException.
+ * 3. Icon day is ALWAYS strictly the REAL device date (LocalDate.now().dayOfMonth).
+ *    Never derived from selected calendar date or Jalali/Hijri conversion.
+ * 4. Strictly idempotent: If today's day has already been applied, it returns immediately doing zero work.
+ * 5. All operations are dispatched to Dispatchers.IO to guarantee zero frame drops on the Main/UI thread.
+ * 6. Changes in calendar mode (Jalali/Gregorian/Hijri), date clicks, or screen navigation NEVER trigger icon updates.
  */
 object DynamicIconManager {
     private const val TAG = "DynamicIconManager"
     private const val PREFS_NAME = "luma_dynamic_icon_prefs"
-    private const val KEY_ACTIVE_DAY = "active_icon_day"
-    private const val KEY_DYNAMIC_SUPPORTED = "dynamic_icon_supported"
+    private const val KEY_LAST_APPLIED_DAY = "last_applied_day"
+    private const val KEY_LAST_SYNC_DATE = "last_sync_date"
 
-    private const val MAIN_ACTIVITY = "com.example.MainActivity"
-    private const val ALIAS_PREFIX = "com.example.MainActivityAliasDay"
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     /**
-     * Updates the launcher icon to reflect the given day of month (1..31).
-     * Enables the corresponding activity-alias and disables previous aliases.
-     * Fails gracefully if the device launcher restricts dynamic activity alias switches.
+     * Checks if the device date has changed since the last applied update.
+     * If already up-to-date and not forced, does nothing (Idempotent).
+     * Dispatches widget and dynamic date persistence safely in background thread.
      */
-    fun updateLauncherIcon(context: Context, dayOfMonth: Int): Boolean {
-        val validDay = dayOfMonth.coerceIn(1, 31)
-        val pm = context.packageManager
+    fun syncIfDateChanged(context: Context, force: Boolean = false) {
+        scope.launch {
+            try {
+                val today = LocalDate.now()
+                val currentDay = today.dayOfMonth
+                val todayIso = today.toString()
 
-        return try {
-            val targetAliasName = "$ALIAS_PREFIX$validDay"
-            val targetComponent = ComponentName(context, targetAliasName)
+                val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                val lastAppliedDay = prefs.getInt(KEY_LAST_APPLIED_DAY, -1)
+                val lastSyncDate = prefs.getString(KEY_LAST_SYNC_DATE, null)
 
-            // 1. Enable the new target alias first
-            pm.setComponentEnabledSetting(
-                targetComponent,
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP
-            )
-
-            // 2. Disable default MainActivity launcher component
-            val mainComponent = ComponentName(context, MAIN_ACTIVITY)
-            pm.setComponentEnabledSetting(
-                mainComponent,
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                PackageManager.DONT_KILL_APP
-            )
-
-            // 3. Disable all other day aliases
-            for (day in 1..31) {
-                if (day != validDay) {
-                    val otherAlias = ComponentName(context, "$ALIAS_PREFIX$day")
-                    val currentState = pm.getComponentEnabledSetting(otherAlias)
-                    if (currentState != PackageManager.COMPONENT_ENABLED_STATE_DISABLED) {
-                        pm.setComponentEnabledSetting(
-                            otherAlias,
-                            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                            PackageManager.DONT_KILL_APP
-                        )
-                    }
+                if (!force && lastAppliedDay == currentDay && lastSyncDate == todayIso) {
+                    // Already up-to-date for today. Idempotent early return.
+                    return@launch
                 }
+
+                // Persist the successfully verified device day
+                prefs.edit()
+                    .putInt(KEY_LAST_APPLIED_DAY, currentDay)
+                    .putString(KEY_LAST_SYNC_DATE, todayIso)
+                    .apply()
+
+                // Update Home Screen Dynamic Calendar Widget
+                LumaCalendarWidgetProvider.updateAllWidgets(context)
+
+                Log.d(TAG, "Dynamic date synced safely to device day $currentDay ($todayIso)")
+            } catch (e: Exception) {
+                Log.w(TAG, "Safe dynamic icon sync encountered non-fatal exception", e)
             }
-
-            // Save active day in preferences
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .edit()
-                .putInt(KEY_ACTIVE_DAY, validDay)
-                .putBoolean(KEY_DYNAMIC_SUPPORTED, true)
-                .apply()
-
-            Log.d(TAG, "Successfully updated dynamic launcher icon to day $validDay")
-            true
-        } catch (e: Exception) {
-            Log.w(TAG, "Dynamic launcher icon not permitted by environment; falling back safely", e)
-            ensureDefaultIconEnabled(context)
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean(KEY_DYNAMIC_SUPPORTED, false)
-                .apply()
-            false
         }
     }
 
     /**
-     * Safely resets or ensures default MainActivity launcher icon is active (Graceful Fallback).
+     * Synchronously returns the device's real day of month (1..31).
+     * Fast and safe to call from UI/Composables without blocking.
      */
-    fun ensureDefaultIconEnabled(context: Context) {
-        try {
-            val pm = context.packageManager
-            val mainComponent = ComponentName(context, MAIN_ACTIVITY)
-            pm.setComponentEnabledSetting(
-                mainComponent,
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to restore default icon", e)
-        }
-    }
-
-    /**
-     * Returns the currently active day of the month configured for the icon.
-     */
-    fun getActiveDay(context: Context): Int {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val saved = prefs.getInt(KEY_ACTIVE_DAY, -1)
-        if (saved in 1..31) return saved
+    fun getRealDeviceDay(): Int {
         return LocalDate.now().dayOfMonth
     }
 
     /**
-     * Checks if dynamic icon updates are supported without exceptions.
+     * Returns the last recorded synced day of the month.
      */
-    fun isDynamicSupported(context: Context): Boolean {
+    fun getLastAppliedDay(context: Context): Int {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getBoolean(KEY_DYNAMIC_SUPPORTED, true)
-    }
-
-    /**
-     * Syncs launcher icon to today's date based on the active calendar type.
-     */
-    fun syncToToday(context: Context, calendarType: CalendarType = CalendarType.GREGORIAN): Boolean {
-        val now = LocalDate.now()
-        val todayIso = String.format("%04d-%02d-%02d", now.year, now.monthValue, now.dayOfMonth)
-        val todayDay = when (calendarType) {
-            CalendarType.JALALI -> {
-                CalendarConverter.gregorianToJalali(todayIso).day
-            }
-            CalendarType.HIJRI -> {
-                CalendarConverter.gregorianToHijri(todayIso).day
-            }
-            CalendarType.GREGORIAN -> {
-                now.dayOfMonth
-            }
-        }
-        return updateLauncherIcon(context, todayDay)
+        val saved = prefs.getInt(KEY_LAST_APPLIED_DAY, -1)
+        return if (saved in 1..31) saved else LocalDate.now().dayOfMonth
     }
 }

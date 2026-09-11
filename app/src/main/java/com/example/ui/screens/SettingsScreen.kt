@@ -406,10 +406,10 @@ fun SettingsScreen(
         // DYNAMIC LAUNCHER ICON & HOME WIDGET
         item {
             val context = LocalContext.current
-            var previewDay by remember { mutableIntStateOf(DynamicIconManager.getActiveDay(context)) }
-            val isSupported = remember { DynamicIconManager.isDynamicSupported(context) }
+            val realDay = remember { DynamicIconManager.getRealDeviceDay() }
+            var previewDay by remember { mutableIntStateOf(realDay) }
 
-            SectionHeader(title = if (strings.tabCalendar == "تقویم") "آیکون پویا و ابزارک" else "Dynamic Icon & Widget")
+            SectionHeader(title = if (strings.tabCalendar == "تقویم") "ابزارک زنده و تاریخ پویا" else "Dynamic Date & Widget")
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -427,7 +427,7 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = if (strings.tabCalendar == "تقویم") "آیکون پویای تقویم" else "Dynamic Calendar Icon",
+                                    text = if (strings.tabCalendar == "تقویم") "تاریخ زنده دستگاه" else "Device Live Date",
                                     style = MaterialTheme.typography.bodyLarge.copy(
                                         color = TextWhitePrimary,
                                         fontWeight = FontWeight.Medium,
@@ -435,7 +435,7 @@ fun SettingsScreen(
                                     )
                                 )
                                 Text(
-                                    text = if (strings.tabCalendar == "تقویم") "نمایش روز جاری ماه روی آیکون" else "Reflects current day of month (1–31)",
+                                    text = if (strings.tabCalendar == "تقویم") "نمایش روز جاری بر روی ابزارک صفحه اصلی" else "Live real-time date on Home Screen widget",
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = TextWhiteSecondary,
                                         letterSpacing = 0.sp
@@ -444,7 +444,7 @@ fun SettingsScreen(
                             }
                         }
 
-                        // Active day badge
+                        // Active real device day badge
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
@@ -453,7 +453,7 @@ fun SettingsScreen(
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = if (strings.tabCalendar == "تقویم") "روز $previewDay" else "Day $previewDay",
+                                text = if (strings.tabCalendar == "تقویم") "امروز: $realDay" else "Today: $realDay",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = AccentElectricBlue,
                                     fontWeight = FontWeight.SemiBold
@@ -464,9 +464,9 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Visual Icon Previews: Single-Digit vs Double-Digit
+                    // Visual Rendering Previews: Single-Digit vs Double-Digit
                     Text(
-                        text = if (strings.tabCalendar == "تقویم") "پیش‌نمایش ارقام تک‌رقمی و دورقمی:" else "Single & Double Digit Icon Rendering:",
+                        text = if (strings.tabCalendar == "تقویم") "پیش‌نمایش ارقام تقویم (تک‌رقمی و دورقمی):" else "Date Typography Preview (Single & Double Digit):",
                         style = MaterialTheme.typography.labelMedium.copy(
                             color = TextWhiteMuted,
                             fontWeight = FontWeight.Medium
@@ -490,11 +490,7 @@ fun SettingsScreen(
                                     if (previewDay <= 9) AccentElectricBlue else GlassBorderSubtle,
                                     RoundedCornerShape(16.dp)
                                 )
-                                .clickable {
-                                    previewDay = 7
-                                    DynamicIconManager.updateLauncherIcon(context, 7)
-                                    LumaCalendarWidgetProvider.updateAllWidgets(context)
-                                }
+                                .clickable { previewDay = 7 }
                                 .padding(12.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -534,11 +530,7 @@ fun SettingsScreen(
                                     if (previewDay > 9) AccentElectricBlue else GlassBorderSubtle,
                                     RoundedCornerShape(16.dp)
                                 )
-                                .clickable {
-                                    previewDay = 24
-                                    DynamicIconManager.updateLauncherIcon(context, 24)
-                                    LumaCalendarWidgetProvider.updateAllWidgets(context)
-                                }
+                                .clickable { previewDay = 24 }
                                 .padding(12.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -579,9 +571,9 @@ fun SettingsScreen(
                         Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                             Text(
                                 text = if (strings.tabCalendar == "تقویم")
-                                    "همگام‌سازی با روز امروز و ابزارک صفحه اصلی"
+                                    "همگام‌سازی فوری ابزارک تقویم صفحه اصلی"
                                 else
-                                    "Sync with today & Home Widget",
+                                    "Sync Home Screen calendar widget with today",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = TextWhiteSecondary,
                                     lineHeight = 16.sp
@@ -590,12 +582,10 @@ fun SettingsScreen(
                         }
 
                         GlassButton(
-                            text = if (strings.tabCalendar == "تقویم") "همگام‌سازی امروز" else "Sync Today",
+                            text = if (strings.tabCalendar == "تقویم") "همگام‌سازی" else "Sync Widget",
                             icon = Icons.Outlined.CheckCircle,
                             onClick = {
-                                DynamicIconManager.syncToToday(context)
-                                previewDay = DynamicIconManager.getActiveDay(context)
-                                LumaCalendarWidgetProvider.updateAllWidgets(context)
+                                DynamicIconManager.syncIfDateChanged(context, force = true)
                             },
                             testTag = "btn_sync_dynamic_icon"
                         )

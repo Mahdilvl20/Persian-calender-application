@@ -3,10 +3,12 @@ package com.example
 import com.example.data.holiday.HolidayService
 import com.example.util.CalendarConverter
 import com.example.util.CalendarType
+import com.example.util.DynamicIconManager
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalDate
 
 class CalendarAndHolidayTest {
 
@@ -66,5 +68,12 @@ class CalendarAndHolidayTest {
     fun testDigitLocalization() {
         assertEquals("۱۲۳۴۵", CalendarConverter.toPersianDigits("12345"))
         assertEquals("١٢٣٤٥", CalendarConverter.toArabicDigits("12345"))
+    }
+
+    @Test
+    fun testDynamicIconManagerRealDeviceDay() {
+        val realDay = DynamicIconManager.getRealDeviceDay()
+        val expected = LocalDate.now().dayOfMonth
+        assertEquals(expected, realDay)
     }
 }
