@@ -317,10 +317,10 @@ object CalendarConverter {
         "شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه"
     )
 
-    // Hijri week starts on Sunday (الأحد) or Saturday (السبت)
-    val HIJRI_WEEKDAYS_SHORT = listOf("أحد", "إثن", "ثلا", "أرب", "خم", "جمع", "سبت")
+    // Hijri week (Sunday to Saturday) with Persian names
+    val HIJRI_WEEKDAYS_SHORT = listOf("ی", "د", "س", "چ", "پ", "ج", "ش")
     val HIJRI_WEEKDAYS_FULL = listOf(
-        "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"
+        "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"
     )
 
     fun getWeekdayLabels(calendarType: CalendarType, firstDayMonday: Boolean): List<String> {
@@ -367,8 +367,8 @@ object CalendarConverter {
             }
             CalendarType.HIJRI -> {
                 val h = gregorianToHijri(dateStr)
-                val dayStr = toArabicDigits(h.day.toString())
-                val yearStr = toArabicDigits(h.year.toString())
+                val dayStr = toPersianDigits(h.day.toString())
+                val yearStr = toPersianDigits(h.year.toString())
                 "$weekday، $dayStr ${getMonthName(h.month, CalendarType.HIJRI)} $yearStr"
             }
         }
@@ -378,8 +378,7 @@ object CalendarConverter {
         val isToday = dateStr == todayDate
         val full = formatDisplayDate(dateStr, calendarType)
         val prefix = when {
-            isToday && calendarType == CalendarType.JALALI -> "امروز • "
-            isToday && calendarType == CalendarType.HIJRI -> "اليوم • "
+            isToday && (calendarType == CalendarType.JALALI || calendarType == CalendarType.HIJRI) -> "امروز • "
             isToday -> "Today • "
             else -> ""
         }
@@ -398,7 +397,7 @@ object CalendarConverter {
             }
             CalendarType.HIJRI -> {
                 val h = gregorianToHijri(dateStr)
-                "${toArabicDigits(h.day.toString())} ${getMonthName(h.month, CalendarType.HIJRI)}"
+                "${toPersianDigits(h.day.toString())} ${getMonthName(h.month, CalendarType.HIJRI)}"
             }
         }
     }
@@ -406,16 +405,14 @@ object CalendarConverter {
     fun formatYearString(year: Int, calendarType: CalendarType): String {
         return when (calendarType) {
             CalendarType.GREGORIAN -> year.toString()
-            CalendarType.JALALI -> toPersianDigits(year.toString())
-            CalendarType.HIJRI -> toArabicDigits(year.toString())
+            CalendarType.JALALI, CalendarType.HIJRI -> toPersianDigits(year.toString())
         }
     }
 
     fun formatDayNumberString(dayNumber: Int, calendarType: CalendarType): String {
         return when (calendarType) {
             CalendarType.GREGORIAN -> dayNumber.toString()
-            CalendarType.JALALI -> toPersianDigits(dayNumber.toString())
-            CalendarType.HIJRI -> toArabicDigits(dayNumber.toString())
+            CalendarType.JALALI, CalendarType.HIJRI -> toPersianDigits(dayNumber.toString())
         }
     }
 

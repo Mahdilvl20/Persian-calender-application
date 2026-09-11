@@ -81,6 +81,9 @@ import com.example.ui.theme.TextWhiteMuted
 import com.example.ui.theme.TextWhitePrimary
 import com.example.ui.theme.TextWhiteSecondary
 import com.example.util.CalendarDay
+import com.example.util.LocalAppStrings
+import com.example.util.LocalCalendarType
+import com.example.util.LocalizationManager
 
 /**
  * Atmospheric deep-space background with layered ambient glow orbs behind translucent glass.
@@ -593,6 +596,11 @@ fun EventCard(
         AccentRoyalViolet
     }
 
+    val strings = LocalAppStrings.current
+    val calendarType = LocalCalendarType.current
+    val categoryName = LocalizationManager.getCategoryName(event.category, strings)
+    val timeFormatted = LocalizationManager.formatTimeRange(event.startTime, event.endTime, calendarType)
+
     GlassCard(
         modifier = modifier.fillMaxWidth(),
         cornerRadius = 16.dp,
@@ -654,7 +662,7 @@ fun EventCard(
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = event.category,
+                            text = categoryName,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = categoryColor,
                                 fontWeight = FontWeight.Medium,
@@ -679,7 +687,7 @@ fun EventCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${event.startTime} – ${event.endTime}",
+                        text = timeFormatted,
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = TextWhiteSecondary,
                             fontWeight = FontWeight.Medium
@@ -860,7 +868,8 @@ fun CategoryChip(
                 text = name,
                 style = MaterialTheme.typography.labelMedium.copy(
                     color = if (isSelected) TextWhitePrimary else TextWhiteSecondary,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                    letterSpacing = 0.sp
                 )
             )
         }
@@ -969,8 +978,10 @@ fun GlassTabBar(
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = if (isSelected) TextWhitePrimary else TextWhiteMuted,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                                fontSize = 11.sp
-                            )
+                                fontSize = 11.sp,
+                                letterSpacing = 0.sp
+                            ),
+                            maxLines = 1
                         )
                     }
                 }

@@ -48,6 +48,8 @@ import com.example.ui.theme.TextWhiteSecondary
 import com.example.ui.viewmodel.AvailableCategories
 import com.example.util.CalendarType
 import com.example.util.DateUtils
+import com.example.util.LocalAppStrings
+import com.example.util.LocalizationManager
 
 @Composable
 fun AgendaScreen(
@@ -57,6 +59,7 @@ fun AgendaScreen(
     onAddEventClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalAppStrings.current
     var selectedCategory by remember { mutableStateOf("All") }
 
     val filteredEvents = remember(events, selectedCategory) {
@@ -75,11 +78,12 @@ fun AgendaScreen(
     ) {
         // Large Title
         Text(
-            text = "Agenda",
+            text = strings.agenda,
             style = MaterialTheme.typography.headlineLarge.copy(
                 fontWeight = FontWeight.Bold,
                 color = TextWhitePrimary,
-                fontSize = 34.sp
+                fontSize = 34.sp,
+                letterSpacing = 0.sp
             ),
             modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
         )
@@ -91,7 +95,7 @@ fun AgendaScreen(
         ) {
             item {
                 CategoryChip(
-                    name = "All",
+                    name = strings.all,
                     color = AccentElectricBlue,
                     isSelected = selectedCategory == "All",
                     onSelect = { selectedCategory = "All" },
@@ -100,7 +104,7 @@ fun AgendaScreen(
             }
             items(AvailableCategories) { cat ->
                 CategoryChip(
-                    name = cat.name,
+                    name = LocalizationManager.getCategoryName(cat.name, strings),
                     color = cat.color,
                     isSelected = selectedCategory == cat.name,
                     onSelect = { selectedCategory = cat.name },
@@ -133,16 +137,20 @@ fun AgendaScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "No events found",
+                        text = strings.noEventsFound,
                         style = MaterialTheme.typography.titleMedium.copy(
                             color = TextWhiteSecondary,
-                            fontWeight = FontWeight.Normal
+                            fontWeight = FontWeight.Normal,
+                            letterSpacing = 0.sp
                         )
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Tap + to add an event to your agenda",
-                        style = MaterialTheme.typography.bodySmall.copy(color = TextWhiteMuted)
+                        text = strings.addEventPrompt,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = TextWhiteMuted,
+                            letterSpacing = 0.sp
+                        )
                     )
                 }
             }

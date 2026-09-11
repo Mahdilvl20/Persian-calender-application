@@ -34,6 +34,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
@@ -73,6 +75,8 @@ import com.example.ui.theme.TextWhitePrimary
 import com.example.ui.theme.TextWhiteSecondary
 import com.example.util.CalendarType
 import com.example.util.DateUtils
+import com.example.util.LocalAppStrings
+import com.example.util.LocalizationManager
 
 @Composable
 fun CalendarScreen(
@@ -94,9 +98,9 @@ fun CalendarScreen(
     onAddEventClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalAppStrings.current
     val monthName = DateUtils.getMonthName(year, month, calendarType)
     val yearStr = DateUtils.getYear(year, month, calendarType)
-    val monthSecondary = DateUtils.getMonthSecondaryName(year, month, calendarType)
 
     Column(
         modifier = modifier
@@ -107,51 +111,52 @@ fun CalendarScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 4.dp, bottom = 6.dp),
+                .padding(top = 4.dp, bottom = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = monthName,
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = TextWhitePrimary,
-                            fontSize = if (monthName.length > 9) 26.sp else 32.sp
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = yearStr,
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = TextWhiteSecondary.copy(alpha = 0.8f),
-                            fontSize = 24.sp
-                        )
-                    )
-                }
-                if (monthSecondary.isNotEmpty()) {
-                    Text(
-                        text = monthSecondary,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            color = AccentElectricBlue,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 11.sp
-                        )
-                    )
-                }
+            // Month + Year title: Never wrap, ample space, no broken words
+            Row(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .padding(end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = monthName,
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextWhitePrimary,
+                        fontSize = if (monthName.length > 8) 24.sp else 28.sp,
+                        letterSpacing = 0.sp
+                    ),
+                    maxLines = 1,
+                    softWrap = false
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = yearStr,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextWhiteSecondary.copy(alpha = 0.85f),
+                        fontSize = 22.sp,
+                        letterSpacing = 0.sp
+                    ),
+                    maxLines = 1,
+                    softWrap = false
+                )
             }
 
-            // Right controls: Left, Today, Right
+            // Controls: [<] [Today] [>]
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 GlassIconButton(
-                    icon = Icons.Default.ChevronLeft,
+                    icon = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                     onClick = onPrevMonth,
-                    contentDescription = "Previous Month",
+                    contentDescription = strings.previousMonth,
                     size = 36.dp,
                     testTag = "btn_prev_month"
                 )
@@ -177,18 +182,21 @@ fun CalendarScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Today",
+                        text = strings.today,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Medium,
-                            color = AccentElectricBlue
-                        )
+                            color = AccentElectricBlue,
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
 
                 GlassIconButton(
-                    icon = Icons.Default.ChevronRight,
+                    icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     onClick = onNextMonth,
-                    contentDescription = "Next Month",
+                    contentDescription = strings.nextMonth,
                     size = 36.dp,
                     testTag = "btn_next_month"
                 )
@@ -333,28 +341,18 @@ fun CalendarTypeSegmentedControl(
                         .testTag("btn_cal_type_${type.name.lowercase()}"),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = type.farsiArabicName,
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                                fontSize = 13.sp,
-                                color = if (isSelected) TextWhitePrimary else TextWhiteMuted
-                            )
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-                        Text(
-                            text = "(${type.englishName})",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontSize = 10.sp,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                                color = if (isSelected) AccentElectricBlue else TextWhiteMuted.copy(alpha = 0.6f)
-                            )
-                        )
-                    }
+                    val strings = LocalAppStrings.current
+                    Text(
+                        text = LocalizationManager.getCalendarTypeName(type, strings),
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                            fontSize = 13.sp,
+                            color = if (isSelected) TextWhitePrimary else TextWhiteMuted,
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false
+                    )
                 }
             }
         }
@@ -419,12 +417,16 @@ private fun SegmentedViewSwitcher(
                         .padding(vertical = 7.dp),
                     contentAlignment = Alignment.Center
                 ) {
+                    val strings = LocalAppStrings.current
                     Text(
-                        text = mode,
+                        text = LocalizationManager.getViewModeName(mode, strings),
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                            color = if (isSelected) TextWhitePrimary else TextWhiteMuted
-                        )
+                            color = if (isSelected) TextWhitePrimary else TextWhiteMuted,
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }
@@ -502,7 +504,8 @@ private fun MonthViewContent(
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = TextWhiteMuted,
                                     fontWeight = FontWeight.Medium,
-                                    fontSize = 12.sp
+                                    fontSize = 12.sp,
+                                    letterSpacing = 0.sp
                                 ),
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.weight(1f)
@@ -540,6 +543,7 @@ private fun MonthViewContent(
 
         // SELECTED DAY / AGENDA SECTION HEADER
         item {
+            val strings = LocalAppStrings.current
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -551,12 +555,13 @@ private fun MonthViewContent(
                     text = DateUtils.formatSelectedHeader(selectedDate, calendarType = calendarType),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = TextWhitePrimary
+                        color = TextWhitePrimary,
+                        letterSpacing = 0.sp
                     )
                 )
 
                 Text(
-                    text = "+ Add",
+                    text = "+ ${strings.addEvent}",
                     style = MaterialTheme.typography.labelMedium.copy(
                         color = AccentElectricBlue,
                         fontWeight = FontWeight.Medium
@@ -572,6 +577,7 @@ private fun MonthViewContent(
         // AGENDA EVENT LIST FOR SELECTED DAY
         if (selectedDayEvents.isEmpty()) {
             item {
+                val strings = LocalAppStrings.current
                 GlassCard(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -594,12 +600,12 @@ private fun MonthViewContent(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "No events scheduled",
+                            text = strings.noEventsForDate,
                             style = MaterialTheme.typography.bodyMedium.copy(color = TextWhiteSecondary)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Tap + to create a new event for this day",
+                            text = strings.addEventPrompt,
                             style = MaterialTheme.typography.bodySmall.copy(color = TextWhiteMuted)
                         )
                     }
@@ -683,7 +689,8 @@ private fun WeekViewContent(
                         Text(
                             text = wDay.dayOfWeekName,
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = if (isSelected) AccentElectricBlue else TextWhiteMuted
+                                color = if (isSelected) AccentElectricBlue else TextWhiteMuted,
+                                letterSpacing = 0.sp
                             )
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -691,7 +698,8 @@ private fun WeekViewContent(
                             text = wDay.displayNumber.ifEmpty { wDay.dayOfMonth.toString() },
                             style = MaterialTheme.typography.labelLarge.copy(
                                 fontWeight = if (isSelected || wDay.isToday) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isSelected) Color.White else TextWhitePrimary
+                                color = if (isSelected) Color.White else TextWhitePrimary,
+                                letterSpacing = 0.sp
                             )
                         )
                     }
@@ -706,10 +714,11 @@ private fun WeekViewContent(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val hours = (8..22).map { String.format("%02d:00", it) }
+            val hours = (8..22).toList()
 
-            items(hours) { hourStr ->
-                val hourInt = hourStr.substringBefore(":").toInt()
+            items(hours) { hourInt ->
+                val hourStr = String.format("%02d:00", hourInt)
+                val displayHour = if (LocalizationManager.isRtl(calendarType)) LocalizationManager.formatDigits(hourStr) else hourStr
                 val eventsAtHour = selectedDayEvents.filter {
                     val evHour = it.startTime.substringBefore(":").toIntOrNull() ?: -1
                     evHour == hourInt
@@ -723,10 +732,11 @@ private fun WeekViewContent(
                 ) {
                     // Hour label
                     Text(
-                        text = hourStr,
+                        text = displayHour,
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = TextWhiteMuted,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 0.sp
                         ),
                         modifier = Modifier.width(50.dp)
                     )
@@ -799,15 +809,20 @@ private fun DayViewContent(
                         text = DateUtils.getDayOfWeek(selectedDate, calendarType),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = TextWhitePrimary
+                            color = TextWhitePrimary,
+                            letterSpacing = 0.sp
                         )
                     )
                     Text(
                         text = DateUtils.formatDisplayDate(selectedDate, calendarType),
-                        style = MaterialTheme.typography.bodyMedium.copy(color = AccentElectricBlue)
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = AccentElectricBlue,
+                            letterSpacing = 0.sp
+                        )
                     )
                 }
 
+                val strings = LocalAppStrings.current
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
@@ -817,10 +832,11 @@ private fun DayViewContent(
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        text = "+ Event",
+                        text = "+ ${strings.addEvent}",
                         style = MaterialTheme.typography.labelMedium.copy(
                             color = Color.White,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 0.sp
                         )
                     )
                 }
@@ -832,10 +848,11 @@ private fun DayViewContent(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val hours = (7..23).map { String.format("%02d:00", it) }
+            val hours = (7..23).toList()
 
-            items(hours) { hourStr ->
-                val hourInt = hourStr.substringBefore(":").toInt()
+            items(hours) { hourInt ->
+                val hourStr = String.format("%02d:00", hourInt)
+                val displayHour = if (LocalizationManager.isRtl(calendarType)) LocalizationManager.formatDigits(hourStr) else hourStr
                 val eventsInHour = events.filter {
                     val evH = it.startTime.substringBefore(":").toIntOrNull() ?: -1
                     evH == hourInt
@@ -846,10 +863,11 @@ private fun DayViewContent(
                     verticalAlignment = Alignment.Top
                 ) {
                     Text(
-                        text = hourStr,
+                        text = displayHour,
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = TextWhiteMuted,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 0.sp
                         ),
                         modifier = Modifier.width(48.dp)
                     )

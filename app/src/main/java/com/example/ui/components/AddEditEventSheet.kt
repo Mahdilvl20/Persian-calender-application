@@ -65,6 +65,8 @@ import com.example.ui.theme.TextWhiteSecondary
 import com.example.ui.viewmodel.AvailableCategories
 import com.example.util.CalendarType
 import com.example.util.DateUtils
+import com.example.util.LocalAppStrings
+import com.example.util.LocalizationManager
 
 @Composable
 fun AddEditEventSheet(
@@ -88,6 +90,9 @@ fun AddEditEventSheet(
     ) -> Unit
 ) {
     if (!isOpen) return
+
+    val strings = LocalAppStrings.current
+    val isRtl = LocalizationManager.isRtl(activeCalendarType)
 
     var title by remember(event) { mutableStateOf(event?.title ?: "") }
     var date by remember(event, defaultDate) { mutableStateOf(event?.date ?: defaultDate) }
@@ -166,10 +171,11 @@ fun AddEditEventSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Cancel",
+                            text = strings.cancel,
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 color = TextWhiteSecondary,
-                                fontWeight = FontWeight.Normal
+                                fontWeight = FontWeight.Normal,
+                                letterSpacing = 0.sp
                             ),
                             modifier = Modifier
                                 .testTag("btn_cancel_event")
@@ -179,20 +185,21 @@ fun AddEditEventSheet(
                         )
 
                         Text(
-                            text = if (event == null) "New Event" else "Edit Event",
+                            text = if (event == null) strings.newEvent else strings.editEvent,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold,
-                                color = TextWhitePrimary
+                                color = TextWhitePrimary,
+                                letterSpacing = 0.sp
                             )
                         )
 
                         GlassButton(
-                            text = "Save",
+                            text = strings.save,
                             isPrimary = true,
                             onClick = {
                                 onSave(
                                     event?.id ?: 0L,
-                                    title.ifBlank { "New Event" },
+                                    title.ifBlank { strings.newEvent },
                                     date,
                                     startTime,
                                     endTime,
@@ -217,17 +224,18 @@ fun AddEditEventSheet(
                     ) {
                         // Title Input
                         Text(
-                            text = "TITLE",
+                            text = strings.titleSection,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = TextWhiteMuted,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.sp
                             ),
                             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
                         )
                         GlassInput(
                             value = title,
                             onValueChange = { title = it },
-                            placeholder = "Event title (e.g., Design Review)",
+                            placeholder = strings.eventTitlePlaceholder,
                             testTag = "input_event_title"
                         )
 
@@ -235,10 +243,11 @@ fun AddEditEventSheet(
 
                         // Category Selection
                         Text(
-                            text = "CATEGORY & COLOR",
+                            text = strings.categoryAndColor,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = TextWhiteMuted,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.sp
                             ),
                             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
                         )
@@ -261,10 +270,11 @@ fun AddEditEventSheet(
 
                         // Date & Time Grouped Glass Card
                         Text(
-                            text = "DATE & TIME",
+                            text = strings.dateTimeSection,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = TextWhiteMuted,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.sp
                             ),
                             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
                         )
@@ -290,10 +300,11 @@ fun AddEditEventSheet(
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
-                                            text = "Date",
+                                            text = strings.date,
                                             style = MaterialTheme.typography.bodyLarge.copy(
                                                 color = TextWhitePrimary,
-                                                fontWeight = FontWeight.Medium
+                                                fontWeight = FontWeight.Medium,
+                                                letterSpacing = 0.sp
                                             )
                                         )
                                     }
@@ -302,22 +313,23 @@ fun AddEditEventSheet(
                                         text = DateUtils.formatDisplayDate(date, activeCalendarType),
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             color = AccentElectricBlue,
-                                            fontWeight = FontWeight.SemiBold
+                                            fontWeight = FontWeight.SemiBold,
+                                            letterSpacing = 0.sp
                                         )
                                     )
                                 }
 
-                                // Quick date buttons (Today, Tomorrow, +3 Days)
+                                // Quick date buttons
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     val quickDates = listOf(
-                                        "Today" to DateUtils.DEFAULT_TODAY,
-                                        "Tomorrow" to DateUtils.addDays(DateUtils.DEFAULT_TODAY, 1),
-                                        "Sep 15" to "2026-09-15",
-                                        "Sep 20" to "2026-09-20"
+                                        strings.today to DateUtils.DEFAULT_TODAY,
+                                        strings.tomorrow to DateUtils.addDays(DateUtils.DEFAULT_TODAY, 1),
+                                        (if (isRtl) LocalizationManager.formatDigits("15") else "15") to "2026-09-15",
+                                        (if (isRtl) LocalizationManager.formatDigits("20") else "20") to "2026-09-20"
                                     )
                                     quickDates.forEach { (label, qDate) ->
                                         val isSel = date == qDate
@@ -340,7 +352,8 @@ fun AddEditEventSheet(
                                                 text = label,
                                                 style = MaterialTheme.typography.labelSmall.copy(
                                                     color = if (isSel) Color.White else TextWhiteSecondary,
-                                                    fontWeight = if (isSel) FontWeight.SemiBold else FontWeight.Medium
+                                                    fontWeight = if (isSel) FontWeight.SemiBold else FontWeight.Medium,
+                                                    letterSpacing = 0.sp
                                                 )
                                             )
                                         }
@@ -371,10 +384,11 @@ fun AddEditEventSheet(
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
-                                            text = "Time",
+                                            text = strings.time,
                                             style = MaterialTheme.typography.bodyLarge.copy(
                                                 color = TextWhitePrimary,
-                                                fontWeight = FontWeight.Medium
+                                                fontWeight = FontWeight.Medium,
+                                                letterSpacing = 0.sp
                                             )
                                         )
                                     }
@@ -384,12 +398,15 @@ fun AddEditEventSheet(
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
                                         // Quick Start Time presets
-                                        TimePill(time = startTime, onSelect = { startTime = it })
+                                        TimePill(time = startTime, isRtl = isRtl, onSelect = { startTime = it })
                                         Text(
-                                            text = "to",
-                                            style = MaterialTheme.typography.bodySmall.copy(color = TextWhiteMuted)
+                                            text = if (isRtl) "تا" else "to",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = TextWhiteMuted,
+                                                letterSpacing = 0.sp
+                                            )
                                         )
-                                        TimePill(time = endTime, onSelect = { endTime = it })
+                                        TimePill(time = endTime, isRtl = isRtl, onSelect = { endTime = it })
                                     }
                                 }
                             }
@@ -399,17 +416,18 @@ fun AddEditEventSheet(
 
                         // Location Input
                         Text(
-                            text = "LOCATION",
+                            text = strings.locationSection,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = TextWhiteMuted,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.sp
                             ),
                             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
                         )
                         GlassInput(
                             value = location,
                             onValueChange = { location = it },
-                            placeholder = "Add location or conference link",
+                            placeholder = strings.locationPlaceholder,
                             leadingIcon = Icons.Outlined.LocationOn,
                             testTag = "input_event_location"
                         )
@@ -418,10 +436,11 @@ fun AddEditEventSheet(
 
                         // Reminder & Calendar Selector
                         Text(
-                            text = "REMINDERS & CALENDAR",
+                            text = strings.remindersAndCalendar,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = TextWhiteMuted,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.sp
                             ),
                             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
                         )
@@ -444,17 +463,18 @@ fun AddEditEventSheet(
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
-                                            text = "Alert",
+                                            text = strings.alert,
                                             style = MaterialTheme.typography.bodyLarge.copy(
                                                 color = TextWhitePrimary,
-                                                fontWeight = FontWeight.Medium
+                                                fontWeight = FontWeight.Medium,
+                                                letterSpacing = 0.sp
                                             )
                                         )
                                     }
 
                                     // Reminder pill cycle
-                                    val reminders = listOf(0 to "None", 5 to "5 min before", 15 to "15 min before", 30 to "30 min before", 60 to "1 hour before")
-                                    val curReminder = reminders.firstOrNull { it.first == reminderMinutes }?.second ?: "15 min before"
+                                    val reminderMinutesOptions = listOf(0, 5, 15, 30, 60)
+                                    val curReminderText = LocalizationManager.formatReminder(reminderMinutes, strings)
 
                                     Box(
                                         modifier = Modifier
@@ -462,16 +482,17 @@ fun AddEditEventSheet(
                                             .background(GlassSurfaceHighlight)
                                             .border(0.8.dp, GlassBorderSubtle, RoundedCornerShape(10.dp))
                                             .clickable {
-                                                val nextIdx = (reminders.indexOfFirst { it.first == reminderMinutes } + 1) % reminders.size
-                                                reminderMinutes = reminders[nextIdx].first
+                                                val nextIdx = (reminderMinutesOptions.indexOf(reminderMinutes) + 1) % reminderMinutesOptions.size
+                                                reminderMinutes = reminderMinutesOptions[nextIdx]
                                             }
                                             .padding(horizontal = 10.dp, vertical = 5.dp)
                                     ) {
                                         Text(
-                                            text = curReminder,
+                                            text = curReminderText,
                                             style = MaterialTheme.typography.bodySmall.copy(
                                                 color = AccentElectricBlue,
-                                                fontWeight = FontWeight.Medium
+                                                fontWeight = FontWeight.Medium,
+                                                letterSpacing = 0.sp
                                             )
                                         )
                                     }
@@ -492,16 +513,21 @@ fun AddEditEventSheet(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        text = "Calendar",
+                                        text = strings.calendarSection,
                                         style = MaterialTheme.typography.bodyLarge.copy(
                                             color = TextWhitePrimary,
-                                            fontWeight = FontWeight.Medium
+                                            fontWeight = FontWeight.Medium,
+                                            letterSpacing = 0.sp
                                         )
                                     )
 
                                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        listOf("Personal", "Work", "Holidays").forEach { calName ->
-                                            val isSelected = calendarType == calName
+                                        listOf(
+                                            "Personal" to strings.categoryPersonal,
+                                            "Work" to strings.categoryWork,
+                                            "Holidays" to strings.categoryHolidays
+                                        ).forEach { (calKey, calLabel) ->
+                                            val isSelected = calendarType == calKey
                                             Box(
                                                 modifier = Modifier
                                                     .clip(RoundedCornerShape(8.dp))
@@ -514,13 +540,14 @@ fun AddEditEventSheet(
                                                         if (isSelected) AccentElectricBlue else Color.Transparent,
                                                         RoundedCornerShape(8.dp)
                                                     )
-                                                    .clickable { calendarType = calName }
+                                                    .clickable { calendarType = calKey }
                                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                                             ) {
                                                 Text(
-                                                    text = calName,
+                                                    text = calLabel,
                                                     style = MaterialTheme.typography.labelSmall.copy(
-                                                        color = if (isSelected) Color.White else TextWhiteSecondary
+                                                        color = if (isSelected) Color.White else TextWhiteSecondary,
+                                                        letterSpacing = 0.sp
                                                     )
                                                 )
                                             }
@@ -534,17 +561,18 @@ fun AddEditEventSheet(
 
                         // Notes Input
                         Text(
-                            text = "NOTES",
+                            text = strings.notesSection,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = TextWhiteMuted,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.sp
                             ),
                             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
                         )
                         GlassInput(
                             value = notes,
                             onValueChange = { notes = it },
-                            placeholder = "Add description or agenda items...",
+                            placeholder = strings.notesPlaceholder,
                             leadingIcon = Icons.Outlined.Description,
                             singleLine = false,
                             maxLines = 4,
@@ -560,6 +588,7 @@ fun AddEditEventSheet(
 @Composable
 private fun TimePill(
     time: String,
+    isRtl: Boolean = false,
     onSelect: (String) -> Unit
 ) {
     val commonTimes = listOf("09:00", "10:00", "11:00", "12:00", "13:30", "15:00", "16:30", "18:00", "19:00", "20:00")
@@ -575,10 +604,11 @@ private fun TimePill(
             .padding(horizontal = 10.dp, vertical = 5.dp)
     ) {
         Text(
-            text = time,
+            text = if (isRtl) LocalizationManager.formatDigits(time) else time,
             style = MaterialTheme.typography.bodyMedium.copy(
                 color = TextWhitePrimary,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 0.sp
             )
         )
     }

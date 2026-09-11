@@ -24,11 +24,13 @@ import androidx.compose.material.icons.outlined.FormatListBulleted
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import com.example.ui.components.AddEditEventSheet
 import com.example.ui.components.AmbientBackground
@@ -43,6 +45,9 @@ import com.example.ui.screens.SearchScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.theme.LumaCalendarTheme
 import com.example.ui.viewmodel.AccentPresets
+import com.example.util.LocalAppStrings
+import com.example.util.LocalCalendarType
+import com.example.util.LocalizationManager
 import com.example.ui.viewmodel.LumaViewModel
 
 class MainActivity : ComponentActivity() {
@@ -91,22 +96,30 @@ fun LumaApp(viewModel: LumaViewModel) {
 
     val currentAccent = AccentPresets.getOrElse(accentIndex) { AccentPresets[0] }.primary
 
+    val layoutDirection = LocalizationManager.getLayoutDirection(calendarType)
+    val appStrings = LocalizationManager.getStrings(calendarType)
+
     val tabItems = listOf(
-        "Calendar" to Icons.Outlined.CalendarMonth,
-        "Agenda" to Icons.Outlined.FormatListBulleted,
-        "Search" to Icons.Default.Search,
-        "Settings" to Icons.Outlined.Settings
+        appStrings.tabCalendar to Icons.Outlined.CalendarMonth,
+        appStrings.tabAgenda to Icons.Outlined.FormatListBulleted,
+        appStrings.tabSearch to Icons.Default.Search,
+        appStrings.tabSettings to Icons.Outlined.Settings
     )
 
     val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    AmbientBackground(accentGlow = currentAccent) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = topInset)
-        ) {
+    CompositionLocalProvider(
+        LocalLayoutDirection provides layoutDirection,
+        LocalAppStrings provides appStrings,
+        LocalCalendarType provides calendarType
+    ) {
+        AmbientBackground(accentGlow = currentAccent) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = topInset)
+            ) {
             // Realistic iPhone status bar with Dynamic Island & signal
             IPhoneStatusBar()
 
@@ -235,5 +248,6 @@ fun LumaApp(viewModel: LumaViewModel) {
             onEdit = { viewModel.openEditEvent(it) },
             onDelete = { viewModel.deleteEvent(it) }
         )
+        }
     }
 }

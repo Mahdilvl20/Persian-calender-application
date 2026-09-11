@@ -211,7 +211,7 @@ object VazirmatnTypography {
         fontWeight = FontWeight.SemiBold,
         fontSize = 28.sp,
         lineHeight = 36.sp,
-        letterSpacing = (-0.4).sp,
+        letterSpacing = 0.sp,
         color = TextWhitePrimary
     )
     val calendarYear = TextStyle(
@@ -219,7 +219,7 @@ object VazirmatnTypography {
         fontWeight = FontWeight.SemiBold,
         fontSize = 24.sp,
         lineHeight = 32.sp,
-        letterSpacing = (-0.2).sp,
+        letterSpacing = 0.sp,
         color = TextWhiteSecondary
     )
     val sectionTitle = TextStyle(
@@ -227,7 +227,7 @@ object VazirmatnTypography {
         fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp,
         lineHeight = 24.sp,
-        letterSpacing = (-0.1).sp,
+        letterSpacing = 0.sp,
         color = TextWhitePrimary
     )
     val eventTitle = TextStyle(
@@ -286,7 +286,7 @@ object VazirmatnTypography {
         fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
-        letterSpacing = (-0.5).sp,
+        letterSpacing = 0.sp,
         color = TextWhitePrimary
     )
     val highlightedInfo = TextStyle(
@@ -301,7 +301,7 @@ object VazirmatnTypography {
         fontWeight = FontWeight.Bold,
         fontSize = 26.sp,
         lineHeight = 34.sp,
-        letterSpacing = (-0.3).sp,
+        letterSpacing = 0.sp,
         color = TextWhitePrimary
     )
     val specialEmphasis = TextStyle(
@@ -350,7 +350,7 @@ val Typography = Typography(
         fontWeight = FontWeight.Bold, // Main screen title when needed
         fontSize = 32.sp,
         lineHeight = 40.sp,
-        letterSpacing = (-0.5).sp,
+        letterSpacing = 0.sp,
         color = TextWhitePrimary
     ),
     headlineMedium = TextStyle(
@@ -358,7 +358,7 @@ val Typography = Typography(
         fontWeight = FontWeight.SemiBold, // Screen titles
         fontSize = 26.sp,
         lineHeight = 34.sp,
-        letterSpacing = (-0.3).sp,
+        letterSpacing = 0.sp,
         color = TextWhitePrimary
     ),
     headlineSmall = TextStyle(
@@ -366,7 +366,7 @@ val Typography = Typography(
         fontWeight = FontWeight.SemiBold, // Screen subtitles & dialog titles
         fontSize = 22.sp,
         lineHeight = 30.sp,
-        letterSpacing = (-0.2).sp,
+        letterSpacing = 0.sp,
         color = TextWhitePrimary
     ),
     titleLarge = TextStyle(
@@ -374,7 +374,7 @@ val Typography = Typography(
         fontWeight = FontWeight.SemiBold, // Section titles, card titles
         fontSize = 20.sp,
         lineHeight = 28.sp,
-        letterSpacing = (-0.1).sp,
+        letterSpacing = 0.sp,
         color = TextWhitePrimary
     ),
     titleMedium = TextStyle(
@@ -422,7 +422,7 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium, // Buttons
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.2.sp,
+        letterSpacing = 0.sp,
         color = TextWhitePrimary
     ),
     labelMedium = TextStyle(
@@ -430,7 +430,7 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium, // Tabs, time labels, small UI labels
         fontSize = 12.sp,
         lineHeight = 18.sp,
-        letterSpacing = 0.3.sp,
+        letterSpacing = 0.sp,
         color = TextWhiteSecondary
     ),
     labelSmall = TextStyle(
@@ -438,7 +438,7 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium, // Navigation items, calendar weekday names
         fontSize = 11.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.4.sp,
+        letterSpacing = 0.sp,
         color = TextWhiteMuted
     )
 )

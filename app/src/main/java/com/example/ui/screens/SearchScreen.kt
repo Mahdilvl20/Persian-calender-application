@@ -41,6 +41,8 @@ import com.example.ui.theme.TextWhiteSecondary
 import com.example.ui.viewmodel.AvailableCategories
 import com.example.util.CalendarType
 import com.example.util.DateUtils
+import com.example.util.LocalAppStrings
+import com.example.util.LocalizationManager
 
 @Composable
 fun SearchScreen(
@@ -53,6 +55,7 @@ fun SearchScreen(
     onEventClick: (CalendarEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalAppStrings.current
     val groupedResults = remember(searchResults) {
         searchResults.groupBy { it.date }
     }
@@ -64,11 +67,12 @@ fun SearchScreen(
     ) {
         // Title
         Text(
-            text = "Search Events",
+            text = strings.searchEvents,
             style = MaterialTheme.typography.headlineLarge.copy(
                 fontWeight = FontWeight.Bold,
                 color = TextWhitePrimary,
-                fontSize = 32.sp
+                fontSize = 32.sp,
+                letterSpacing = 0.sp
             ),
             modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
         )
@@ -77,7 +81,7 @@ fun SearchScreen(
         GlassInput(
             value = searchQuery,
             onValueChange = onSearchQueryChange,
-            placeholder = "Search by title, location, or notes...",
+            placeholder = strings.searchPlaceholder,
             leadingIcon = Icons.Default.Search,
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
@@ -102,7 +106,7 @@ fun SearchScreen(
         ) {
             item {
                 CategoryChip(
-                    name = "All",
+                    name = strings.all,
                     color = AccentElectricBlue,
                     isSelected = selectedCategory == "All",
                     onSelect = { onCategoryChange("All") },
@@ -111,7 +115,7 @@ fun SearchScreen(
             }
             items(AvailableCategories) { cat ->
                 CategoryChip(
-                    name = cat.name,
+                    name = LocalizationManager.getCategoryName(cat.name, strings),
                     color = cat.color,
                     isSelected = selectedCategory == cat.name,
                     onSelect = { onCategoryChange(cat.name) },
@@ -144,16 +148,20 @@ fun SearchScreen(
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        text = if (searchQuery.isEmpty()) "Find any event instantly" else "No matching events",
+                        text = if (searchQuery.isEmpty()) strings.findAnyEvent else strings.noMatchingEvents,
                         style = MaterialTheme.typography.titleMedium.copy(
                             color = TextWhiteSecondary,
-                            fontWeight = FontWeight.Normal
+                            fontWeight = FontWeight.Normal,
+                            letterSpacing = 0.sp
                         )
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = if (searchQuery.isEmpty()) "Type keywords above or tap a category filter" else "Try searching for another keyword or clearing filters",
-                        style = MaterialTheme.typography.bodySmall.copy(color = TextWhiteMuted)
+                        text = if (searchQuery.isEmpty()) strings.typeKeywordsPrompt else strings.tryAnotherKeywordPrompt,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = TextWhiteMuted,
+                            letterSpacing = 0.sp
+                        )
                     )
                 }
             }

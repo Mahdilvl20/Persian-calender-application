@@ -54,6 +54,7 @@ import com.example.ui.theme.TextWhiteMuted
 import com.example.ui.theme.TextWhitePrimary
 import com.example.ui.theme.TextWhiteSecondary
 import com.example.ui.viewmodel.AccentPresets
+import com.example.util.LocalAppStrings
 
 @Composable
 fun SettingsScreen(
@@ -77,6 +78,7 @@ fun SettingsScreen(
     onClearAllData: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalAppStrings.current
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -86,11 +88,12 @@ fun SettingsScreen(
         // Large Title
         item {
             Text(
-                text = "Settings",
+                text = strings.settings,
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = TextWhitePrimary,
-                    fontSize = 34.sp
+                    fontSize = 34.sp,
+                    letterSpacing = 0.sp
                 ),
                 modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
             )
@@ -98,7 +101,7 @@ fun SettingsScreen(
 
         // APPEARANCE SECTION
         item {
-            SectionHeader(title = "APPEARANCE")
+            SectionHeader(title = strings.appearance)
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     // Theme Mode
@@ -116,10 +119,11 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Theme Surface",
+                                text = strings.themeSurface,
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = TextWhitePrimary,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
+                                    letterSpacing = 0.sp
                                 )
                             )
                         }
@@ -132,7 +136,7 @@ fun SettingsScreen(
                                         .clip(RoundedCornerShape(8.dp))
                                         .background(
                                             if (isSel) AccentElectricBlue.copy(alpha = 0.25f)
-                                            else Color.Transparent
+                                             else Color.Transparent
                                         )
                                         .border(
                                             0.8.dp,
@@ -145,7 +149,8 @@ fun SettingsScreen(
                                     Text(
                                         text = th,
                                         style = MaterialTheme.typography.labelSmall.copy(
-                                            color = if (isSel) Color.White else TextWhiteSecondary
+                                            color = if (isSel) Color.White else TextWhiteSecondary,
+                                            letterSpacing = 0.sp
                                         )
                                     )
                                 }
@@ -164,10 +169,11 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Accent Palette",
+                            text = strings.accentPalette,
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 color = TextWhitePrimary,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Medium,
+                                letterSpacing = 0.sp
                             )
                         )
 
@@ -195,7 +201,7 @@ fun SettingsScreen(
 
         // CALENDAR CONFIGURATION SECTION
         item {
-            SectionHeader(title = "CALENDAR")
+            SectionHeader(title = strings.calendarSection)
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     // First Day of Week
@@ -213,10 +219,11 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Start Week on Monday",
+                                text = strings.startWeekMonday,
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = TextWhitePrimary,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
+                                    letterSpacing = 0.sp
                                 )
                             )
                         }
@@ -247,10 +254,11 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Show Week Numbers",
+                                text = strings.showWeekNumbers,
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = TextWhitePrimary,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
+                                    letterSpacing = 0.sp
                                 )
                             )
                         }
@@ -267,7 +275,7 @@ fun SettingsScreen(
 
         // NOTIFICATIONS SECTION
         item {
-            SectionHeader(title = "NOTIFICATIONS")
+            SectionHeader(title = strings.notifications)
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier
@@ -286,15 +294,19 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Event Reminders",
+                                text = strings.eventReminders,
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = TextWhitePrimary,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
+                                    letterSpacing = 0.sp
                                 )
                             )
                             Text(
-                                text = "Play notification chime before events",
-                                style = MaterialTheme.typography.bodySmall.copy(color = TextWhiteSecondary)
+                                text = strings.eventRemindersDesc,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = TextWhiteSecondary,
+                                    letterSpacing = 0.sp
+                                )
                             )
                         }
                     }
@@ -310,7 +322,7 @@ fun SettingsScreen(
 
         // CALENDARS VISIBILITY
         item {
-            SectionHeader(title = "CALENDARS")
+            SectionHeader(title = strings.calendarsVisibility)
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     // Personal
@@ -323,8 +335,11 @@ fun SettingsScreen(
                             Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(CategoryPersonal))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Personal",
-                                style = MaterialTheme.typography.bodyLarge.copy(color = TextWhitePrimary)
+                                text = strings.categoryPersonal,
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = TextWhitePrimary,
+                                    letterSpacing = 0.sp
+                                )
                             )
                         }
                         GlassToggle(checked = personalVisible, onCheckedChange = { onTogglePersonal() })
@@ -344,8 +359,11 @@ fun SettingsScreen(
                             Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(CategoryWork))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Work",
-                                style = MaterialTheme.typography.bodyLarge.copy(color = TextWhitePrimary)
+                                text = strings.categoryWork,
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = TextWhitePrimary,
+                                    letterSpacing = 0.sp
+                                )
                             )
                         }
                         GlassToggle(checked = workVisible, onCheckedChange = { onToggleWork() })
@@ -365,8 +383,11 @@ fun SettingsScreen(
                             Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(CategoryHealth))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Holidays",
-                                style = MaterialTheme.typography.bodyLarge.copy(color = TextWhitePrimary)
+                                text = strings.categoryHolidays,
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = TextWhitePrimary,
+                                    letterSpacing = 0.sp
+                                )
                             )
                         }
                         GlassToggle(checked = holidaysVisible, onCheckedChange = { onToggleHolidays() })
@@ -377,24 +398,28 @@ fun SettingsScreen(
 
         // DATA & SAMPLE SEEDING
         item {
-            SectionHeader(title = "SAMPLE DATA & RESTORE")
+            SectionHeader(title = strings.sampleDataTitle)
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Reset September 2026 Showcase",
+                        text = strings.resetSampleTitle,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             color = TextWhitePrimary,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 0.sp
                         )
                     )
                     Text(
-                        text = "Restores prompt demo events (Design Review, Lunch with Sarah, Gym, etc.)",
-                        style = MaterialTheme.typography.bodySmall.copy(color = TextWhiteSecondary)
+                        text = strings.resetSampleDesc,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = TextWhiteSecondary,
+                            letterSpacing = 0.sp
+                        )
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         GlassButton(
-                            text = "Reset Sample Events",
+                            text = strings.resetSampleButton,
                             icon = Icons.Outlined.Refresh,
                             onClick = onResetSampleData,
                             testTag = "btn_reset_sample"
@@ -406,7 +431,7 @@ fun SettingsScreen(
 
         // ABOUT LUMA CALENDAR
         item {
-            SectionHeader(title = "ABOUT")
+            SectionHeader(title = strings.about)
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -419,25 +444,30 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Luma Calendar",
+                                text = strings.lumaCalendar,
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     color = TextWhitePrimary,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    letterSpacing = 0.sp
                                 )
                             )
                             Text(
-                                text = "Version 2.6.0 (iOS Glass Concept)",
-                                style = MaterialTheme.typography.bodySmall.copy(color = TextWhiteMuted)
+                                text = strings.lumaVersion,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = TextWhiteMuted,
+                                    letterSpacing = 0.sp
+                                )
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Crafted with Liquid Glass translucency, fluid timelines, and Apple-like typography for modern mobile productivity.",
+                        text = strings.lumaDescription,
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = TextWhiteSecondary,
-                            lineHeight = 18.sp
+                            lineHeight = 18.sp,
+                            letterSpacing = 0.sp
                         )
                     )
                 }

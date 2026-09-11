@@ -63,6 +63,8 @@ import com.example.ui.theme.TextWhitePrimary
 import com.example.ui.theme.TextWhiteSecondary
 import com.example.util.CalendarType
 import com.example.util.DateUtils
+import com.example.util.LocalAppStrings
+import com.example.util.LocalizationManager
 
 @Composable
 fun EventDetailSheet(
@@ -75,6 +77,8 @@ fun EventDetailSheet(
 ) {
     if (!isOpen || event == null) return
 
+    val strings = LocalAppStrings.current
+    val isRtl = LocalizationManager.isRtl(calendarType)
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
     val categoryColor = try {
@@ -193,18 +197,20 @@ fun EventDetailSheet(
                                     .padding(horizontal = 10.dp, vertical = 4.dp)
                             ) {
                                 Text(
-                                    text = event.category,
+                                    text = LocalizationManager.getCategoryName(event.category, strings),
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         color = categoryColor,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 0.sp
                                     )
                                 )
                             }
 
                             Text(
-                                text = event.calendarType,
+                                text = LocalizationManager.getCategoryName(event.calendarType, strings),
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = TextWhiteMuted
+                                    color = TextWhiteMuted,
+                                    letterSpacing = 0.sp
                                 )
                             )
                         }
@@ -216,7 +222,8 @@ fun EventDetailSheet(
                             style = MaterialTheme.typography.headlineLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 28.sp,
-                                color = TextWhitePrimary
+                                color = TextWhitePrimary,
+                                letterSpacing = 0.sp
                             )
                         )
 
@@ -242,13 +249,15 @@ fun EventDetailSheet(
                                             text = DateUtils.getDayOfWeek(event.date, calendarType),
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 color = TextWhitePrimary,
-                                                fontWeight = FontWeight.SemiBold
+                                                fontWeight = FontWeight.SemiBold,
+                                                letterSpacing = 0.sp
                                             )
                                         )
                                         Text(
                                             text = DateUtils.formatDisplayDate(event.date, calendarType),
                                             style = MaterialTheme.typography.bodyMedium.copy(
-                                                color = TextWhiteSecondary
+                                                color = TextWhiteSecondary,
+                                                letterSpacing = 0.sp
                                             )
                                         )
                                     }
@@ -272,10 +281,11 @@ fun EventDetailSheet(
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
-                                        text = "${event.startTime} – ${event.endTime}",
+                                        text = LocalizationManager.formatTimeRange(event.startTime, event.endTime, isRtl),
                                         style = MaterialTheme.typography.bodyLarge.copy(
                                             color = TextWhitePrimary,
-                                            fontWeight = FontWeight.Medium
+                                            fontWeight = FontWeight.Medium,
+                                            letterSpacing = 0.sp
                                         )
                                     )
                                 }
@@ -302,14 +312,18 @@ fun EventDetailSheet(
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Text(
-                                            text = "Location",
-                                            style = MaterialTheme.typography.labelSmall.copy(color = TextWhiteMuted)
+                                            text = strings.location,
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = TextWhiteMuted,
+                                                letterSpacing = 0.sp
+                                            )
                                         )
                                         Text(
                                             text = event.location,
                                             style = MaterialTheme.typography.bodyLarge.copy(
                                                 color = TextWhitePrimary,
-                                                fontWeight = FontWeight.Normal
+                                                fontWeight = FontWeight.Normal,
+                                                letterSpacing = 0.sp
                                             )
                                         )
                                     }
@@ -336,14 +350,18 @@ fun EventDetailSheet(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "Reminder",
-                                        style = MaterialTheme.typography.labelSmall.copy(color = TextWhiteMuted)
+                                        text = strings.reminder,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = TextWhiteMuted,
+                                            letterSpacing = 0.sp
+                                        )
                                     )
                                     Text(
-                                        text = if (event.reminderMinutes > 0) "${event.reminderMinutes} minutes before" else "None",
+                                        text = LocalizationManager.formatReminder(event.reminderMinutes, strings),
                                         style = MaterialTheme.typography.bodyLarge.copy(
                                             color = TextWhitePrimary,
-                                            fontWeight = FontWeight.Medium
+                                            fontWeight = FontWeight.Medium,
+                                            letterSpacing = 0.sp
                                         )
                                     )
                                 }
@@ -367,8 +385,11 @@ fun EventDetailSheet(
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            text = "Notes",
-                                            style = MaterialTheme.typography.labelSmall.copy(color = TextWhiteMuted)
+                                            text = strings.notes,
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = TextWhiteMuted,
+                                                letterSpacing = 0.sp
+                                            )
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(8.dp))
@@ -376,7 +397,8 @@ fun EventDetailSheet(
                                         text = event.notes,
                                         style = MaterialTheme.typography.bodyLarge.copy(
                                             color = TextWhitePrimary,
-                                            lineHeight = 22.sp
+                                            lineHeight = 22.sp,
+                                            letterSpacing = 0.sp
                                         )
                                     )
                                 }
@@ -397,28 +419,32 @@ fun EventDetailSheet(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
-                                        text = "Delete this event?",
+                                        text = strings.deleteEventConfirm,
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             color = TextWhitePrimary,
-                                            fontWeight = FontWeight.SemiBold
+                                            fontWeight = FontWeight.SemiBold,
+                                            letterSpacing = 0.sp
                                         )
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "This action cannot be undone.",
-                                        style = MaterialTheme.typography.bodySmall.copy(color = TextWhiteSecondary)
+                                        text = strings.actionCannotBeUndone,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = TextWhiteSecondary,
+                                            letterSpacing = 0.sp
+                                        )
                                     )
                                     Spacer(modifier = Modifier.height(12.dp))
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
                                         GlassButton(
-                                            text = "Cancel",
+                                            text = strings.cancel,
                                             onClick = { showDeleteConfirm = false },
                                             testTag = "btn_cancel_delete"
                                         )
                                         GlassButton(
-                                            text = "Delete",
+                                            text = strings.delete,
                                             isPrimary = false,
                                             onClick = { onDelete(event) },
                                             testTag = "btn_confirm_delete"
