@@ -422,7 +422,7 @@ fun SettingsScreen(
                                 text = "Luma Calendar",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     color = TextWhitePrimary,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             )
                             Text(

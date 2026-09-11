@@ -147,7 +147,7 @@ fun SearchScreen(
                         text = if (searchQuery.isEmpty()) "Find any event instantly" else "No matching events",
                         style = MaterialTheme.typography.titleMedium.copy(
                             color = TextWhiteSecondary,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Normal
                         )
                     )
                     Spacer(modifier = Modifier.height(6.dp))
@@ -167,7 +167,7 @@ fun SearchScreen(
                         Text(
                             text = DateUtils.formatMonthDay(dateStr, calendarType = calendarType),
                             style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.SemiBold,
                                 color = AccentElectricBlue
                             ),
                             modifier = Modifier.padding(start = 4.dp, top = 6.dp)

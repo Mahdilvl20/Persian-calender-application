@@ -116,7 +116,7 @@ fun CalendarScreen(
                     Text(
                         text = monthName,
                         style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.SemiBold,
                             color = TextWhitePrimary,
                             fontSize = if (monthName.length > 9) 26.sp else 32.sp
                         )
@@ -125,7 +125,7 @@ fun CalendarScreen(
                     Text(
                         text = yearStr,
                         style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Normal,
+                            fontWeight = FontWeight.SemiBold,
                             color = TextWhiteSecondary.copy(alpha = 0.8f),
                             fontSize = 24.sp
                         )
@@ -136,7 +136,7 @@ fun CalendarScreen(
                         text = monthSecondary,
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = AccentElectricBlue,
-                            fontWeight = FontWeight.SemiBold,
+                            fontWeight = FontWeight.Normal,
                             fontSize = 11.sp
                         )
                     )
@@ -179,7 +179,7 @@ fun CalendarScreen(
                     Text(
                         text = "Today",
                         style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.SemiBold,
+                            fontWeight = FontWeight.Medium,
                             color = AccentElectricBlue
                         )
                     )
@@ -340,7 +340,7 @@ fun CalendarTypeSegmentedControl(
                         Text(
                             text = type.farsiArabicName,
                             style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                                 fontSize = 13.sp,
                                 color = if (isSelected) TextWhitePrimary else TextWhiteMuted
                             )
@@ -350,7 +350,7 @@ fun CalendarTypeSegmentedControl(
                             text = "(${type.englishName})",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 10.sp,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                                 color = if (isSelected) AccentElectricBlue else TextWhiteMuted.copy(alpha = 0.6f)
                             )
                         )
@@ -501,7 +501,7 @@ private fun MonthViewContent(
                                 text = label,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = TextWhiteMuted,
-                                    fontWeight = FontWeight.SemiBold,
+                                    fontWeight = FontWeight.Medium,
                                     fontSize = 12.sp
                                 ),
                                 textAlign = TextAlign.Center,
@@ -559,7 +559,7 @@ private fun MonthViewContent(
                     text = "+ Add",
                     style = MaterialTheme.typography.labelMedium.copy(
                         color = AccentElectricBlue,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Medium
                     ),
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -690,7 +690,7 @@ private fun WeekViewContent(
                         Text(
                             text = wDay.displayNumber.ifEmpty { wDay.dayOfMonth.toString() },
                             style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = if (isSelected || wDay.isToday) FontWeight.Bold else FontWeight.Medium,
+                                fontWeight = if (isSelected || wDay.isToday) FontWeight.SemiBold else FontWeight.Normal,
                                 color = if (isSelected) Color.White else TextWhitePrimary
                             )
                         )
@@ -798,7 +798,7 @@ private fun DayViewContent(
                     Text(
                         text = DateUtils.getDayOfWeek(selectedDate, calendarType),
                         style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.SemiBold,
                             color = TextWhitePrimary
                         )
                     )
@@ -820,7 +820,7 @@ private fun DayViewContent(
                         text = "+ Event",
                         style = MaterialTheme.typography.labelMedium.copy(
                             color = Color.White,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Medium
                         )
                     )
                 }
@@ -849,7 +849,7 @@ private fun DayViewContent(
                         text = hourStr,
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = TextWhiteMuted,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Medium
                         ),
                         modifier = Modifier.width(48.dp)
                     )

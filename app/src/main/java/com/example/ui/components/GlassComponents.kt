@@ -301,7 +301,7 @@ fun GlassButton(
             Text(
                 text = text,
                 style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                     color = if (isPrimary) Color.White else TextWhitePrimary,
                     fontSize = 14.sp
                 )
@@ -539,7 +539,7 @@ fun CalendarCell(
                 Text(
                     text = day.displayNumber.ifEmpty { day.dayOfMonth.toString() },
                     style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = if (day.isSelected || day.isToday) FontWeight.Bold else FontWeight.Medium,
+                        fontWeight = if (day.isSelected || day.isToday) FontWeight.SemiBold else FontWeight.Normal,
                         color = when {
                             day.isSelected -> Color.White
                             day.isToday -> Color.White
@@ -657,7 +657,7 @@ fun EventCard(
                             text = event.category,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = categoryColor,
-                                fontWeight = FontWeight.SemiBold,
+                                fontWeight = FontWeight.Medium,
                                 fontSize = 11.sp
                             )
                         )
@@ -749,7 +749,10 @@ fun GlassInput(
                 shape
             )
             .padding(horizontal = 16.dp, vertical = 14.dp),
-        textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextWhitePrimary),
+        textStyle = MaterialTheme.typography.bodyLarge.copy(
+            color = TextWhitePrimary,
+            fontWeight = FontWeight.Medium
+        ),
         cursorBrush = SolidColor(AccentElectricBlue),
         singleLine = singleLine,
         maxLines = maxLines,
@@ -857,7 +860,7 @@ fun CategoryChip(
                 text = name,
                 style = MaterialTheme.typography.labelMedium.copy(
                     color = if (isSelected) TextWhitePrimary else TextWhiteSecondary,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
                 )
             )
         }
@@ -965,7 +968,7 @@ fun GlassTabBar(
                             text = item.first,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = if (isSelected) TextWhitePrimary else TextWhiteMuted,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                                 fontSize = 11.sp
                             )
                         )
@@ -1065,7 +1068,7 @@ fun SectionHeader(
                 text = actionText,
                 style = MaterialTheme.typography.labelMedium.copy(
                     color = AccentElectricBlue,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Medium
                 ),
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -1095,7 +1098,7 @@ fun IPhoneStatusBar(
         Text(
             text = timeText,
             style = MaterialTheme.typography.labelLarge.copy(
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Medium,
                 color = TextWhitePrimary,
                 fontSize = 15.sp
             )

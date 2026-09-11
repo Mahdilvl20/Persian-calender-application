@@ -340,7 +340,7 @@ fun AddEditEventSheet(
                                                 text = label,
                                                 style = MaterialTheme.typography.labelSmall.copy(
                                                     color = if (isSel) Color.White else TextWhiteSecondary,
-                                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
+                                                    fontWeight = if (isSel) FontWeight.SemiBold else FontWeight.Medium
                                                 )
                                             )
                                         }
@@ -471,7 +471,7 @@ fun AddEditEventSheet(
                                             text = curReminder,
                                             style = MaterialTheme.typography.bodySmall.copy(
                                                 color = AccentElectricBlue,
-                                                fontWeight = FontWeight.SemiBold
+                                                fontWeight = FontWeight.Medium
                                             )
                                         )
                                     }
@@ -578,7 +578,7 @@ private fun TimePill(
             text = time,
             style = MaterialTheme.typography.bodyMedium.copy(
                 color = TextWhitePrimary,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Medium
             )
         )
     }

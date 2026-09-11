@@ -275,7 +275,7 @@ fun EventDetailSheet(
                                         text = "${event.startTime} – ${event.endTime}",
                                         style = MaterialTheme.typography.bodyLarge.copy(
                                             color = TextWhitePrimary,
-                                            fontWeight = FontWeight.SemiBold
+                                            fontWeight = FontWeight.Medium
                                         )
                                     )
                                 }
@@ -309,7 +309,7 @@ fun EventDetailSheet(
                                             text = event.location,
                                             style = MaterialTheme.typography.bodyLarge.copy(
                                                 color = TextWhitePrimary,
-                                                fontWeight = FontWeight.Medium
+                                                fontWeight = FontWeight.Normal
                                             )
                                         )
                                     }
@@ -400,7 +400,7 @@ fun EventDetailSheet(
                                         text = "Delete this event?",
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             color = TextWhitePrimary,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.SemiBold
                                         )
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))

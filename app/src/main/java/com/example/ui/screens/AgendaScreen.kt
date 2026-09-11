@@ -136,7 +136,7 @@ fun AgendaScreen(
                         text = "No events found",
                         style = MaterialTheme.typography.titleMedium.copy(
                             color = TextWhiteSecondary,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Normal
                         )
                     )
                     Spacer(modifier = Modifier.height(4.dp))
