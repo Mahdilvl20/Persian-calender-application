@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.FormatListBulleted
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -34,9 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.aistudio.lumacalendar.vtxk.ui.components.AddEditEventSheet
 import com.aistudio.lumacalendar.vtxk.ui.components.AmbientBackground
 import com.aistudio.lumacalendar.vtxk.ui.components.EventDetailSheet
-import com.aistudio.lumacalendar.vtxk.ui.components.FloatingGlassActionButton
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassTabBar
-import com.aistudio.lumacalendar.vtxk.ui.screens.AgendaScreen
 import com.aistudio.lumacalendar.vtxk.ui.screens.CalendarScreen
 import com.aistudio.lumacalendar.vtxk.ui.screens.SearchScreen
 import com.aistudio.lumacalendar.vtxk.ui.screens.SettingsScreen
@@ -105,7 +102,6 @@ fun LumaApp(viewModel: LumaViewModel) {
 
     val tabItems = listOf(
         appStrings.tabCalendar to Icons.Outlined.CalendarMonth,
-        appStrings.tabAgenda to Icons.Outlined.FormatListBulleted,
         appStrings.tabSearch to Icons.Default.Search,
         appStrings.tabSettings to Icons.Outlined.Settings
     )
@@ -163,13 +159,7 @@ fun LumaApp(viewModel: LumaViewModel) {
                                 persianDaysMap = persianDaysMap,
                                 isPersianLoading = isPersianLoading
                             )
-                            1 -> AgendaScreen(
-                                events = allEvents,
-                                calendarType = calendarType,
-                                onEventClick = { viewModel.openEventDetail(it) },
-                                onAddEventClick = { viewModel.openAddEvent() }
-                            )
-                            2 -> SearchScreen(
+                            1 -> SearchScreen(
                                 searchQuery = searchQuery,
                                 onSearchQueryChange = { viewModel.setSearchQuery(it) },
                                 selectedCategory = searchCategory,
@@ -178,7 +168,7 @@ fun LumaApp(viewModel: LumaViewModel) {
                                 calendarType = calendarType,
                                 onEventClick = { viewModel.openEventDetail(it) }
                             )
-                            3 -> SettingsScreen(
+                            2 -> SettingsScreen(
                                 accentColorIndex = accentIndex,
                                 onAccentColorSelect = { viewModel.setAccentColorIndex(it) },
                                 firstDayMonday = firstDayMonday,
@@ -200,14 +190,6 @@ fun LumaApp(viewModel: LumaViewModel) {
                             )
                         }
                     }
-
-                    // Floating Action Button anchored cleanly above Navigation Bar & Tab Bar
-                    FloatingGlassActionButton(
-                        onClick = { viewModel.openAddEvent(selectedDate) },
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(end = 24.dp, bottom = 78.dp + bottomInset)
-                    )
 
                     // Translucent Liquid Glass Tab Bar positioned responsively above Navigation Bar
                     GlassTabBar(

@@ -579,7 +579,7 @@ private fun MonthViewContent(
             }
         }
 
-        // SELECTED DAY / AGENDA SECTION HEADER
+        // SELECTED DAY SECTION HEADER
         item {
             val strings = LocalAppStrings.current
             Row(
@@ -622,7 +622,7 @@ private fun MonthViewContent(
             }
         }
 
-        // AGENDA EVENT LIST FOR SELECTED DAY
+        // EVENT LIST FOR SELECTED DAY
         if (selectedDayEvents.isEmpty() && holiday == null) {
             item {
                 val strings = LocalAppStrings.current

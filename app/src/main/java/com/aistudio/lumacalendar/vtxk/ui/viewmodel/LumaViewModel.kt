@@ -87,7 +87,7 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
         persianCalendarRepository.getCachedDaysForYear(1405)?.let { updatePersianDaysMap(it) }
     }
 
-    // Navigation & Tab State (0: Calendar, 1: Agenda, 2: Search, 3: Settings)
+    // Navigation & Tab State (0: Calendar, 1: Search, 2: Settings)
     private val _currentTab = MutableStateFlow(0)
     val currentTab: StateFlow<Int> = _currentTab.asStateFlow()
 
