@@ -1,6 +1,8 @@
 package com.example.util
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
 import com.example.widget.LumaCalendarWidgetProvider
 import kotlinx.coroutines.CoroutineScope
@@ -12,14 +14,16 @@ import java.time.LocalDate
  * DynamicIconManager:
  * Architecture-compliant, safe, and reliable dynamic icon and widget manager.
  *
- * KEY RULES IMPLEMENTED:
- * 1. MainActivity is NEVER disabled, stopped, or recreated.
- * 2. No destructive Activity-Alias swapping that causes process termination or ActivityNotFoundException.
+ * KEY ARCHITECTURE RULES:
+ * 1. MainActivity is NEVER disabled, stopped, recreated, or switched.
+ * 2. No destructive Activity-Alias swapping that causes process termination, task recreation,
+ *    broken input channels, or ActivityNotFoundException.
  * 3. Icon day is ALWAYS strictly the REAL device date (LocalDate.now().dayOfMonth).
- *    Never derived from selected calendar date or Jalali/Hijri conversion.
+ *    Never derived from selected calendar date, visible month, or Jalali/Hijri conversion.
  * 4. Strictly idempotent: If today's day has already been applied, it returns immediately doing zero work.
  * 5. All operations are dispatched to Dispatchers.IO to guarantee zero frame drops on the Main/UI thread.
  * 6. Changes in calendar mode (Jalali/Gregorian/Hijri), date clicks, or screen navigation NEVER trigger icon updates.
+ * 7. Resilient: Automatically repairs MainActivity component state if previous versions disabled it.
  */
 object DynamicIconManager {
     private const val TAG = "DynamicIconManager"
@@ -28,6 +32,32 @@ object DynamicIconManager {
     private const val KEY_LAST_SYNC_DATE = "last_sync_date"
 
     private val scope = CoroutineScope(Dispatchers.IO)
+
+    /**
+     * Ensures that com.example.MainActivity is explicitly enabled in the device's PackageManager.
+     * This repairs any corrupted PackageManager state left behind by earlier versions or custom ROMs.
+     */
+    fun ensureMainActivityEnabled(context: Context) {
+        scope.launch {
+            try {
+                val pm = context.packageManager
+                val component = ComponentName(context, "com.example.MainActivity")
+                val state = pm.getComponentEnabledSetting(component)
+                if (state != PackageManager.COMPONENT_ENABLED_STATE_DEFAULT &&
+                    state != PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                ) {
+                    pm.setComponentEnabledSetting(
+                        component,
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                        PackageManager.DONT_KILL_APP
+                    )
+                    Log.i(TAG, "MainActivity component state restored to ENABLED.")
+                }
+            } catch (e: Exception) {
+                // Non-fatal, keep application running smoothly
+            }
+        }
+    }
 
     /**
      * Checks if the device date has changed since the last applied update.

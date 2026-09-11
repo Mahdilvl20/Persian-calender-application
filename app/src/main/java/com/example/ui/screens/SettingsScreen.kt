@@ -49,7 +49,6 @@ import com.example.ui.components.GlassCard
 import com.example.ui.components.GlassToggle
 import com.example.ui.components.SectionHeader
 import com.example.util.DynamicIconManager
-import com.example.widget.LumaCalendarWidgetProvider
 import com.example.ui.theme.AccentElectricBlue
 import com.example.ui.theme.CategoryHealth
 import com.example.ui.theme.CategoryPersonal

@@ -54,19 +54,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Idempotent background synchronization on real device date change only
+        // Ensure MainActivity component state is enabled and sync dynamic date safely
+        DynamicIconManager.ensureMainActivityEnabled(applicationContext)
         DynamicIconManager.syncIfDateChanged(applicationContext)
         setContent {
             LumaCalendarTheme {
                 LumaApp(viewModel = viewModel)
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // Safe idempotent check in background (does nothing if date hasn't changed)
-        DynamicIconManager.syncIfDateChanged(applicationContext)
     }
 }
 
