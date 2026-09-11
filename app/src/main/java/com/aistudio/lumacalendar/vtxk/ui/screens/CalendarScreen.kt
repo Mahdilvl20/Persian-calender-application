@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import com.aistudio.lumacalendar.vtxk.data.CalendarEvent
 import com.aistudio.lumacalendar.vtxk.data.holiday.Holiday
 import com.aistudio.lumacalendar.vtxk.data.holiday.HolidayService
+import com.aistudio.lumacalendar.vtxk.data.model.PersianCalendarDay
 import com.aistudio.lumacalendar.vtxk.ui.components.CalendarCell
 import com.aistudio.lumacalendar.vtxk.ui.components.EventCard
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassButton
@@ -99,7 +100,9 @@ fun CalendarScreen(
     onCalendarTypeChange: (CalendarType) -> Unit,
     onEventClick: (CalendarEvent) -> Unit,
     onAddEventClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    persianDaysMap: Map<String, PersianCalendarDay> = emptyMap(),
+    isPersianLoading: Boolean = false
 ) {
     val strings = LocalAppStrings.current
     val monthName = DateUtils.getMonthName(year, month, calendarType)
@@ -233,8 +236,28 @@ fun CalendarScreen(
             },
             label = "calendar_content_transition"
         ) { (activeType, activeMode) ->
-            val selectedHoliday = remember(selectedDate, activeType) {
-                HolidayService.default.getHoliday(selectedDate, activeType)
+            val selectedHoliday = remember(selectedDate, activeType, persianDaysMap) {
+                if (activeType == CalendarType.JALALI) {
+                    val pDay = persianDaysMap[selectedDate]
+                    if (pDay != null) {
+                        if (pDay.isHoliday) {
+                            Holiday(
+                                id = "jalali_${pDay.date}",
+                                dateString = pDay.date,
+                                name = pDay.holidayDescription ?: "تعطیل رسمی",
+                                isOfficialHoliday = true,
+                                calendarType = CalendarType.JALALI,
+                                description = pDay.holidayDescription ?: "تعطیل رسمی"
+                            )
+                        } else {
+                            null
+                        }
+                    } else {
+                        HolidayService.default.getHoliday(selectedDate, activeType)
+                    }
+                } else {
+                    HolidayService.default.getHoliday(selectedDate, activeType)
+                }
             }
 
             when (activeMode) {
@@ -250,7 +273,8 @@ fun CalendarScreen(
                         firstDayMonday = firstDayMonday,
                         onDateSelect = onDateSelect,
                         onEventClick = onEventClick,
-                        onAddEventClick = onAddEventClick
+                        onAddEventClick = onAddEventClick,
+                        persianDaysMap = persianDaysMap
                     )
                 }
                 "Week" -> {
@@ -262,7 +286,8 @@ fun CalendarScreen(
                         firstDayMonday = firstDayMonday,
                         onDateSelect = onDateSelect,
                         onEventClick = onEventClick,
-                        onAddEventClick = onAddEventClick
+                        onAddEventClick = onAddEventClick,
+                        persianDaysMap = persianDaysMap
                     )
                 }
                 "Day" -> {
@@ -459,19 +484,21 @@ private fun MonthViewContent(
     firstDayMonday: Boolean,
     onDateSelect: (String) -> Unit,
     onEventClick: (CalendarEvent) -> Unit,
-    onAddEventClick: (String) -> Unit
+    onAddEventClick: (String) -> Unit,
+    persianDaysMap: Map<String, PersianCalendarDay> = emptyMap()
 ) {
     val weekdayLabels = remember(calendarType, firstDayMonday) {
         DateUtils.getWeekdayLabels(calendarType, firstDayMonday)
     }
 
-    val days = remember(year, month, selectedDate, calendarType, firstDayMonday) {
+    val days = remember(year, month, selectedDate, calendarType, firstDayMonday, persianDaysMap) {
         DateUtils.getMonthDays(
             year = year,
             month = month,
             selectedDate = selectedDate,
             calendarType = calendarType,
-            firstDaySunday = !firstDayMonday
+            firstDaySunday = !firstDayMonday,
+            persianDaysMap = persianDaysMap
         )
     }
 
@@ -660,14 +687,16 @@ private fun WeekViewContent(
     firstDayMonday: Boolean,
     onDateSelect: (String) -> Unit,
     onEventClick: (CalendarEvent) -> Unit,
-    onAddEventClick: (String) -> Unit
+    onAddEventClick: (String) -> Unit,
+    persianDaysMap: Map<String, PersianCalendarDay> = emptyMap()
 ) {
-    val weekDays = remember(selectedDate, calendarType, firstDayMonday) {
+    val weekDays = remember(selectedDate, calendarType, firstDayMonday, persianDaysMap) {
         DateUtils.getWeekDays(
             targetDateStr = selectedDate,
             selectedDate = selectedDate,
             calendarType = calendarType,
-            firstDaySunday = !firstDayMonday
+            firstDaySunday = !firstDayMonday,
+            persianDaysMap = persianDaysMap
         )
     }
 

@@ -8,7 +8,11 @@ import com.aistudio.lumacalendar.vtxk.util.CalendarType
 /**
  * High-level service providing holiday inquiries and conversions for the application UI.
  */
-class HolidayService(private val repository: HolidayRepository) {
+class HolidayService(val repository: HolidayRepository) {
+
+    fun updatePersianCalendarRepository(persianRepo: com.aistudio.lumacalendar.vtxk.data.repository.PersianCalendarRepository) {
+        (repository as? HolidayRepositoryImpl)?.updatePersianCalendarRepository(persianRepo)
+    }
 
     fun getHoliday(dateStr: String, calendarType: CalendarType): Holiday? {
         return repository.getHolidayForDate(dateStr, calendarType)

@@ -7,6 +7,11 @@ import androidx.lifecycle.viewModelScope
 import com.aistudio.lumacalendar.vtxk.data.CalendarEvent
 import com.aistudio.lumacalendar.vtxk.data.EventRepository
 import com.aistudio.lumacalendar.vtxk.data.LumaDatabase
+import com.aistudio.lumacalendar.vtxk.data.holiday.HolidayRepositoryImpl
+import com.aistudio.lumacalendar.vtxk.data.holiday.HolidayService
+import com.aistudio.lumacalendar.vtxk.data.model.PersianCalendarDay
+import com.aistudio.lumacalendar.vtxk.data.repository.PersianCalendarRepository
+import com.aistudio.lumacalendar.vtxk.data.repository.PersianCalendarRepositoryImpl
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentCyan
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentDeepViolet
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
@@ -20,6 +25,7 @@ import com.aistudio.lumacalendar.vtxk.ui.theme.CategoryWork
 import com.aistudio.lumacalendar.vtxk.util.CalendarConverter
 import com.aistudio.lumacalendar.vtxk.util.CalendarType
 import com.aistudio.lumacalendar.vtxk.util.DateUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -60,10 +66,25 @@ val AccentPresets = listOf(
 
 class LumaViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: EventRepository
+    val persianCalendarRepository: PersianCalendarRepository = PersianCalendarRepositoryImpl(application)
+
+    // Live Persian Calendar Days state flow: Map of Gregorian date ("YYYY-MM-DD") and Shamsi date ("YYYY/MM/DD") to PersianCalendarDay
+    private val _persianDaysMap = MutableStateFlow<Map<String, PersianCalendarDay>>(emptyMap())
+    val persianDaysMap: StateFlow<Map<String, PersianCalendarDay>> = _persianDaysMap.asStateFlow()
+
+    private val _isPersianLoading = MutableStateFlow(false)
+    val isPersianLoading: StateFlow<Boolean> = _isPersianLoading.asStateFlow()
+
+    private val _persianApiError = MutableStateFlow<String?>(null)
+    val persianApiError: StateFlow<String?> = _persianApiError.asStateFlow()
 
     init {
         val db = LumaDatabase.getDatabase(application, viewModelScope)
         repository = EventRepository(db.eventDao())
+        HolidayService.default.updatePersianCalendarRepository(persianCalendarRepository)
+        // Pre-populate memory cache from repository for instant display
+        persianCalendarRepository.getCachedDaysForYear(1404)?.let { updatePersianDaysMap(it) }
+        persianCalendarRepository.getCachedDaysForYear(1405)?.let { updatePersianDaysMap(it) }
     }
 
     // Navigation & Tab State (0: Calendar, 1: Agenda, 2: Search, 3: Settings)
@@ -176,12 +197,53 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     val themeName: StateFlow<String> = _themeName.asStateFlow()
 
     // Actions
+    fun loadPersianYear(year: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val cached = persianCalendarRepository.getCachedDaysForYear(year)
+            if (cached != null && cached.isNotEmpty()) {
+                updatePersianDaysMap(cached)
+                _isPersianLoading.value = false
+                return@launch
+            }
+
+            _isPersianLoading.value = true
+            _persianApiError.value = null
+            val result = persianCalendarRepository.getDaysForYear(year)
+            result.onSuccess { days ->
+                updatePersianDaysMap(days)
+                HolidayService.default.updatePersianCalendarRepository(persianCalendarRepository)
+                _isPersianLoading.value = false
+                _persianApiError.value = null
+            }.onFailure { err ->
+                _isPersianLoading.value = false
+                _persianApiError.value = err.message
+            }
+        }
+    }
+
+    private fun updatePersianDaysMap(days: List<PersianCalendarDay>) {
+        val map = _persianDaysMap.value.toMutableMap()
+        days.forEach { day ->
+            map[day.date] = day
+            map[day.shamsiDate] = day
+        }
+        _persianDaysMap.value = map
+    }
+
+    private fun checkAndLoadPersianYearIfNeeded() {
+        if (_calendarType.value == CalendarType.JALALI) {
+            val jalaliYear = _selectedYear.value
+            loadPersianYear(jalaliYear)
+        }
+    }
+
     fun selectDate(dateStr: String) {
         _selectedDate.value = dateStr
         // Synchronize month and year in current calendar type
         val (newYear, newMonth) = CalendarConverter.getYearAndMonth(dateStr, _calendarType.value)
         _selectedYear.value = newYear
         _selectedMonth.value = newMonth
+        checkAndLoadPersianYearIfNeeded()
     }
 
     fun changeMonth(delta: Int) {
@@ -193,14 +255,16 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
         )
         _selectedYear.value = newYear
         _selectedMonth.value = newMonth
+        checkAndLoadPersianYearIfNeeded()
     }
 
     fun goToToday() {
-        val today = DateUtils.DEFAULT_TODAY
+        val today = DateUtils.getRealDeviceDate()
         _selectedDate.value = today
         val (newYear, newMonth) = CalendarConverter.getYearAndMonth(today, _calendarType.value)
         _selectedYear.value = newYear
         _selectedMonth.value = newMonth
+        checkAndLoadPersianYearIfNeeded()
     }
 
     fun setCalendarType(type: CalendarType) {
@@ -210,6 +274,7 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
         val (newYear, newMonth) = CalendarConverter.getYearAndMonth(_selectedDate.value, type)
         _selectedYear.value = newYear
         _selectedMonth.value = newMonth
+        checkAndLoadPersianYearIfNeeded()
     }
 
     fun setCalendarViewMode(mode: String) {

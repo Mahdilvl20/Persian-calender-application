@@ -1,7 +1,9 @@
 package com.aistudio.lumacalendar.vtxk.util
 
 import com.aistudio.lumacalendar.vtxk.data.holiday.HolidayService
+import com.aistudio.lumacalendar.vtxk.data.model.PersianCalendarDay
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -31,6 +33,15 @@ data class WeekDayInfo(
 object DateUtils {
     // Current simulated base date matching user prompt & context (September 11, 2026 / Sep 10, 2026)
     val DEFAULT_TODAY: String = "2026-09-11"
+
+    fun getRealDeviceDate(): String {
+        return try {
+            val now = LocalDate.now()
+            "%04d-%02d-%02d".format(now.year, now.monthValue, now.dayOfMonth)
+        } catch (e: Exception) {
+            DEFAULT_TODAY
+        }
+    }
 
     private val ymdFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     private val monthYearFormat = SimpleDateFormat("MMMM yyyy", Locale.US)
@@ -95,10 +106,11 @@ object DateUtils {
         year: Int,
         month: Int,
         selectedDate: String,
-        todayDate: String = DEFAULT_TODAY,
+        todayDate: String = getRealDeviceDate(),
         calendarType: CalendarType = CalendarType.GREGORIAN,
         firstDaySunday: Boolean = true,
-        holidayService: HolidayService? = HolidayService.default
+        holidayService: HolidayService? = HolidayService.default,
+        persianDaysMap: Map<String, PersianCalendarDay>? = null
     ): List<CalendarDay> {
         val daysData = CalendarConverter.getMonthDays(
             year = year,
@@ -109,7 +121,20 @@ object DateUtils {
             firstDayMonday = !firstDaySunday
         )
         return daysData.map {
+            val isJalali = calendarType == CalendarType.JALALI
+            val pDay = if (isJalali) persianDaysMap?.get(it.dateString) else null
             val holiday = holidayService?.getHoliday(it.dateString, calendarType)
+            val isHoliday = if (isJalali && pDay != null) {
+                pDay.isHoliday
+            } else {
+                holiday?.isOfficialHoliday == true
+            }
+            val holidayName = if (isJalali && pDay != null) {
+                pDay.holidayDescription ?: holiday?.name
+            } else {
+                holiday?.name
+            }
+
             CalendarDay(
                 dateString = it.dateString,
                 dayOfMonth = it.dayNumber,
@@ -117,8 +142,8 @@ object DateUtils {
                 isToday = it.isToday,
                 isSelected = it.isSelected,
                 displayNumber = it.displayNumber,
-                isHoliday = holiday?.isOfficialHoliday == true,
-                holidayName = holiday?.name
+                isHoliday = isHoliday,
+                holidayName = holidayName
             )
         }
     }
@@ -129,10 +154,11 @@ object DateUtils {
     fun getWeekDays(
         targetDateStr: String,
         selectedDate: String,
-        todayDate: String = DEFAULT_TODAY,
+        todayDate: String = getRealDeviceDate(),
         calendarType: CalendarType = CalendarType.GREGORIAN,
         firstDaySunday: Boolean = false,
-        holidayService: HolidayService? = HolidayService.default
+        holidayService: HolidayService? = HolidayService.default,
+        persianDaysMap: Map<String, PersianCalendarDay>? = null
     ): List<WeekDayInfo> {
         val weekData = CalendarConverter.getWeekDays(
             selectedDate = targetDateStr,
@@ -141,7 +167,20 @@ object DateUtils {
             firstDayMonday = !firstDaySunday
         )
         return weekData.map {
+            val isJalali = calendarType == CalendarType.JALALI
+            val pDay = if (isJalali) persianDaysMap?.get(it.dateString) else null
             val holiday = holidayService?.getHoliday(it.dateString, calendarType)
+            val isHoliday = if (isJalali && pDay != null) {
+                pDay.isHoliday
+            } else {
+                holiday?.isOfficialHoliday == true
+            }
+            val holidayName = if (isJalali && pDay != null) {
+                pDay.holidayDescription ?: holiday?.name
+            } else {
+                holiday?.name
+            }
+
             WeekDayInfo(
                 dateString = it.dateString,
                 dayOfWeekName = it.dayOfWeekName,
@@ -149,8 +188,8 @@ object DateUtils {
                 isToday = it.isToday,
                 isSelected = it.isSelected,
                 displayNumber = it.dayNumberString,
-                isHoliday = holiday?.isOfficialHoliday == true,
-                holidayName = holiday?.name
+                isHoliday = isHoliday,
+                holidayName = holidayName
             )
         }
     }

@@ -95,6 +95,8 @@ fun LumaApp(viewModel: LumaViewModel) {
     val workVisible by viewModel.calendarWorkVisible.collectAsState()
     val holidaysVisible by viewModel.calendarHolidaysVisible.collectAsState()
     val themeName by viewModel.themeName.collectAsState()
+    val persianDaysMap by viewModel.persianDaysMap.collectAsState()
+    val isPersianLoading by viewModel.isPersianLoading.collectAsState()
 
     val currentAccent = AccentPresets.getOrElse(accentIndex) { AccentPresets[0] }.primary
 
@@ -157,7 +159,9 @@ fun LumaApp(viewModel: LumaViewModel) {
                                 onViewModeChange = { viewModel.setCalendarViewMode(it) },
                                 onCalendarTypeChange = { viewModel.setCalendarType(it) },
                                 onEventClick = { viewModel.openEventDetail(it) },
-                                onAddEventClick = { viewModel.openAddEvent(it) }
+                                onAddEventClick = { viewModel.openAddEvent(it) },
+                                persianDaysMap = persianDaysMap,
+                                isPersianLoading = isPersianLoading
                             )
                             1 -> AgendaScreen(
                                 events = allEvents,
