@@ -532,7 +532,7 @@ fun EventDetailSheet(
 
                             // Persian Description: "این رویداد به صورت دائمی حذف خواهد شد و قابلبازگشت نیست."
                             Text(
-                                text = if (isRtl) "این رویداد به صورت دائمی حذف خواهد شد و قابلبازگشت نیست." else strings.deleteDialogMessage,
+                                text = if (isRtl) "این رویداد به صورت دائمی حذف خواهد شد و قابل بازگشت نیست." else strings.deleteDialogMessage,
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontWeight = FontWeight.Normal,
                                     fontSize = 14.sp,
