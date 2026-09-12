@@ -12,6 +12,8 @@ import com.aistudio.lumacalendar.vtxk.data.holiday.HolidayService
 import com.aistudio.lumacalendar.vtxk.data.model.PersianCalendarDay
 import com.aistudio.lumacalendar.vtxk.data.repository.PersianCalendarRepository
 import com.aistudio.lumacalendar.vtxk.data.repository.PersianCalendarRepositoryImpl
+import com.aistudio.lumacalendar.vtxk.notification.EventNotificationScheduler
+import com.aistudio.lumacalendar.vtxk.notification.NotificationPreferences
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentCyan
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentDeepViolet
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
@@ -32,6 +34,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -181,8 +185,12 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     private val _showWeekNumbers = MutableStateFlow(false)
     val showWeekNumbers: StateFlow<Boolean> = _showWeekNumbers.asStateFlow()
 
-    private val _notificationsEnabled = MutableStateFlow(true)
+    private val _notificationsEnabled = MutableStateFlow(
+        NotificationPreferences.isEnabled(application) &&
+            EventNotificationScheduler.hasNotificationPermission(application)
+    )
     val notificationsEnabled: StateFlow<Boolean> = _notificationsEnabled.asStateFlow()
+    private var notificationSyncJob: Job? = null
 
     private val _calendarPersonalVisible = MutableStateFlow(true)
     val calendarPersonalVisible: StateFlow<Boolean> = _calendarPersonalVisible.asStateFlow()
@@ -345,19 +353,63 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
                 reminderMinutes = reminderMinutes,
                 calendarType = calendarType
             )
-            if (id == 0L) {
-                repository.insertEvent(event)
+            val savedEvent = if (id == 0L) {
+                event.copy(id = repository.insertEvent(event))
             } else {
                 repository.updateEvent(event)
+                event
             }
+            EventNotificationScheduler.schedule(getApplication(), savedEvent)
             closeAddEdit()
         }
     }
 
     fun deleteEvent(event: CalendarEvent) {
         viewModelScope.launch {
+            EventNotificationScheduler.cancel(getApplication(), event.id)
             repository.deleteEvent(event)
             closeEventDetail()
+        }
+    }
+
+    fun openEventFromNotification(eventId: Long) {
+        if (eventId <= 0) return
+        viewModelScope.launch {
+            val event = repository.getEventById(eventId) ?: return@launch
+            _currentTab.value = 0
+            selectDate(event.date)
+            openEventDetail(event)
+        }
+    }
+
+    fun refreshNotificationState() {
+        _notificationsEnabled.value = NotificationPreferences.isEnabled(getApplication()) &&
+            EventNotificationScheduler.hasNotificationPermission(getApplication())
+    }
+
+    fun enableNotifications() {
+        NotificationPreferences.setEnabled(getApplication(), true)
+        refreshNotificationState()
+        if (!_notificationsEnabled.value) return
+        EventNotificationScheduler.createChannel(getApplication())
+        val previousJob = notificationSyncJob
+        notificationSyncJob = viewModelScope.launch(Dispatchers.IO) {
+            previousJob?.cancelAndJoin()
+            repository.getAllEventsSnapshot().forEach {
+                if (NotificationPreferences.isEnabled(getApplication())) {
+                    EventNotificationScheduler.schedule(getApplication(), it)
+                }
+            }
+        }
+    }
+
+    fun disableNotifications() {
+        NotificationPreferences.setEnabled(getApplication(), false)
+        _notificationsEnabled.value = false
+        val previousJob = notificationSyncJob
+        notificationSyncJob = viewModelScope.launch(Dispatchers.IO) {
+            previousJob?.cancelAndJoin()
+            EventNotificationScheduler.cancelAll(getApplication(), repository.getAllEventsSnapshot())
         }
     }
 
@@ -372,10 +424,6 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setShowWeekNumbers(show: Boolean) {
         _showWeekNumbers.value = show
-    }
-
-    fun setNotificationsEnabled(enabled: Boolean) {
-        _notificationsEnabled.value = enabled
     }
 
     fun toggleCalendarPersonal() {
@@ -396,12 +444,16 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resetToSampleData() {
         viewModelScope.launch {
+            val events = repository.getAllEventsSnapshot()
+            EventNotificationScheduler.cancelAll(getApplication(), events)
             repository.seedInitialData()
         }
     }
 
     fun clearAllData() {
         viewModelScope.launch {
+            val events = repository.getAllEventsSnapshot()
+            EventNotificationScheduler.cancelAll(getApplication(), events)
             repository.clearAll()
         }
     }

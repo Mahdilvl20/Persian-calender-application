@@ -835,7 +835,7 @@ private fun WeekViewContent(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val hours = (8..22).toList()
+            val hours = (0..23).toList()
 
             items(hours) { hourInt ->
                 val hourStr = String.format("%02d:00", hourInt)
@@ -978,7 +978,7 @@ private fun DayViewContent(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val hours = (7..23).toList()
+            val hours = (0..23).toList()
 
             items(hours) { hourInt ->
                 val hourStr = String.format("%02d:00", hourInt)

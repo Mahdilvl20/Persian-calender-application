@@ -13,6 +13,12 @@ interface EventDao {
     @Query("SELECT * FROM calendar_events ORDER BY date ASC, startTime ASC")
     fun getAllEvents(): Flow<List<CalendarEvent>>
 
+    @Query("SELECT * FROM calendar_events ORDER BY date ASC, startTime ASC")
+    suspend fun getAllEventsSnapshot(): List<CalendarEvent>
+
+    @Query("SELECT * FROM calendar_events WHERE id = :id LIMIT 1")
+    suspend fun getEventById(id: Long): CalendarEvent?
+
     @Query("SELECT * FROM calendar_events WHERE date = :date ORDER BY startTime ASC")
     fun getEventsForDate(date: String): Flow<List<CalendarEvent>>
 

@@ -5,6 +5,12 @@ import kotlinx.coroutines.flow.Flow
 class EventRepository(private val eventDao: EventDao) {
     val allEvents: Flow<List<CalendarEvent>> = eventDao.getAllEvents()
 
+    suspend fun getAllEventsSnapshot(): List<CalendarEvent> =
+        eventDao.getAllEventsSnapshot()
+
+    suspend fun getEventById(id: Long): CalendarEvent? =
+        eventDao.getEventById(id)
+
     fun getEventsForDate(date: String): Flow<List<CalendarEvent>> =
         eventDao.getEventsForDate(date)
 

@@ -12,6 +12,7 @@ import com.aistudio.lumacalendar.vtxk.MainActivity
 import com.aistudio.lumacalendar.vtxk.R
 import com.aistudio.lumacalendar.vtxk.data.holiday.HolidayService
 import com.aistudio.lumacalendar.vtxk.util.CalendarType
+import com.aistudio.lumacalendar.vtxk.util.DynamicIconManager
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -26,6 +27,7 @@ import java.util.Locale
 class LumaCalendarWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        DynamicIconManager.updateLiveCalendarShortcutAsync(context)
         for (appWidgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
@@ -38,6 +40,9 @@ class LumaCalendarWidgetProvider : AppWidgetProvider() {
             intent.action == Intent.ACTION_TIMEZONE_CHANGED ||
             intent.action == ACTION_UPDATE_WIDGET
         ) {
+            if (intent.action != ACTION_UPDATE_WIDGET) {
+                DynamicIconManager.updateLiveCalendarShortcutAsync(context)
+            }
             val appWidgetManager = AppWidgetManager.getInstance(context)
             val thisWidget = ComponentName(context, LumaCalendarWidgetProvider::class.java)
             val allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget)

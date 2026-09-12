@@ -1,9 +1,16 @@
 package com.aistudio.lumacalendar.vtxk
 
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -24,12 +31,24 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.aistudio.lumacalendar.vtxk.notification.EventNotificationScheduler
+import com.aistudio.lumacalendar.vtxk.notification.NotificationPreferences
 import com.aistudio.lumacalendar.vtxk.ui.components.AddEditEventSheet
 import com.aistudio.lumacalendar.vtxk.ui.components.AmbientBackground
 import com.aistudio.lumacalendar.vtxk.ui.components.EventDetailSheet
@@ -51,6 +70,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        EventNotificationScheduler.createChannel(applicationContext)
         // Ensure MainActivity component state is enabled and sync dynamic date safely
         DynamicIconManager.ensureMainActivityEnabled(applicationContext)
         DynamicIconManager.syncIfDateChanged(applicationContext)
@@ -59,11 +79,85 @@ class MainActivity : ComponentActivity() {
                 LumaApp(viewModel = viewModel)
             }
         }
+        handleNotificationIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        val eventId = intent?.getLongExtra(EventNotificationScheduler.EXTRA_EVENT_ID, -1L) ?: -1L
+        if (eventId > 0) {
+            viewModel.openEventFromNotification(eventId)
+            intent?.removeExtra(EventNotificationScheduler.EXTRA_EVENT_ID)
+        }
     }
 }
 
 @Composable
 fun LumaApp(viewModel: LumaViewModel) {
+    val context = LocalContext.current
+    val activity = context as Activity
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var enableAfterSettings by remember { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        NotificationPreferences.markPermissionRequested(context)
+        if (granted) viewModel.enableNotifications() else viewModel.disableNotifications()
+    }
+
+    fun requestNotificationAccess() {
+        if (EventNotificationScheduler.hasNotificationPermission(context)) {
+            viewModel.enableNotifications()
+        } else if (
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            NotificationPreferences.wasPermissionRequested(context) &&
+            !ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.POST_NOTIFICATIONS)
+        ) {
+            enableAfterSettings = true
+            val settingsIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            } else {
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    .setData(android.net.Uri.parse("package:${context.packageName}"))
+            }
+            context.startActivity(settingsIntent)
+        } else {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (!NotificationPreferences.wasPermissionRequested(context)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                NotificationPreferences.markPermissionRequested(context)
+                viewModel.enableNotifications()
+            }
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (enableAfterSettings && EventNotificationScheduler.hasNotificationPermission(context)) {
+                    enableAfterSettings = false
+                    viewModel.enableNotifications()
+                } else {
+                    viewModel.refreshNotificationState()
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     val currentTab by viewModel.currentTab.collectAsState()
     val year by viewModel.selectedYear.collectAsState()
     val month by viewModel.selectedMonth.collectAsState()
@@ -178,7 +272,9 @@ fun LumaApp(viewModel: LumaViewModel) {
                                 showWeekNumbers = showWeekNumbers,
                                 onShowWeekNumbersChange = { viewModel.setShowWeekNumbers(it) },
                                 notificationsEnabled = notificationsEnabled,
-                                onNotificationsChange = { viewModel.setNotificationsEnabled(it) },
+                                onNotificationsChange = { enabled ->
+                                    if (enabled) requestNotificationAccess() else viewModel.disableNotifications()
+                                },
                                 personalVisible = personalVisible,
                                 onTogglePersonal = { viewModel.toggleCalendarPersonal() },
                                 workVisible = workVisible,

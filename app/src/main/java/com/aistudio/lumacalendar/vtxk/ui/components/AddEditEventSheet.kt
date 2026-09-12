@@ -1,5 +1,7 @@
 package com.aistudio.lumacalendar.vtxk.ui.components
 
+import android.app.TimePickerDialog
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,7 +45,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,6 +72,7 @@ import com.aistudio.lumacalendar.vtxk.util.CalendarType
 import com.aistudio.lumacalendar.vtxk.util.DateUtils
 import com.aistudio.lumacalendar.vtxk.util.LocalAppStrings
 import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
+import java.util.Locale
 
 @Composable
 fun AddEditEventSheet(
@@ -398,7 +404,12 @@ fun AddEditEventSheet(
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
                                         // Quick Start Time presets
-                                        TimePill(time = startTime, isRtl = isRtl, onSelect = { startTime = it })
+                                        TimePill(
+                            time = startTime,
+                            label = strings.startLabel,
+                            isRtl = isRtl,
+                            onSelect = { startTime = it }
+                        )
                                         Text(
                                             text = if (isRtl) "تا" else "to",
                                             style = MaterialTheme.typography.bodySmall.copy(
@@ -406,7 +417,12 @@ fun AddEditEventSheet(
                                                 letterSpacing = 0.sp
                                             )
                                         )
-                                        TimePill(time = endTime, isRtl = isRtl, onSelect = { endTime = it })
+                                        TimePill(
+                            time = endTime,
+                            label = strings.endLabel,
+                            isRtl = isRtl,
+                            onSelect = { endTime = it }
+                        )
                                     }
                                 }
                             }
@@ -473,7 +489,7 @@ fun AddEditEventSheet(
                                     }
 
                                     // Reminder pill cycle
-                                    val reminderMinutesOptions = listOf(0, 5, 15, 30, 60)
+                                    val reminderMinutesOptions = listOf(-1, 0, 5, 10, 15, 30, 60, 1440)
                                     val curReminderText = LocalizationManager.formatReminder(reminderMinutes, strings)
 
                                     Box(
@@ -588,18 +604,38 @@ fun AddEditEventSheet(
 @Composable
 private fun TimePill(
     time: String,
+    label: String,
     isRtl: Boolean = false,
     onSelect: (String) -> Unit
 ) {
-    val commonTimes = listOf("09:00", "10:00", "11:00", "12:00", "13:30", "15:00", "16:30", "18:00", "19:00", "20:00")
+    val context = LocalContext.current
+    val pickerContext = remember(context, isRtl) {
+        val pickerLocale = if (isRtl) Locale.forLanguageTag("fa") else Locale.US
+        val configuration = Configuration(context.resources.configuration)
+        configuration.setLocale(pickerLocale)
+        configuration.setLayoutDirection(pickerLocale)
+        context.createConfigurationContext(configuration)
+    }
+    val parts = time.split(":")
+    val hour = parts.getOrNull(0)?.toIntOrNull()?.takeIf { it in 0..23 } ?: 9
+    val minute = parts.getOrNull(1)?.toIntOrNull()?.takeIf { it in 0..59 } ?: 0
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
             .background(GlassSurfaceHighlight)
             .border(0.8.dp, GlassBorderDefault, RoundedCornerShape(10.dp))
+            .semantics { contentDescription = "$label: $time" }
             .clickable {
-                val nextIdx = (commonTimes.indexOf(time) + 1).coerceAtLeast(0) % commonTimes.size
-                onSelect(commonTimes[nextIdx])
+                TimePickerDialog(
+                    pickerContext,
+                    { _, selectedHour, selectedMinute ->
+                        onSelect(String.format(Locale.ROOT, "%02d:%02d", selectedHour, selectedMinute))
+                    },
+                    hour,
+                    minute,
+                    // ponytail: event times stay 24-hour; switch to the system format when every timeline supports AM/PM labels.
+                    true
+                ).apply { setTitle(label) }.show()
             }
             .padding(horizontal = 10.dp, vertical = 5.dp)
     ) {

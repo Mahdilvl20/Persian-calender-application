@@ -1,5 +1,6 @@
 package com.aistudio.lumacalendar.vtxk.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -427,7 +428,7 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = if (strings.tabCalendar == "تقویم") "تاریخ زنده دستگاه" else "Device Live Date",
+                                    text = if (strings.tabCalendar == "تقویم") "میانبر تاریخ سه‌گانه" else "Triple Calendar Shortcut",
                                     style = MaterialTheme.typography.bodyLarge.copy(
                                         color = TextWhitePrimary,
                                         fontWeight = FontWeight.Medium,
@@ -435,7 +436,7 @@ fun SettingsScreen(
                                     )
                                 )
                                 Text(
-                                    text = if (strings.tabCalendar == "تقویم") "نمایش روز جاری بر روی ابزارک صفحه اصلی" else "Live real-time date on Home Screen widget",
+                                    text = if (strings.tabCalendar == "تقویم") "به‌روزرسانی خودکار بر اساس تاریخ واقعی دستگاه" else "Updates from the device's real date",
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = TextWhiteSecondary,
                                         letterSpacing = 0.sp
@@ -571,9 +572,9 @@ fun SettingsScreen(
                         Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                             Text(
                                 text = if (strings.tabCalendar == "تقویم")
-                                    "همگام‌سازی فوری ابزارک تقویم صفحه اصلی"
+                                    "میانبر زنده: شمسی وسط، میلادی پایین راست، قمری پایین چپ"
                                 else
-                                    "Sync Home Screen calendar widget with today",
+                                    "Live shortcut: Jalali center, Gregorian bottom-right, Hijri bottom-left",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = TextWhiteSecondary,
                                     lineHeight = 16.sp
@@ -582,10 +583,16 @@ fun SettingsScreen(
                         }
 
                         GlassButton(
-                            text = if (strings.tabCalendar == "تقویم") "همگام‌سازی" else "Sync Widget",
+                            text = if (strings.tabCalendar == "تقویم") "افزودن به صفحه اصلی" else "Add to Home",
                             icon = Icons.Outlined.CheckCircle,
                             onClick = {
-                                DynamicIconManager.syncIfDateChanged(context, force = true)
+                                if (!DynamicIconManager.requestLiveCalendarShortcut(context)) {
+                                    Toast.makeText(
+                                        context,
+                                        if (strings.tabCalendar == "تقویم") "لانچر این قابلیت را پشتیبانی نمی‌کند" else "Your launcher does not support pinned shortcuts",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                             },
                             testTag = "btn_sync_dynamic_icon"
                         )

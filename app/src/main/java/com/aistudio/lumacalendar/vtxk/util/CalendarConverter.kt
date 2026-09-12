@@ -123,7 +123,7 @@ object CalendarConverter {
      */
     fun hijriToJdn(year: Int, month: Int, day: Int): Long {
         val y = year - 1
-        val daysBeforeThisYear = y * 354L + (11 * y + 3) / 30
+        val daysBeforeThisYear = y * 354L + (11 * y + 14) / 30
         val daysBeforeThisMonth = ((month - 1) * 59 + 1) / 2
         return day + daysBeforeThisMonth + daysBeforeThisYear + 1948439L
     }
@@ -137,14 +137,14 @@ object CalendarConverter {
         val dayInCycle = daysSinceEpoch % 10631L
 
         val yearInCycle = ((30 * dayInCycle + 15) / 10631).toInt()
-        val daysBeforeYearInCycle = yearInCycle * 354 + (11 * yearInCycle + 3) / 30
+        val daysBeforeYearInCycle = yearInCycle * 354 + (11 * yearInCycle + 14) / 30
         var dayInYear = (dayInCycle - daysBeforeYearInCycle).toInt()
 
         var year = (cycles * 30 + yearInCycle + 1).toInt()
         if (dayInYear < 0) {
             year--
             val y = year - 1
-            val daysBefore = y * 354L + (11 * y + 3) / 30
+            val daysBefore = y * 354L + (11 * y + 14) / 30
             dayInYear = (jdn - (daysBefore + 1948440L)).toInt()
         }
 

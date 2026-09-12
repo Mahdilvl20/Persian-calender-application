@@ -4,6 +4,7 @@ import com.aistudio.lumacalendar.vtxk.data.holiday.HolidayService
 import com.aistudio.lumacalendar.vtxk.util.CalendarConverter
 import com.aistudio.lumacalendar.vtxk.util.CalendarType
 import com.aistudio.lumacalendar.vtxk.util.DynamicIconManager
+import com.aistudio.lumacalendar.vtxk.util.HijriDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -75,6 +76,27 @@ class CalendarAndHolidayTest {
         val realDay = DynamicIconManager.getRealDeviceDay()
         val expected = LocalDate.now().dayOfMonth
         assertEquals(expected, realDay)
+    }
+
+    @Test
+    fun testTripleCalendarDaysUseSameGregorianDate() {
+        val days = DynamicIconManager.getTripleCalendarDays("2026-03-21")
+
+        assertEquals(1, days.jalali)
+        assertEquals(21, days.gregorian)
+        assertEquals(2, days.hijri)
+    }
+
+    @Test
+    fun testCivilHijriKnownDates() {
+        listOf(
+            "2025-03-20" to HijriDate(1446, 9, 20),
+            "2026-09-11" to HijriDate(1448, 3, 28),
+            "2026-09-12" to HijriDate(1448, 3, 29)
+        ).forEach { (gregorian, hijri) ->
+            assertEquals(hijri, CalendarConverter.gregorianToHijri(gregorian))
+            assertEquals(gregorian, CalendarConverter.hijriToGregorianString(hijri.year, hijri.month, hijri.day))
+        }
     }
 
     @Test
