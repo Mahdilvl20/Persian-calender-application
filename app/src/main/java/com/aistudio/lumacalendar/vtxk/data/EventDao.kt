@@ -28,6 +28,9 @@ interface EventDao {
     @Query("SELECT * FROM calendar_events WHERE title LIKE '%' || :query || '%' OR notes LIKE '%' || :query || '%' OR location LIKE '%' || :query || '%' ORDER BY date ASC, startTime ASC")
     fun searchEvents(query: String): Flow<List<CalendarEvent>>
 
+    @Query("SELECT * FROM calendar_events WHERE reminderMinutes > 0")
+    suspend fun getEventsWithReminders(): List<CalendarEvent>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEvent(event: CalendarEvent): Long
 

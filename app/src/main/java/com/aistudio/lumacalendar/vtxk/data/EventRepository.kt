@@ -20,6 +20,9 @@ class EventRepository(private val eventDao: EventDao) {
     fun searchEvents(query: String): Flow<List<CalendarEvent>> =
         eventDao.searchEvents(query)
 
+    suspend fun getEventsWithReminders(): List<CalendarEvent> =
+        eventDao.getEventsWithReminders()
+
     suspend fun insertEvent(event: CalendarEvent): Long =
         eventDao.insertEvent(event)
 
