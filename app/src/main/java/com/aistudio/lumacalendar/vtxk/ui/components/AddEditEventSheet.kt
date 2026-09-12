@@ -102,6 +102,7 @@ fun AddEditEventSheet(
 
     var title by remember(event) { mutableStateOf(event?.title ?: "") }
     var date by remember(event, defaultDate) { mutableStateOf(event?.date ?: defaultDate) }
+    var showManualDatePicker by remember { mutableStateOf(false) }
     var startTime by remember(event) { mutableStateOf(event?.startTime ?: "09:00") }
     var endTime by remember(event) { mutableStateOf(event?.endTime ?: "10:00") }
     var selectedCategoryIndex by remember(event) {
@@ -291,9 +292,14 @@ fun AddEditEventSheet(
                             Column(
                                 modifier = Modifier.padding(14.dp)
                             ) {
-                                // Date selector row
+                                // Date selector row (tappable to open manual date picker)
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable { showManualDatePicker = true }
+                                        .padding(vertical = 4.dp)
+                                        .testTag("btn_select_date"),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
@@ -315,14 +321,19 @@ fun AddEditEventSheet(
                                         )
                                     }
 
-                                    Text(
-                                        text = DateUtils.formatDisplayDate(date, activeCalendarType),
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            color = AccentElectricBlue,
-                                            fontWeight = FontWeight.SemiBold,
-                                            letterSpacing = 0.sp
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Text(
+                                            text = DateUtils.formatDisplayDate(date, activeCalendarType),
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                color = AccentElectricBlue,
+                                                fontWeight = FontWeight.SemiBold,
+                                                letterSpacing = 0.sp
+                                            )
                                         )
-                                    )
+                                    }
                                 }
 
                                 // Quick date buttons
@@ -363,6 +374,26 @@ fun AddEditEventSheet(
                                                 )
                                             )
                                         }
+                                    }
+
+                                    // Manual Date Input Button
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(GlassSurfaceHighlight)
+                                            .border(0.8.dp, AccentElectricBlue.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                                            .clickable { showManualDatePicker = true }
+                                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                                            .testTag("btn_custom_date_picker")
+                                    ) {
+                                        Text(
+                                            text = strings.selectDate,
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = AccentElectricBlue,
+                                                fontWeight = FontWeight.SemiBold,
+                                                letterSpacing = 0.sp
+                                            )
+                                        )
                                     }
                                 }
 
@@ -597,6 +628,18 @@ fun AddEditEventSheet(
                     }
                 }
             }
+
+            // Manual Date Input Dialog
+            ManualDateInputDialog(
+                isOpen = showManualDatePicker,
+                initialDate = date,
+                activeCalendarType = activeCalendarType,
+                onDismiss = { showManualDatePicker = false },
+                onDateSelected = { selected ->
+                    date = selected
+                    showManualDatePicker = false
+                }
+            )
         }
     }
 }

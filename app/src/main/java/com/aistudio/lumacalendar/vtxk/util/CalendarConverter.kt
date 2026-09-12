@@ -162,44 +162,78 @@ object CalendarConverter {
     // --- Direct conversions between Gregorian string "YYYY-MM-DD" and specific systems ---
 
     fun parseGregorianString(dateStr: String): GregorianDate {
-        val parts = dateStr.split("-")
-        return if (parts.size == 3) {
-            GregorianDate(
-                parts[0].toIntOrNull() ?: 2026,
-                parts[1].toIntOrNull() ?: 9,
-                parts[2].toIntOrNull() ?: 11
-            )
-        } else {
+        return try {
+            val normalized = DateValidator.normalizeDigits(dateStr)
+            val parts = normalized.split('-', '/', '.', ' ').filter { it.isNotBlank() }
+            if (parts.size >= 3) {
+                val y = parts[0].toIntOrNull() ?: 2026
+                val m = (parts[1].toIntOrNull() ?: 9).coerceIn(1, 12)
+                val maxDay = getDaysInGregorianMonth(y, m)
+                val d = (parts[2].toIntOrNull() ?: 11).coerceIn(1, maxDay)
+                GregorianDate(y, m, d)
+            } else if (normalized.length == 8 && normalized.all { it.isDigit() }) {
+                val y = normalized.substring(0, 4).toIntOrNull() ?: 2026
+                val m = (normalized.substring(4, 6).toIntOrNull() ?: 9).coerceIn(1, 12)
+                val maxDay = getDaysInGregorianMonth(y, m)
+                val d = (normalized.substring(6, 8).toIntOrNull() ?: 11).coerceIn(1, maxDay)
+                GregorianDate(y, m, d)
+            } else {
+                GregorianDate(2026, 9, 11)
+            }
+        } catch (e: Exception) {
             GregorianDate(2026, 9, 11)
         }
     }
 
     fun formatGregorianString(date: GregorianDate): String {
-        return String.format("%04d-%02d-%02d", date.year, date.month, date.day)
+        val y = date.year
+        val m = date.month.coerceIn(1, 12)
+        val d = date.day.coerceIn(1, 31)
+        return String.format(java.util.Locale.US, "%04d-%02d-%02d", y, m, d)
     }
 
     fun gregorianToJalali(dateStr: String): JalaliDate {
-        val g = parseGregorianString(dateStr)
-        val jdn = gregorianToJdn(g.year, g.month, g.day)
-        return jdnToJalali(jdn)
+        return try {
+            val g = parseGregorianString(dateStr)
+            val jdn = gregorianToJdn(g.year, g.month, g.day)
+            jdnToJalali(jdn)
+        } catch (e: Exception) {
+            JalaliDate(1405, 6, 21)
+        }
     }
 
     fun jalaliToGregorianString(year: Int, month: Int, day: Int): String {
-        val jdn = jalaliToJdn(year, month, day)
-        val g = jdnToGregorian(jdn)
-        return formatGregorianString(g)
+        return try {
+            val safeMonth = month.coerceIn(1, 12)
+            val safeDay = day.coerceIn(1, 31)
+            val jdn = jalaliToJdn(year, safeMonth, safeDay)
+            val g = jdnToGregorian(jdn)
+            formatGregorianString(g)
+        } catch (e: Exception) {
+            "2026-09-11"
+        }
     }
 
     fun gregorianToHijri(dateStr: String): HijriDate {
-        val g = parseGregorianString(dateStr)
-        val jdn = gregorianToJdn(g.year, g.month, g.day)
-        return jdnToHijri(jdn)
+        return try {
+            val g = parseGregorianString(dateStr)
+            val jdn = gregorianToJdn(g.year, g.month, g.day)
+            jdnToHijri(jdn)
+        } catch (e: Exception) {
+            HijriDate(1448, 3, 28)
+        }
     }
 
     fun hijriToGregorianString(year: Int, month: Int, day: Int): String {
-        val jdn = hijriToJdn(year, month, day)
-        val g = jdnToGregorian(jdn)
-        return formatGregorianString(g)
+        return try {
+            val safeMonth = month.coerceIn(1, 12)
+            val safeDay = day.coerceIn(1, 30)
+            val jdn = hijriToJdn(year, safeMonth, safeDay)
+            val g = jdnToGregorian(jdn)
+            formatGregorianString(g)
+        } catch (e: Exception) {
+            "2026-09-11"
+        }
     }
 
     // --- Days in Month calculations ---
@@ -303,9 +337,13 @@ object CalendarConverter {
     // 0 = Sunday, 1 = Monday, 2 = Tuesday, 3 = Wednesday, 4 = Thursday, 5 = Friday, 6 = Saturday
 
     fun getDayOfWeekIndex(dateStr: String): Int {
-        val g = parseGregorianString(dateStr)
-        val jdn = gregorianToJdn(g.year, g.month, g.day)
-        return ((jdn + 1) % 7).toInt() // 0 = Sun .. 6 = Sat
+        return try {
+            val g = parseGregorianString(dateStr)
+            val jdn = gregorianToJdn(g.year, g.month, g.day)
+            (((jdn + 1) % 7 + 7) % 7).toInt().coerceIn(0, 6) // 0 = Sun .. 6 = Sat
+        } catch (e: Exception) {
+            5 // Friday safe fallback
+        }
     }
 
     val GREGORIAN_WEEKDAYS_SUN_FIRST = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
@@ -332,20 +370,20 @@ object CalendarConverter {
     }
 
     fun getWeekdayName(dateStr: String, calendarType: CalendarType): String {
-        val dow = getDayOfWeekIndex(dateStr) // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat
+        val dow = getDayOfWeekIndex(dateStr).coerceIn(0, 6) // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat
         return when (calendarType) {
             CalendarType.GREGORIAN -> {
                 val full = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
-                full[dow]
+                full.getOrElse(dow) { "Friday" }
             }
             CalendarType.JALALI -> {
                 // In Jalali: Saturday is index 0 in JALALI_WEEKDAYS_FULL
                 // dow: 6 (Sat) -> 0; 0 (Sun) -> 1; 1 (Mon) -> 2 ...
-                val jalaliDow = (dow + 1) % 7
-                JALALI_WEEKDAYS_FULL[jalaliDow]
+                val jalaliDow = (((dow + 1) % 7 + 7) % 7).coerceIn(0, 6)
+                JALALI_WEEKDAYS_FULL.getOrElse(jalaliDow) { "جمعه" }
             }
             CalendarType.HIJRI -> {
-                HIJRI_WEEKDAYS_FULL[dow]
+                HIJRI_WEEKDAYS_FULL.getOrElse(dow) { "الجمعة" }
             }
         }
     }
@@ -478,9 +516,10 @@ object CalendarConverter {
         todayDate: String,
         firstDayMonday: Boolean
     ): List<CalendarDayData> {
-        val daysInMonth = getDaysInGregorianMonth(year, month)
-        val firstJdn = gregorianToJdn(year, month, 1)
-        val dow = ((firstJdn + 1) % 7).toInt() // 0 = Sun.. 6 = Sat
+        val safeMonth = month.coerceIn(1, 12)
+        val daysInMonth = getDaysInGregorianMonth(year, safeMonth)
+        val firstJdn = gregorianToJdn(year, safeMonth, 1)
+        val dow = (((firstJdn + 1) % 7 + 7) % 7).toInt().coerceIn(0, 6) // 0 = Sun.. 6 = Sat
 
         // Leading days from previous month
         val firstDayOfWeek = if (firstDayMonday) 1 else 0
@@ -494,7 +533,7 @@ object CalendarConverter {
             val cellJdn = startJdn + i
             val g = jdnToGregorian(cellJdn)
             val dateStr = formatGregorianString(g)
-            val isCurrentMonth = g.year == year && g.month == month
+            val isCurrentMonth = g.year == year && g.month == safeMonth
 
             list.add(
                 CalendarDayData(
@@ -516,13 +555,14 @@ object CalendarConverter {
         selectedDate: String,
         todayDate: String
     ): List<CalendarDayData> {
-        val daysInMonth = getDaysInJalaliMonth(year, month)
-        val firstJdn = jalaliToJdn(year, month, 1)
-        val dow = ((firstJdn + 1) % 7).toInt() // 0 = Sun.. 6 = Sat
+        val safeMonth = month.coerceIn(1, 12)
+        val daysInMonth = getDaysInJalaliMonth(year, safeMonth)
+        val firstJdn = jalaliToJdn(year, safeMonth, 1)
+        val dow = (((firstJdn + 1) % 7 + 7) % 7).toInt().coerceIn(0, 6) // 0 = Sun.. 6 = Sat
 
         // In Jalali calendar, week starts on Saturday (dow = 6)
         // Saturday -> 0 leading days, Sunday -> 1, Monday -> 2, ..., Friday -> 6
-        val leadingDays = (dow + 1) % 7
+        val leadingDays = (((dow + 1) % 7 + 7) % 7).toInt().coerceIn(0, 6)
 
         val startJdn = firstJdn - leadingDays
         val list = mutableListOf<CalendarDayData>()
@@ -532,7 +572,7 @@ object CalendarConverter {
             val j = jdnToJalali(cellJdn)
             val g = jdnToGregorian(cellJdn)
             val dateStr = formatGregorianString(g)
-            val isCurrentMonth = j.year == year && j.month == month
+            val isCurrentMonth = j.year == year && j.month == safeMonth
 
             list.add(
                 CalendarDayData(
@@ -554,9 +594,10 @@ object CalendarConverter {
         selectedDate: String,
         todayDate: String
     ): List<CalendarDayData> {
-        val daysInMonth = getDaysInHijriMonth(year, month)
-        val firstJdn = hijriToJdn(year, month, 1)
-        val dow = ((firstJdn + 1) % 7).toInt() // 0 = Sun.. 6 = Sat
+        val safeMonth = month.coerceIn(1, 12)
+        val daysInMonth = getDaysInHijriMonth(year, safeMonth)
+        val firstJdn = hijriToJdn(year, safeMonth, 1)
+        val dow = (((firstJdn + 1) % 7 + 7) % 7).toInt().coerceIn(0, 6) // 0 = Sun.. 6 = Sat
 
         // In Hijri calendar, week starts on Sunday (dow = 0)
         val leadingDays = dow
@@ -569,7 +610,7 @@ object CalendarConverter {
             val h = jdnToHijri(cellJdn)
             val g = jdnToGregorian(cellJdn)
             val dateStr = formatGregorianString(g)
-            val isCurrentMonth = h.year == year && h.month == month
+            val isCurrentMonth = h.year == year && h.month == safeMonth
 
             list.add(
                 CalendarDayData(
@@ -596,7 +637,7 @@ object CalendarConverter {
     ): List<WeekDayData> {
         val g = parseGregorianString(selectedDate)
         val targetJdn = gregorianToJdn(g.year, g.month, g.day)
-        val dow = ((targetJdn + 1) % 7).toInt() // 0 = Sun.. 6 = Sat
+        val dow = (((targetJdn + 1) % 7 + 7) % 7).toInt().coerceIn(0, 6) // 0 = Sun.. 6 = Sat
 
         val offset = when (calendarType) {
             CalendarType.GREGORIAN -> {
@@ -607,7 +648,7 @@ object CalendarConverter {
             }
             CalendarType.JALALI -> {
                 // Starts on Saturday
-                (dow + 1) % 7
+                (((dow + 1) % 7 + 7) % 7).toInt().coerceIn(0, 6)
             }
             CalendarType.HIJRI -> {
                 // Starts on Sunday
@@ -622,20 +663,20 @@ object CalendarConverter {
             val curJdn = startJdn + i
             val curG = jdnToGregorian(curJdn)
             val curDateStr = formatGregorianString(curG)
-            val curDow = ((curJdn + 1) % 7).toInt()
+            val curDow = (((curJdn + 1) % 7 + 7) % 7).toInt().coerceIn(0, 6)
 
             val (dayName, dayNumberStr) = when (calendarType) {
                 CalendarType.GREGORIAN -> {
-                    Pair(GREGORIAN_WEEKDAYS_SUN_FIRST[curDow], curG.day.toString())
+                    Pair(GREGORIAN_WEEKDAYS_SUN_FIRST.getOrElse(curDow) { "Sun" }, curG.day.toString())
                 }
                 CalendarType.JALALI -> {
                     val j = jdnToJalali(curJdn)
-                    val jalaliDow = (curDow + 1) % 7
-                    Pair(JALALI_WEEKDAYS_SHORT[jalaliDow], toPersianDigits(j.day.toString()))
+                    val jalaliDow = (((curDow + 1) % 7 + 7) % 7).toInt().coerceIn(0, 6)
+                    Pair(JALALI_WEEKDAYS_SHORT.getOrElse(jalaliDow) { "ش" }, toPersianDigits(j.day.toString()))
                 }
                 CalendarType.HIJRI -> {
                     val h = jdnToHijri(curJdn)
-                    Pair(HIJRI_WEEKDAYS_SHORT[curDow], toArabicDigits(h.day.toString()))
+                    Pair(HIJRI_WEEKDAYS_SHORT.getOrElse(curDow) { "ی" }, toArabicDigits(h.day.toString()))
                 }
             }
 

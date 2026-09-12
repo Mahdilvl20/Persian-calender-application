@@ -39,12 +39,16 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,6 +69,7 @@ import com.aistudio.lumacalendar.vtxk.ui.components.GlassButton
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassCard
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassIconButton
 import com.aistudio.lumacalendar.vtxk.ui.components.HolidayCard
+import com.aistudio.lumacalendar.vtxk.ui.components.ManualDateInputDialog
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentRoyalViolet
 import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasBlack
@@ -108,6 +113,7 @@ fun CalendarScreen(
     val strings = LocalAppStrings.current
     val monthName = DateUtils.getMonthName(year, month, calendarType)
     val yearStr = DateUtils.getYear(year, month, calendarType)
+    var showManualDatePicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -122,11 +128,14 @@ fun CalendarScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Month + Year title: Never wrap, ample space, no broken words
+            // Month + Year title: Tap to open safe manual date picker
             Row(
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .padding(end = 8.dp),
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { showManualDatePicker = true }
+                    .padding(end = 8.dp, top = 4.dp, bottom = 4.dp)
+                    .testTag("btn_header_date_picker"),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
@@ -155,7 +164,7 @@ fun CalendarScreen(
                 )
             }
 
-            // Controls: [<] [Today] [>]
+            // Controls: [<] [Today] [Pick Date] [>]
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -199,6 +208,15 @@ fun CalendarScreen(
                         softWrap = false
                     )
                 }
+
+                // Quick Date Jump Button
+                GlassIconButton(
+                    icon = Icons.Outlined.CalendarMonth,
+                    onClick = { showManualDatePicker = true },
+                    contentDescription = strings.selectDate,
+                    size = 36.dp,
+                    testTag = "btn_jump_to_date"
+                )
 
                 GlassIconButton(
                     icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -304,6 +322,18 @@ fun CalendarScreen(
                 }
             }
         }
+
+        // Safe Manual Date Input Dialog
+        ManualDateInputDialog(
+            isOpen = showManualDatePicker,
+            initialDate = selectedDate,
+            activeCalendarType = calendarType,
+            onDismiss = { showManualDatePicker = false },
+            onDateSelected = { canonicalDate ->
+                onDateSelect(canonicalDate)
+                showManualDatePicker = false
+            }
+        )
     }
 }
 

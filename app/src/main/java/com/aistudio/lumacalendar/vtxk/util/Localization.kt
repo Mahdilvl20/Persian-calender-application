@@ -177,6 +177,10 @@ data class AppStrings(
     val lumaCalendar: String get() = aboutTitle
     val lumaVersion: String get() = aboutVersion
     val lumaDescription: String get() = aboutSubtitle
+    val selectDate: String get() = if (tabCalendar == "تقویم") "انتخاب تاریخ" else "Select Date"
+    val manualDateTitle: String get() = if (tabCalendar == "تقویم") "رفتن به تاریخ" else "Jump to Date"
+    val manualDatePrompt: String get() = if (tabCalendar == "تقویم") "تاریخ مورد نظر را وارد کنید" else "Enter the target date"
+    val confirm: String get() = if (tabCalendar == "تقویم") "تأیید" else "Confirm"
 
     fun formatReminder(minutes: Int?): String = LocalizationManager.getReminderLabel(minutes, this)
 
