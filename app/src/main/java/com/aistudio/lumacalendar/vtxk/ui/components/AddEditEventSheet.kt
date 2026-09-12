@@ -1,7 +1,5 @@
 package com.aistudio.lumacalendar.vtxk.ui.components
 
-import android.app.TimePickerDialog
-import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -45,7 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -103,8 +100,16 @@ fun AddEditEventSheet(
     var title by remember(event) { mutableStateOf(event?.title ?: "") }
     var date by remember(event, defaultDate) { mutableStateOf(event?.date ?: defaultDate) }
     var showManualDatePicker by remember { mutableStateOf(false) }
-    var startTime by remember(event) { mutableStateOf(event?.startTime ?: "09:00") }
-    var endTime by remember(event) { mutableStateOf(event?.endTime ?: "10:00") }
+    var activeTimePickerType by remember { mutableStateOf<TimePickerType?>(null) }
+    var startTime by remember(event) {
+        mutableStateOf(com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(event?.startTime, "09:00"))
+    }
+    var endTime by remember(event) {
+        val normStart = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(event?.startTime, "09:00")
+        val normEnd = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(event?.endTime, "10:00")
+        val (_, safeEnd) = com.aistudio.lumacalendar.vtxk.util.TimeValidator.ensureValidRange(normStart, normEnd)
+        mutableStateOf(safeEnd)
+    }
     var selectedCategoryIndex by remember(event) {
         val idx = AvailableCategories.indexOfFirst { it.name == event?.category }
         mutableIntStateOf(if (idx >= 0) idx else 0)
@@ -204,12 +209,15 @@ fun AddEditEventSheet(
                             text = strings.save,
                             isPrimary = true,
                             onClick = {
+                                val normStart = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(startTime, "09:00")
+                                val normEnd = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(endTime, "10:00")
+                                val (safeStart, safeEnd) = com.aistudio.lumacalendar.vtxk.util.TimeValidator.ensureValidRange(normStart, normEnd)
                                 onSave(
                                     event?.id ?: 0L,
                                     title.ifBlank { strings.newEvent },
                                     date,
-                                    startTime,
-                                    endTime,
+                                    safeStart,
+                                    safeEnd,
                                     selectedCategory.name,
                                     selectedCategory.hex,
                                     location,
@@ -434,13 +442,13 @@ fun AddEditEventSheet(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
-                                        // Quick Start Time presets
                                         TimePill(
-                            time = startTime,
-                            label = strings.startLabel,
-                            isRtl = isRtl,
-                            onSelect = { startTime = it }
-                        )
+                                            time = startTime,
+                                            label = strings.startLabel,
+                                            testTag = "time_pill_start",
+                                            isRtl = isRtl,
+                                            onClick = { activeTimePickerType = TimePickerType.START }
+                                        )
                                         Text(
                                             text = if (isRtl) "تا" else "to",
                                             style = MaterialTheme.typography.bodySmall.copy(
@@ -449,11 +457,12 @@ fun AddEditEventSheet(
                                             )
                                         )
                                         TimePill(
-                            time = endTime,
-                            label = strings.endLabel,
-                            isRtl = isRtl,
-                            onSelect = { endTime = it }
-                        )
+                                            time = endTime,
+                                            label = strings.endLabel,
+                                            testTag = "time_pill_end",
+                                            isRtl = isRtl,
+                                            onClick = { activeTimePickerType = TimePickerType.END }
+                                        )
                                     }
                                 }
                             }
@@ -640,6 +649,30 @@ fun AddEditEventSheet(
                     showManualDatePicker = false
                 }
             )
+
+            // Liquid Glass Time Picker Dialog
+            if (activeTimePickerType != null) {
+                LiquidGlassTimePickerDialog(
+                    initialTime = if (activeTimePickerType == TimePickerType.START) startTime else endTime,
+                    type = activeTimePickerType!!,
+                    isRtl = isRtl,
+                    strings = strings,
+                    startTimeReference = startTime,
+                    onDismiss = { activeTimePickerType = null },
+                    onTimeSelected = { selectedTime ->
+                        if (activeTimePickerType == TimePickerType.START) {
+                            startTime = selectedTime
+                            val (_, safeEnd) = com.aistudio.lumacalendar.vtxk.util.TimeValidator.ensureValidRange(selectedTime, endTime)
+                            endTime = safeEnd
+                        } else {
+                            val (safeStart, safeEnd) = com.aistudio.lumacalendar.vtxk.util.TimeValidator.ensureValidRange(startTime, selectedTime)
+                            startTime = safeStart
+                            endTime = safeEnd
+                        }
+                        activeTimePickerType = null
+                    }
+                )
+            }
         }
     }
 }
@@ -648,42 +681,31 @@ fun AddEditEventSheet(
 private fun TimePill(
     time: String,
     label: String,
+    testTag: String,
     isRtl: Boolean = false,
-    onSelect: (String) -> Unit
+    onClick: () -> Unit
 ) {
-    val context = LocalContext.current
-    val pickerContext = remember(context, isRtl) {
-        val pickerLocale = if (isRtl) Locale.forLanguageTag("fa") else Locale.US
-        val configuration = Configuration(context.resources.configuration)
-        configuration.setLocale(pickerLocale)
-        configuration.setLayoutDirection(pickerLocale)
-        context.createConfigurationContext(configuration)
+    val parsed = remember(time) {
+        com.aistudio.lumacalendar.vtxk.util.TimeValidator.parseTime(time)
     }
-    val parts = time.split(":")
-    val hour = parts.getOrNull(0)?.toIntOrNull()?.takeIf { it in 0..23 } ?: 9
-    val minute = parts.getOrNull(1)?.toIntOrNull()?.takeIf { it in 0..59 } ?: 0
+    val displayTime = if (isRtl) {
+        LocalizationManager.formatDigits(parsed.canonicalTime)
+    } else {
+        parsed.canonicalTime
+    }
+
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
             .background(GlassSurfaceHighlight)
             .border(0.8.dp, GlassBorderDefault, RoundedCornerShape(10.dp))
-            .semantics { contentDescription = "$label: $time" }
-            .clickable {
-                TimePickerDialog(
-                    pickerContext,
-                    { _, selectedHour, selectedMinute ->
-                        onSelect(String.format(Locale.ROOT, "%02d:%02d", selectedHour, selectedMinute))
-                    },
-                    hour,
-                    minute,
-                    // ponytail: event times stay 24-hour; switch to the system format when every timeline supports AM/PM labels.
-                    true
-                ).apply { setTitle(label) }.show()
-            }
-            .padding(horizontal = 10.dp, vertical = 5.dp)
+            .semantics { contentDescription = "$label: $displayTime" }
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .testTag(testTag)
     ) {
         Text(
-            text = if (isRtl) LocalizationManager.formatDigits(time) else time,
+            text = displayTime,
             style = MaterialTheme.typography.bodyMedium.copy(
                 color = TextWhitePrimary,
                 fontWeight = FontWeight.Medium,

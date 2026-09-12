@@ -27,6 +27,7 @@ import com.aistudio.lumacalendar.vtxk.ui.theme.CategoryWork
 import com.aistudio.lumacalendar.vtxk.util.CalendarConverter
 import com.aistudio.lumacalendar.vtxk.util.CalendarType
 import com.aistudio.lumacalendar.vtxk.util.DateUtils
+import com.aistudio.lumacalendar.vtxk.util.TimeValidator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -340,12 +341,16 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
         calendarType: String
     ) {
         viewModelScope.launch {
+            val normStart = TimeValidator.normalizeTime(startTime, "09:00")
+            val normEnd = TimeValidator.normalizeTime(endTime, "10:00")
+            val (safeStart, safeEnd) = TimeValidator.ensureValidRange(normStart, normEnd)
+
             val event = CalendarEvent(
                 id = id,
                 title = title.ifBlank { "Untitled Event" },
                 date = date,
-                startTime = startTime,
-                endTime = endTime,
+                startTime = safeStart,
+                endTime = safeEnd,
                 category = category,
                 colorHex = colorHex,
                 location = location,

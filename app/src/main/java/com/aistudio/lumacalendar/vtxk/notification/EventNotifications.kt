@@ -62,12 +62,13 @@ object EventNotificationScheduler {
         timeZone: TimeZone = TimeZone.getDefault()
     ): Long? {
         if (reminderMinutes < 0) return null
+        val normalizedTime = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeDigits(startTime).trim()
         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).apply {
             isLenient = false
             this.timeZone = timeZone
         }
         return try {
-            formatter.parse("$date $startTime")?.time?.minus(reminderMinutes * 60_000L)
+            formatter.parse("$date $normalizedTime")?.time?.minus(reminderMinutes * 60_000L)
         } catch (_: ParseException) {
             null
         }

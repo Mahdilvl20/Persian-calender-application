@@ -70,6 +70,7 @@ import com.aistudio.lumacalendar.vtxk.ui.components.GlassCard
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassIconButton
 import com.aistudio.lumacalendar.vtxk.ui.components.HolidayCard
 import com.aistudio.lumacalendar.vtxk.ui.components.ManualDateInputDialog
+import com.aistudio.lumacalendar.vtxk.util.TimeValidator
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentRoyalViolet
 import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasBlack
@@ -871,7 +872,7 @@ private fun WeekViewContent(
                 val hourStr = String.format("%02d:00", hourInt)
                 val displayHour = if (LocalizationManager.isRtl(calendarType)) LocalizationManager.formatDigits(hourStr) else hourStr
                 val eventsAtHour = selectedDayEvents.filter {
-                    val evHour = it.startTime.substringBefore(":").toIntOrNull() ?: -1
+                    val evHour = TimeValidator.parseTime(it.startTime).hour
                     evHour == hourInt
                 }
 
@@ -1014,7 +1015,7 @@ private fun DayViewContent(
                 val hourStr = String.format("%02d:00", hourInt)
                 val displayHour = if (LocalizationManager.isRtl(calendarType)) LocalizationManager.formatDigits(hourStr) else hourStr
                 val eventsInHour = events.filter {
-                    val evH = it.startTime.substringBefore(":").toIntOrNull() ?: -1
+                    val evH = TimeValidator.parseTime(it.startTime).hour
                     evH == hourInt
                 }
 

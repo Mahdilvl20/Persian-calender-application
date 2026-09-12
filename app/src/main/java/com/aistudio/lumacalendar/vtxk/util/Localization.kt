@@ -482,15 +482,19 @@ object LocalizationManager {
     /**
      * Formats a time range (e.g., "09:00 – 10:30") with localized numerals.
      */
-    fun formatTimeRange(start: String, end: String, isRtl: Boolean): String {
-        val s = if (isRtl) formatDigits(start) else start
-        val e = if (isRtl) formatDigits(end) else end
+    fun formatTimeRange(start: String?, end: String?, isRtl: Boolean): String {
+        val safeStart = TimeValidator.normalizeTime(start, "09:00")
+        val safeEnd = TimeValidator.normalizeTime(end, "10:00")
+        val s = if (isRtl) formatDigits(safeStart) else safeStart
+        val e = if (isRtl) formatDigits(safeEnd) else safeEnd
         return "$s – $e"
     }
 
-    fun formatTimeRange(start: String, end: String, calendarType: CalendarType): String {
-        val s = formatDigits(start, calendarType)
-        val e = formatDigits(end, calendarType)
+    fun formatTimeRange(start: String?, end: String?, calendarType: CalendarType): String {
+        val safeStart = TimeValidator.normalizeTime(start, "09:00")
+        val safeEnd = TimeValidator.normalizeTime(end, "10:00")
+        val s = formatDigits(safeStart, calendarType)
+        val e = formatDigits(safeEnd, calendarType)
         return "$s – $e"
     }
 
