@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/notification_expanded_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/notification_glass_bg"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- Row 1: Header (Icon + Name + Dot + Timestamp) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- App Icon: Dynamic Canvas Bitmap with blue->violet gradient & day number -->
+        <ImageView
+            android:id="@+id/notification_app_icon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="Luma Calendar Icon"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/notification_header_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Luma Calendar"
+            android:textColor="#CBD5E1"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/vazirmatn_semibold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="6dp"
+            android:text="•"
+            android:textColor="#64748B"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/notification_header_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="now"
+            android:textColor="#94A3B8"
+            android:textSize="11sp"
+            android:fontFamily="@font/vazirmatn_regular" />
+    </LinearLayout>
+
+    <!-- Row 2: Two-Column Content (Left: Main info, Right: Miniature Calendar Tile) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- Left / Main Content Column -->
+        <LinearLayout
+            android:id="@+id/notification_main_content_col"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="12dp"
+            android:orientation="vertical">
+
+            <!-- Primary Persian Date -->
+            <TextView
+                android:id="@+id/notification_main_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="یکشنبه ۲۲ شهریور ۱۴۰۵"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/vazirmatn_semibold"
+                android:textDirection="firstStrong"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Secondary Gregorian & Hijri Date -->
+            <TextView
+                android:id="@+id/notification_secondary_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="13 September 2026 • 10 Rabi' II 1448"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:fontFamily="@font/vazirmatn_regular"
+                android:textDirection="firstStrong"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Daily Contextual Message -->
+            <TextView
+                android:id="@+id/notification_daily_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="✨ امروز روز خوبی برای برنامه‌های مهمه"
+                android:textColor="#C7D2FE"
+                android:textSize="12sp"
+                android:fontFamily="@font/vazirmatn_regular"
+                android:textDirection="firstStrong"
+                android:maxLines="2"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <!-- Right: Miniature Glass Calendar Tile -->
+        <LinearLayout
+            android:id="@+id/notification_calendar_tile"
+            android:layout_width="60dp"
+            android:layout_height="64dp"
+            android:background="@drawable/notification_calendar_tile_bg"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="4dp">
+
+            <TextView
+                android:id="@+id/notification_tile_month"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="شهریور"
+                android:textColor="#C7D2FE"
+                android:textSize="10sp"
+                android:fontFamily="@font/vazirmatn_medium"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/notification_tile_day"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="۲۲"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/vazirmatn_bold"
+                android:includeFontPadding="false" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Row 3: Action Buttons (Today, New Event, Remind Later) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- Action 1: Today (Primary subtle blue glass highlight) -->
+        <LinearLayout
+            android:id="@+id/notification_action_today"
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1"
+            android:background="@drawable/notification_action_btn_primary_bg"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:src="@drawable/ic_notification_action_today"
+                android:contentDescription="Today" />
+
+            <TextView
+                android:id="@+id/notification_action_today_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="امروز"
+                android:textColor="#E0E7FF"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/vazirmatn_medium" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="1dp" />
+
+        <!-- Action 2: New Event -->
+        <LinearLayout
+            android:id="@+id/notification_action_new_event"
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1"
+            android:background="@drawable/notification_action_btn_bg"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:src="@drawable/ic_notification_action_add"
+                android:contentDescription="New Event" />
+
+            <TextView
+                android:id="@+id/notification_action_new_event_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="رویداد جدید"
+                android:textColor="#E2E8F0"
+                android:textSize="11sp"
+                android:fontFamily="@font/vazirmatn_medium" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="1dp" />
+
+        <!-- Action 3: Remind Later -->
+        <LinearLayout
+            android:id="@+id/notification_action_remind_later"
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1"
+            android:background="@drawable/notification_action_btn_bg"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:src="@drawable/ic_notification_action_snooze"
+                android:contentDescription="Remind Later" />
+
+            <TextView
+                android:id="@+id/notification_action_remind_later_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="یادآوری بعداً"
+                android:textColor="#CBD5E1"
+                android:textSize="11sp"
+                android:fontFamily="@font/vazirmatn_medium" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

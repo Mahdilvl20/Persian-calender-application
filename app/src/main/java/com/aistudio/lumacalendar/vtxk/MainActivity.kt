@@ -48,7 +48,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.aistudio.lumacalendar.vtxk.notification.EventNotificationScheduler
+import com.aistudio.lumacalendar.vtxk.notification.LumaNotificationManager
 import com.aistudio.lumacalendar.vtxk.notification.NotificationPreferences
+import com.aistudio.lumacalendar.vtxk.util.DateUtils
 import com.aistudio.lumacalendar.vtxk.ui.components.AddEditEventSheet
 import com.aistudio.lumacalendar.vtxk.ui.components.AmbientBackground
 import com.aistudio.lumacalendar.vtxk.ui.components.EventDetailSheet
@@ -71,6 +73,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         EventNotificationScheduler.createChannel(applicationContext)
+        LumaNotificationManager.createChannels(applicationContext)
+        LumaNotificationManager.updateNotificationAsync(applicationContext)
         // Ensure MainActivity component state is enabled and sync dynamic date safely
         DynamicIconManager.ensureMainActivityEnabled(applicationContext)
         DynamicIconManager.syncIfDateChanged(applicationContext)
@@ -82,6 +86,11 @@ class MainActivity : ComponentActivity() {
         handleNotificationIntent(intent)
     }
 
+    override fun onResume() {
+        super.onResume()
+        LumaNotificationManager.updateNotificationAsync(applicationContext)
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -89,10 +98,31 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleNotificationIntent(intent: Intent?) {
-        val eventId = intent?.getLongExtra(EventNotificationScheduler.EXTRA_EVENT_ID, -1L) ?: -1L
-        if (eventId > 0) {
-            viewModel.openEventFromNotification(eventId)
-            intent?.removeExtra(EventNotificationScheduler.EXTRA_EVENT_ID)
+        if (intent == null) return
+        val action = intent.action
+        val extraAction = intent.getStringExtra("EXTRA_ACTION")
+
+        when {
+            action == LumaNotificationManager.ACTION_TODAY || extraAction == "TODAY" || action == "${packageName}.OPEN_TODAY" -> {
+                val today = DateUtils.getRealDeviceDate()
+                viewModel.setCurrentTab(0)
+                viewModel.selectDate(today)
+                intent.removeExtra("EXTRA_ACTION")
+            }
+            action == LumaNotificationManager.ACTION_NEW_EVENT || extraAction == "NEW_EVENT" -> {
+                val today = DateUtils.getRealDeviceDate()
+                viewModel.setCurrentTab(0)
+                viewModel.selectDate(today)
+                viewModel.openAddEvent(today)
+                intent.removeExtra("EXTRA_ACTION")
+            }
+            else -> {
+                val eventId = intent.getLongExtra(EventNotificationScheduler.EXTRA_EVENT_ID, -1L)
+                if (eventId > 0) {
+                    viewModel.openEventFromNotification(eventId)
+                    intent.removeExtra(EventNotificationScheduler.EXTRA_EVENT_ID)
+                }
+            }
         }
     }
 }

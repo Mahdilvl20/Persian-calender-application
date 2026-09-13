@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/notification_collapsed_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/notification_glass_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <!-- App Icon: Dynamic Canvas Bitmap with blue->violet gradient & day number -->
+    <ImageView
+        android:id="@+id/notification_app_icon"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:contentDescription="Luma Calendar Icon"
+        android:scaleType="fitCenter" />
+
+    <!-- Center Content: Header, Main Date & Secondary Date -->
+    <LinearLayout
+        android:id="@+id/notification_content_col"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:orientation="vertical">
+
+        <!-- Header: App Name • Timestamp -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/notification_header_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Luma Calendar"
+                android:textColor="#CBD5E1"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/vazirmatn_semibold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:text="•"
+                android:textColor="#64748B"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/notification_header_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="now"
+                android:textColor="#94A3B8"
+                android:textSize="10sp"
+                android:fontFamily="@font/vazirmatn_regular" />
+        </LinearLayout>
+
+        <!-- Main Prominent Persian Date -->
+        <TextView
+            android:id="@+id/notification_main_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="یکشنبه ۲۲ شهریور ۱۴۰۵"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/vazirmatn_semibold"
+            android:textDirection="firstStrong"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- Secondary Date (Gregorian / Hijri) -->
+        <TextView
+            android:id="@+id/notification_secondary_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:text="13 September 2026"
+            android:textColor="#94A3B8"
+            android:textSize="11sp"
+            android:fontFamily="@font/vazirmatn_regular"
+            android:textDirection="firstStrong"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <!-- Right: Miniature Glass Calendar Tile -->
+    <LinearLayout
+        android:id="@+id/notification_calendar_tile"
+        android:layout_width="50dp"
+        android:layout_height="54dp"
+        android:background="@drawable/notification_calendar_tile_bg"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="2dp">
+
+        <TextView
+            android:id="@+id/notification_tile_month"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="شهریور"
+            android:textColor="#C7D2FE"
+            android:textSize="9sp"
+            android:fontFamily="@font/vazirmatn_medium"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/notification_tile_day"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="۲۲"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/vazirmatn_bold"
+            android:includeFontPadding="false" />
+    </LinearLayout>
+
+</LinearLayout>

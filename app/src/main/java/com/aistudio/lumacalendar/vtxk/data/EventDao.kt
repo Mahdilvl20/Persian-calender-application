@@ -22,6 +22,9 @@ interface EventDao {
     @Query("SELECT * FROM calendar_events WHERE date = :date ORDER BY startTime ASC")
     fun getEventsForDate(date: String): Flow<List<CalendarEvent>>
 
+    @Query("SELECT * FROM calendar_events WHERE date = :date ORDER BY startTime ASC")
+    suspend fun getEventsForDateSnapshot(date: String): List<CalendarEvent>
+
     @Query("SELECT * FROM calendar_events WHERE date >= :startDate AND date <= :endDate ORDER BY date ASC, startTime ASC")
     fun getEventsBetweenDates(startDate: String, endDate: String): Flow<List<CalendarEvent>>
 

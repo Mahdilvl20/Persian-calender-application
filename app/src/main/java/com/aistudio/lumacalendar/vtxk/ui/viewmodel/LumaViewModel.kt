@@ -13,6 +13,7 @@ import com.aistudio.lumacalendar.vtxk.data.model.PersianCalendarDay
 import com.aistudio.lumacalendar.vtxk.data.repository.PersianCalendarRepository
 import com.aistudio.lumacalendar.vtxk.data.repository.PersianCalendarRepositoryImpl
 import com.aistudio.lumacalendar.vtxk.notification.EventNotificationScheduler
+import com.aistudio.lumacalendar.vtxk.notification.LumaNotificationManager
 import com.aistudio.lumacalendar.vtxk.notification.NotificationPreferences
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentCyan
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentDeepViolet
@@ -102,7 +103,8 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
 
     // Calendar Display State (Initialized to actual device local date)
     private val initialDeviceDate = DateUtils.getRealDeviceDate()
-    private val initialYearMonth = CalendarConverter.getYearAndMonth(initialDeviceDate, CalendarType.GREGORIAN)
+    private val initialCalendarType = NotificationPreferences.getCalendarType(application)
+    private val initialYearMonth = CalendarConverter.getYearAndMonth(initialDeviceDate, initialCalendarType)
 
     private val _selectedYear = MutableStateFlow(initialYearMonth.first)
     val selectedYear: StateFlow<Int> = _selectedYear.asStateFlow()
@@ -117,7 +119,7 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     val calendarViewMode: StateFlow<String> = _calendarViewMode.asStateFlow()
 
     // Calendar Type: شمسی (Jalali), میلادی (Gregorian), قمری (Hijri)
-    private val _calendarType = MutableStateFlow(CalendarType.GREGORIAN)
+    private val _calendarType = MutableStateFlow(initialCalendarType)
     val calendarType: StateFlow<CalendarType> = _calendarType.asStateFlow()
 
     // Events flow from Room Database
@@ -282,6 +284,8 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     fun setCalendarType(type: CalendarType) {
         if (_calendarType.value == type) return
         _calendarType.value = type
+        NotificationPreferences.setCalendarType(getApplication(), type)
+        LumaNotificationManager.updateNotificationAsync(getApplication())
         // Synchronize month and year to the selected date in the new calendar type!
         val (newYear, newMonth) = CalendarConverter.getYearAndMonth(_selectedDate.value, type)
         _selectedYear.value = newYear
@@ -396,6 +400,7 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
                 event
             }
             EventNotificationScheduler.schedule(getApplication(), savedEvent)
+            LumaNotificationManager.updateNotification(getApplication())
             closeAddEdit()
         }
     }
@@ -404,6 +409,7 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             EventNotificationScheduler.cancel(getApplication(), event.id)
             repository.deleteEvent(event)
+            LumaNotificationManager.updateNotification(getApplication())
             closeEventDetail()
         }
     }
@@ -428,6 +434,8 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
         refreshNotificationState()
         if (!_notificationsEnabled.value) return
         EventNotificationScheduler.createChannel(getApplication())
+        LumaNotificationManager.createChannels(getApplication())
+        LumaNotificationManager.updateNotificationAsync(getApplication())
         val previousJob = notificationSyncJob
         notificationSyncJob = viewModelScope.launch(Dispatchers.IO) {
             previousJob?.cancelAndJoin()
@@ -442,6 +450,7 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     fun disableNotifications() {
         NotificationPreferences.setEnabled(getApplication(), false)
         _notificationsEnabled.value = false
+        LumaNotificationManager.cancel(getApplication())
         val previousJob = notificationSyncJob
         notificationSyncJob = viewModelScope.launch(Dispatchers.IO) {
             previousJob?.cancelAndJoin()

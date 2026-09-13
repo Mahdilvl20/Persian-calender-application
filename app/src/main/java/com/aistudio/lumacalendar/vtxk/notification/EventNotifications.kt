@@ -27,10 +27,25 @@ object NotificationPreferences {
     private const val KEY_ENABLED = "event_reminders_enabled"
     private const val KEY_PERMISSION_REQUESTED = "notification_permission_requested"
 
+    private const val KEY_CALENDAR_TYPE = "active_calendar_type"
+
     fun isEnabled(context: Context): Boolean = preferences(context).getBoolean(KEY_ENABLED, false)
 
     fun setEnabled(context: Context, enabled: Boolean) {
         preferences(context).edit().putBoolean(KEY_ENABLED, enabled).apply()
+    }
+
+    fun getCalendarType(context: Context): com.aistudio.lumacalendar.vtxk.util.CalendarType {
+        val name = preferences(context).getString(KEY_CALENDAR_TYPE, com.aistudio.lumacalendar.vtxk.util.CalendarType.JALALI.name)
+        return try {
+            com.aistudio.lumacalendar.vtxk.util.CalendarType.valueOf(name ?: com.aistudio.lumacalendar.vtxk.util.CalendarType.JALALI.name)
+        } catch (_: Exception) {
+            com.aistudio.lumacalendar.vtxk.util.CalendarType.JALALI
+        }
+    }
+
+    fun setCalendarType(context: Context, type: com.aistudio.lumacalendar.vtxk.util.CalendarType) {
+        preferences(context).edit().putString(KEY_CALENDAR_TYPE, type.name).apply()
     }
 
     fun wasPermissionRequested(context: Context): Boolean =
