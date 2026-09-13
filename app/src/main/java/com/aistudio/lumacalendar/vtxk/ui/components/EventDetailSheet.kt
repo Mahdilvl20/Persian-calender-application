@@ -295,7 +295,7 @@ fun EventDetailSheet(
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
-                                        text = LocalizationManager.formatTimeRange(event.startTime, event.endTime, isRtl),
+                                        text = LocalizationManager.formatSingleTime(event.time, isRtl),
                                         style = MaterialTheme.typography.bodyLarge.copy(
                                             color = TextWhitePrimary,
                                             fontWeight = FontWeight.Medium,

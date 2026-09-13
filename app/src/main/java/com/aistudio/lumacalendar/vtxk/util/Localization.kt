@@ -480,6 +480,19 @@ object LocalizationManager {
     }
 
     /**
+     * Formats a single time (e.g., "11:00") with localized numerals.
+     */
+    fun formatSingleTime(time: String?, isRtl: Boolean): String {
+        val safe = TimeValidator.normalizeTime(time, "11:00")
+        return if (isRtl) formatDigits(safe) else safe
+    }
+
+    fun formatSingleTime(time: String?, calendarType: CalendarType): String {
+        val safe = TimeValidator.normalizeTime(time, "11:00")
+        return formatDigits(safe, calendarType)
+    }
+
+    /**
      * Formats a time range (e.g., "09:00 – 10:30") with localized numerals.
      */
     fun formatTimeRange(start: String?, end: String?, isRtl: Boolean): String {

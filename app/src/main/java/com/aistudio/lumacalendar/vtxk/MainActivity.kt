@@ -308,13 +308,12 @@ fun LumaApp(viewModel: LumaViewModel) {
                 defaultDate = selectedDate,
                 activeCalendarType = calendarType,
                 onDismiss = { viewModel.closeAddEdit() },
-                onSave = { id, title, date, start, end, cat, hex, loc, notes, reminder, calType ->
+                onSave = { id, title, date, time, cat, hex, loc, notes, reminder, calType ->
                     viewModel.saveEvent(
                         id = id,
                         title = title,
                         date = date,
-                        startTime = start,
-                        endTime = end,
+                        time = time,
                         category = cat,
                         colorHex = hex,
                         location = loc,

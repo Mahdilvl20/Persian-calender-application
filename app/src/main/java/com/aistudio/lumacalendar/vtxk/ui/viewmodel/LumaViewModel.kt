@@ -100,14 +100,17 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
         _currentTab.value = tab
     }
 
-    // Calendar Display State
-    private val _selectedYear = MutableStateFlow(2026)
+    // Calendar Display State (Initialized to actual device local date)
+    private val initialDeviceDate = DateUtils.getRealDeviceDate()
+    private val initialYearMonth = CalendarConverter.getYearAndMonth(initialDeviceDate, CalendarType.GREGORIAN)
+
+    private val _selectedYear = MutableStateFlow(initialYearMonth.first)
     val selectedYear: StateFlow<Int> = _selectedYear.asStateFlow()
 
-    private val _selectedMonth = MutableStateFlow(9) // September is 9 (1-indexed)
+    private val _selectedMonth = MutableStateFlow(initialYearMonth.second)
     val selectedMonth: StateFlow<Int> = _selectedMonth.asStateFlow()
 
-    private val _selectedDate = MutableStateFlow("2026-09-11") // Matches prompt: "Friday, September 11"
+    private val _selectedDate = MutableStateFlow(initialDeviceDate)
     val selectedDate: StateFlow<String> = _selectedDate.asStateFlow()
 
     private val _calendarViewMode = MutableStateFlow("Month") // "Month", "Week", "Day"
@@ -325,6 +328,34 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     fun closeEventDetail() {
         _isDetailOpen.value = false
         _viewingEvent.value = null
+    }
+
+    fun saveEvent(
+        id: Long = 0,
+        title: String,
+        date: String,
+        time: String,
+        category: String,
+        colorHex: String,
+        location: String,
+        notes: String,
+        reminderMinutes: Int,
+        calendarType: String
+    ) {
+        val normTime = TimeValidator.normalizeTime(time, "11:00")
+        saveEvent(
+            id = id,
+            title = title,
+            date = date,
+            startTime = normTime,
+            endTime = normTime,
+            category = category,
+            colorHex = colorHex,
+            location = location,
+            notes = notes,
+            reminderMinutes = reminderMinutes,
+            calendarType = calendarType
+        )
     }
 
     fun saveEvent(

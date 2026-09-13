@@ -3,18 +3,26 @@ package com.aistudio.lumacalendar.vtxk.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -82,8 +90,7 @@ fun AddEditEventSheet(
         id: Long,
         title: String,
         date: String,
-        startTime: String,
-        endTime: String,
+        time: String,
         category: String,
         colorHex: String,
         location: String,
@@ -100,15 +107,10 @@ fun AddEditEventSheet(
     var title by remember(event) { mutableStateOf(event?.title ?: "") }
     var date by remember(event, defaultDate) { mutableStateOf(event?.date ?: defaultDate) }
     var showManualDatePicker by remember { mutableStateOf(false) }
-    var activeTimePickerType by remember { mutableStateOf<TimePickerType?>(null) }
-    var startTime by remember(event) {
-        mutableStateOf(com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(event?.startTime, "09:00"))
-    }
-    var endTime by remember(event) {
-        val normStart = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(event?.startTime, "09:00")
-        val normEnd = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(event?.endTime, "10:00")
-        val (_, safeEnd) = com.aistudio.lumacalendar.vtxk.util.TimeValidator.ensureValidRange(normStart, normEnd)
-        mutableStateOf(safeEnd)
+    var showTimePicker by remember { mutableStateOf(false) }
+    var eventTime by remember(event) {
+        val rawTime = event?.startTime?.ifBlank { null } ?: event?.time
+        mutableStateOf(com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(rawTime, "11:00"))
     }
     var selectedCategoryIndex by remember(event) {
         val idx = AvailableCategories.indexOfFirst { it.name == event?.category }
@@ -123,7 +125,10 @@ fun AddEditEventSheet(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
     ) {
         Box(
             modifier = Modifier
@@ -137,7 +142,12 @@ fun AddEditEventSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.92f)
-                    .clickable(enabled = false) {}
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        enabled = true
+                    ) {}
                     .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
                     .background(
                         Brush.verticalGradient(
@@ -209,15 +219,12 @@ fun AddEditEventSheet(
                             text = strings.save,
                             isPrimary = true,
                             onClick = {
-                                val normStart = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(startTime, "09:00")
-                                val normEnd = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(endTime, "10:00")
-                                val (safeStart, safeEnd) = com.aistudio.lumacalendar.vtxk.util.TimeValidator.ensureValidRange(normStart, normEnd)
+                                val normTime = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(eventTime, "11:00")
                                 onSave(
                                     event?.id ?: 0L,
                                     title.ifBlank { strings.newEvent },
                                     date,
-                                    safeStart,
-                                    safeEnd,
+                                    normTime,
                                     selectedCategory.name,
                                     selectedCategory.hex,
                                     location,
@@ -230,12 +237,14 @@ fun AddEditEventSheet(
                         )
                     }
 
-                    // Scrollable form body
+                    // Scrollable form body with generous bottom padding and keyboard handling
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
-                            .padding(bottom = 32.dp)
+                            .imePadding()
+                            .navigationBarsPadding()
+                            .padding(bottom = 80.dp)
                     ) {
                         // Title Input
                         Text(
@@ -344,17 +353,18 @@ fun AddEditEventSheet(
                                     }
                                 }
 
-                                // Quick date buttons
+                                 // Quick date buttons
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
+                                    val realToday = DateUtils.getRealDeviceDate()
                                     val quickDates = listOf(
-                                        strings.today to DateUtils.DEFAULT_TODAY,
-                                        strings.tomorrow to DateUtils.addDays(DateUtils.DEFAULT_TODAY, 1),
-                                        (if (isRtl) LocalizationManager.formatDigits("15") else "15") to "2026-09-15",
-                                        (if (isRtl) LocalizationManager.formatDigits("20") else "20") to "2026-09-20"
+                                        strings.today to realToday,
+                                        strings.tomorrow to DateUtils.addDays(realToday, 1),
+                                        (if (isRtl) LocalizationManager.formatDigits("15") else "15") to DateUtils.addDays(realToday, 2),
+                                        (if (isRtl) LocalizationManager.formatDigits("20") else "20") to DateUtils.addDays(realToday, 5)
                                     )
                                     quickDates.forEach { (label, qDate) ->
                                         val isSel = date == qDate
@@ -414,7 +424,7 @@ fun AddEditEventSheet(
                                 )
                                 Spacer(modifier = Modifier.height(14.dp))
 
-                                // Time selector row
+                                // Single Event Time selector row
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -438,32 +448,13 @@ fun AddEditEventSheet(
                                         )
                                     }
 
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        TimePill(
-                                            time = startTime,
-                                            label = strings.startLabel,
-                                            testTag = "time_pill_start",
-                                            isRtl = isRtl,
-                                            onClick = { activeTimePickerType = TimePickerType.START }
-                                        )
-                                        Text(
-                                            text = if (isRtl) "تا" else "to",
-                                            style = MaterialTheme.typography.bodySmall.copy(
-                                                color = TextWhiteMuted,
-                                                letterSpacing = 0.sp
-                                            )
-                                        )
-                                        TimePill(
-                                            time = endTime,
-                                            label = strings.endLabel,
-                                            testTag = "time_pill_end",
-                                            isRtl = isRtl,
-                                            onClick = { activeTimePickerType = TimePickerType.END }
-                                        )
-                                    }
+                                    TimePill(
+                                        time = eventTime,
+                                        label = strings.time,
+                                        testTag = "time_pill_event",
+                                        isRtl = isRtl,
+                                        onClick = { showTimePicker = true }
+                                    )
                                 }
                             }
                         }
@@ -650,26 +641,17 @@ fun AddEditEventSheet(
                 }
             )
 
-            // Liquid Glass Time Picker Dialog
-            if (activeTimePickerType != null) {
+            // Liquid Glass Time Picker Dialog (Single Event Time)
+            if (showTimePicker) {
                 LiquidGlassTimePickerDialog(
-                    initialTime = if (activeTimePickerType == TimePickerType.START) startTime else endTime,
-                    type = activeTimePickerType!!,
+                    initialTime = eventTime,
+                    type = TimePickerType.EVENT,
                     isRtl = isRtl,
                     strings = strings,
-                    startTimeReference = startTime,
-                    onDismiss = { activeTimePickerType = null },
+                    onDismiss = { showTimePicker = false },
                     onTimeSelected = { selectedTime ->
-                        if (activeTimePickerType == TimePickerType.START) {
-                            startTime = selectedTime
-                            val (_, safeEnd) = com.aistudio.lumacalendar.vtxk.util.TimeValidator.ensureValidRange(selectedTime, endTime)
-                            endTime = safeEnd
-                        } else {
-                            val (safeStart, safeEnd) = com.aistudio.lumacalendar.vtxk.util.TimeValidator.ensureValidRange(startTime, selectedTime)
-                            startTime = safeStart
-                            endTime = safeEnd
-                        }
-                        activeTimePickerType = null
+                        eventTime = selectedTime
+                        showTimePicker = false
                     }
                 )
             }

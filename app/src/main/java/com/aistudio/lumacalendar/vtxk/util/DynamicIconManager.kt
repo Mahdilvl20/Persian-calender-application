@@ -250,7 +250,7 @@ object DynamicIconManager {
     fun syncIfDateChanged(context: Context, force: Boolean = false) {
         scope.launch {
             try {
-                val today = LocalDate.now()
+                val today = DateUtils.getRealDeviceLocalDate()
                 val currentDay = today.dayOfMonth
                 val todayIso = today.toString()
 
@@ -284,7 +284,7 @@ object DynamicIconManager {
      * Fast and safe to call from UI/Composables without blocking.
      */
     fun getRealDeviceDay(): Int {
-        return LocalDate.now().dayOfMonth
+        return DateUtils.getRealDeviceLocalDate().dayOfMonth
     }
 
     /**
@@ -293,6 +293,6 @@ object DynamicIconManager {
     fun getLastAppliedDay(context: Context): Int {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val saved = prefs.getInt(KEY_LAST_APPLIED_DAY, -1)
-        return if (saved in 1..31) saved else LocalDate.now().dayOfMonth
+        return if (saved in 1..31) saved else DateUtils.getRealDeviceLocalDate().dayOfMonth
     }
 }

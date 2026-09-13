@@ -72,6 +72,7 @@ import com.aistudio.lumacalendar.vtxk.util.TimeValidator
 import java.util.Locale
 
 enum class TimePickerType {
+    EVENT,
     START,
     END
 }
@@ -84,14 +85,13 @@ enum class TimePickerType {
  * Provides:
  * - 12h (AM/PM) and 24h mode toggling
  * - Interactive stepper and direct interval controls
- * - Quick presets for common meeting lengths (+15m, +30m, +45m, +1h)
  * - Full Persian/Arabic numerals and RTL layout support
  * - Defensive state boundaries (hours in 0..23, minutes in 0..59)
  */
 @Composable
 fun LiquidGlassTimePickerDialog(
     initialTime: String,
-    type: TimePickerType,
+    type: TimePickerType = TimePickerType.EVENT,
     isRtl: Boolean,
     strings: AppStrings,
     startTimeReference: String? = null,
@@ -99,7 +99,12 @@ fun LiquidGlassTimePickerDialog(
     onTimeSelected: (String) -> Unit
 ) {
     val initialParsed = remember(initialTime) {
-        TimeValidator.parseTime(initialTime, if (type == TimePickerType.START) 9 else 10, 0)
+        val defHour = when (type) {
+            TimePickerType.EVENT -> 11
+            TimePickerType.START -> 9
+            TimePickerType.END -> 10
+        }
+        TimeValidator.parseTime(initialTime, defHour, 0)
     }
 
     var is24HourMode by remember { mutableStateOf(true) }
@@ -110,7 +115,11 @@ fun LiquidGlassTimePickerDialog(
         ParsedTime.ofSafe(selectedHour, selectedMinute)
     }
 
-    val dialogTitle = if (type == TimePickerType.START) strings.startLabel else strings.endLabel
+    val dialogTitle = when (type) {
+        TimePickerType.EVENT -> strings.time
+        TimePickerType.START -> strings.startLabel
+        TimePickerType.END -> strings.endLabel
+    }
 
     Dialog(
         onDismissRequest = onDismiss,

@@ -4,9 +4,11 @@ import com.aistudio.lumacalendar.vtxk.data.holiday.HolidayService
 import com.aistudio.lumacalendar.vtxk.data.model.PersianCalendarDay
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 data class CalendarDay(
     val dateString: String, // "YYYY-MM-DD"
@@ -31,17 +33,56 @@ data class WeekDayInfo(
 )
 
 object DateUtils {
-    // Current simulated base date matching user prompt & context (September 11, 2026 / Sep 10, 2026)
-    val DEFAULT_TODAY: String = "2026-09-11"
-
-    fun getRealDeviceDate(): String {
+    /**
+     * Resolves the device's local timezone reliably.
+     */
+    fun getDeviceZoneId(): ZoneId {
         return try {
-            val now = LocalDate.now()
-            "%04d-%02d-%02d".format(now.year, now.monthValue, now.dayOfMonth)
-        } catch (e: Exception) {
-            DEFAULT_TODAY
+            TimeZone.getDefault().toZoneId()
+        } catch (_: Exception) {
+            ZoneId.systemDefault()
         }
     }
+
+    /**
+     * Obtains today's date in the device's actual local timezone.
+     * Never relies on UTC to determine 'today'.
+     */
+    fun getRealDeviceLocalDate(): LocalDate {
+        return try {
+            LocalDate.now(getDeviceZoneId())
+        } catch (_: Exception) {
+            val cal = Calendar.getInstance(TimeZone.getDefault())
+            LocalDate.of(
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH) + 1,
+                cal.get(Calendar.DAY_OF_MONTH)
+            )
+        }
+    }
+
+    /**
+     * Returns today's date in canonical ISO format "YYYY-MM-DD" based on local device time.
+     */
+    fun getRealDeviceDate(): String {
+        return try {
+            val now = getRealDeviceLocalDate()
+            String.format(Locale.US, "%04d-%02d-%02d", now.year, now.monthValue, now.dayOfMonth)
+        } catch (_: Exception) {
+            val cal = Calendar.getInstance(TimeZone.getDefault())
+            String.format(
+                Locale.US,
+                "%04d-%02d-%02d",
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH) + 1,
+                cal.get(Calendar.DAY_OF_MONTH)
+            )
+        }
+    }
+
+    /** Dynamic real device date */
+    val DEFAULT_TODAY: String
+        get() = getRealDeviceDate()
 
     private val ymdFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     private val monthYearFormat = SimpleDateFormat("MMMM yyyy", Locale.US)
@@ -76,7 +117,7 @@ object DateUtils {
 
     fun formatSelectedHeader(
         dateStr: String,
-        todayStr: String = DEFAULT_TODAY,
+        todayStr: String = getRealDeviceDate(),
         calendarType: CalendarType = CalendarType.GREGORIAN
     ): String {
         return CalendarConverter.formatHeaderDate(dateStr, calendarType, todayStr)

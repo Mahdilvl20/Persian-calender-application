@@ -57,7 +57,7 @@ class LumaCalendarWidgetProvider : AppWidgetProvider() {
 
         fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
             val views = RemoteViews(context.packageName, R.layout.widget_luma_calendar)
-            val now = LocalDate.now()
+            val now = com.aistudio.lumacalendar.vtxk.util.DateUtils.getRealDeviceLocalDate()
 
             val dayNumber = now.dayOfMonth
             val monthName = now.month.getDisplayName(TextStyle.FULL, Locale.getDefault()).uppercase()

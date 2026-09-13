@@ -622,7 +622,7 @@ fun EventCard(
     val strings = LocalAppStrings.current
     val calendarType = LocalCalendarType.current
     val categoryName = LocalizationManager.getCategoryName(event.category, strings)
-    val timeFormatted = LocalizationManager.formatTimeRange(event.startTime, event.endTime, calendarType)
+    val timeFormatted = LocalizationManager.formatSingleTime(event.time, calendarType)
 
     GlassCard(
         modifier = modifier.fillMaxWidth(),
@@ -892,7 +892,7 @@ fun GlassInput(
         keyboardActions = keyboardActions,
         decorationBox = { innerTextField ->
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (leadingIcon != null) {
@@ -900,7 +900,9 @@ fun GlassInput(
                         imageVector = leadingIcon,
                         contentDescription = null,
                         tint = TextWhiteSecondary,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier
+                            .size(18.dp)
+                            .then(if (!singleLine) Modifier.padding(top = 2.dp) else Modifier)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                 }

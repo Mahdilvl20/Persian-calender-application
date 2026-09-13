@@ -239,13 +239,13 @@ object TimeValidator {
                     val d = parts[2].toIntOrNull()?.coerceIn(1, 31) ?: 11
                     LocalDate.of(y, m, d)
                 } else {
-                    LocalDate.now()
+                    DateUtils.getRealDeviceLocalDate()
                 }
             } else {
-                LocalDate.now()
+                DateUtils.getRealDeviceLocalDate()
             }
         } catch (_: Exception) {
-            LocalDate.now()
+            DateUtils.getRealDeviceLocalDate()
         }
 
         return LocalDateTime.of(localDate, localTime)
