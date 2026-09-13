@@ -520,7 +520,7 @@ fun AddEditEventSheet(
                                     }
 
                                     // Reminder pill cycle
-                                    val reminderMinutesOptions = listOf(-1, 0, 5, 10, 15, 30, 60, 1440)
+                                    val reminderMinutesOptions = listOf(-1, 0, 1, 5, 10, 15, 30, 60, 1440)
                                     val curReminderText = LocalizationManager.formatReminder(reminderMinutes, strings)
 
                                     Box(

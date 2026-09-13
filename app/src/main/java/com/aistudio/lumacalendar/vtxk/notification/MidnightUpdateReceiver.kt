@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 class MidnightUpdateReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent?) {
+        android.util.Log.d("LumaDailyNotification", "Triggered by MidnightUpdateReceiver: action=${intent?.action}")
         val pendingResult = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {

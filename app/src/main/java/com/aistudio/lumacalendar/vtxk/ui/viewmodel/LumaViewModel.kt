@@ -425,23 +425,26 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun refreshNotificationState() {
-        _notificationsEnabled.value = NotificationPreferences.isEnabled(getApplication()) &&
-            EventNotificationScheduler.hasNotificationPermission(getApplication())
+        val hasPerm = EventNotificationScheduler.hasNotificationPermission(getApplication())
+        val isDaily = NotificationPreferences.isDailyNotificationEnabled(getApplication())
+        val isReminders = NotificationPreferences.areEventRemindersEnabled(getApplication())
+        _notificationsEnabled.value = (isDaily || isReminders) && hasPerm
     }
 
     fun enableNotifications() {
         NotificationPreferences.setEnabled(getApplication(), true)
         refreshNotificationState()
-        if (!_notificationsEnabled.value) return
         EventNotificationScheduler.createChannel(getApplication())
         LumaNotificationManager.createChannels(getApplication())
-        LumaNotificationManager.updateNotificationAsync(getApplication())
-        LumaNotificationManager.scheduleMidnightUpdate(getApplication())
+        if (EventNotificationScheduler.hasNotificationPermission(getApplication())) {
+            LumaNotificationManager.updateNotificationAsync(getApplication())
+            LumaNotificationManager.scheduleMidnightUpdate(getApplication())
+        }
         val previousJob = notificationSyncJob
         notificationSyncJob = viewModelScope.launch(Dispatchers.IO) {
             previousJob?.cancelAndJoin()
             repository.getAllEventsSnapshot().forEach {
-                if (NotificationPreferences.isEnabled(getApplication())) {
+                if (NotificationPreferences.areEventRemindersEnabled(getApplication())) {
                     EventNotificationScheduler.schedule(getApplication(), it)
                 }
             }
@@ -451,7 +454,7 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     fun disableNotifications() {
         NotificationPreferences.setEnabled(getApplication(), false)
         _notificationsEnabled.value = false
-        LumaNotificationManager.cancel(getApplication())
+        LumaNotificationManager.cancel(getApplication(), "User disabled notifications in app settings")
         val previousJob = notificationSyncJob
         notificationSyncJob = viewModelScope.launch(Dispatchers.IO) {
             previousJob?.cancelAndJoin()

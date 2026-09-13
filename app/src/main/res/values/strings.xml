@@ -6,4 +6,6 @@
     <string name="notification_daily_channel_description">Daily calendar display and reminders</string>
     <string name="notification_at_time">At %1$s</string>
     <string name="notification_at_location">%1$s · %2$s</string>
+    <string name="notification_action_open_event">Open Event</string>
+    <string name="notification_action_snooze_event">Remind Later</string>
 </resources>

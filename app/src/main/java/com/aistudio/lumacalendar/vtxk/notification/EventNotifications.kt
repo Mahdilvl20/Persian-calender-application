@@ -11,12 +11,14 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.aistudio.lumacalendar.vtxk.MainActivity
 import com.aistudio.lumacalendar.vtxk.R
 import com.aistudio.lumacalendar.vtxk.data.CalendarEvent
+import com.aistudio.lumacalendar.vtxk.util.DateUtils
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -24,15 +26,44 @@ import java.util.TimeZone
 
 object NotificationPreferences {
     private const val FILE_NAME = "notification_preferences"
-    private const val KEY_ENABLED = "event_reminders_enabled"
+    private const val KEY_DAILY_ENABLED = "daily_calendar_notification_enabled"
+    private const val KEY_EVENT_REMINDERS_ENABLED = "event_reminders_enabled"
     private const val KEY_PERMISSION_REQUESTED = "notification_permission_requested"
-
     private const val KEY_CALENDAR_TYPE = "active_calendar_type"
 
-    fun isEnabled(context: Context): Boolean = preferences(context).getBoolean(KEY_ENABLED, false)
+    /**
+     * Controls whether the permanent daily calendar notification is active.
+     * Defaults to true so it stays visible whenever notifications are permitted.
+     */
+    fun isDailyNotificationEnabled(context: Context): Boolean =
+        preferences(context).getBoolean(KEY_DAILY_ENABLED, true)
+
+    fun setDailyNotificationEnabled(context: Context, enabled: Boolean) {
+        preferences(context).edit().putBoolean(KEY_DAILY_ENABLED, enabled).apply()
+    }
+
+    /**
+     * Controls whether individual event reminder alerts are active.
+     * Defaults to true.
+     */
+    fun areEventRemindersEnabled(context: Context): Boolean =
+        preferences(context).getBoolean(KEY_EVENT_REMINDERS_ENABLED, true)
+
+    fun setEventRemindersEnabled(context: Context, enabled: Boolean) {
+        preferences(context).edit().putBoolean(KEY_EVENT_REMINDERS_ENABLED, enabled).apply()
+    }
+
+    /**
+     * Backward-compatible convenience check.
+     */
+    fun isEnabled(context: Context): Boolean =
+        isDailyNotificationEnabled(context) || areEventRemindersEnabled(context)
 
     fun setEnabled(context: Context, enabled: Boolean) {
-        preferences(context).edit().putBoolean(KEY_ENABLED, enabled).apply()
+        preferences(context).edit()
+            .putBoolean(KEY_DAILY_ENABLED, enabled)
+            .putBoolean(KEY_EVENT_REMINDERS_ENABLED, enabled)
+            .apply()
     }
 
     fun getCalendarType(context: Context): com.aistudio.lumacalendar.vtxk.util.CalendarType {
@@ -61,30 +92,40 @@ object NotificationPreferences {
 
 object EventNotificationScheduler {
     const val EXTRA_EVENT_ID = "event_id"
+    const val ACTION_SNOOZE_EVENT_REMINDER = "com.aistudio.lumacalendar.vtxk.ACTION_SNOOZE_EVENT_REMINDER"
     private const val CHANNEL_ID = "event_reminders"
+    private const val TAG = "EventNotification"
 
     fun hasNotificationPermission(context: Context): Boolean {
         val runtimePermissionGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
             PackageManager.PERMISSION_GRANTED
-        return runtimePermissionGranted && NotificationManagerCompat.from(context).areNotificationsEnabled()
+        val appNotificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+        return runtimePermissionGranted && appNotificationsEnabled
     }
 
     fun calculateTriggerAtMillis(
         date: String,
         startTime: String,
         reminderMinutes: Int,
-        timeZone: TimeZone = TimeZone.getDefault()
+        timeZone: TimeZone = TimeZone.getTimeZone(DateUtils.getDeviceZoneId())
     ): Long? {
         if (reminderMinutes < 0) return null
         val normalizedTime = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeDigits(startTime).trim()
+        val parts = normalizedTime.split(":")
+        val paddedTime = if (parts.size >= 2) {
+            "${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}"
+        } else {
+            normalizedTime
+        }
         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).apply {
             isLenient = false
             this.timeZone = timeZone
         }
         return try {
-            formatter.parse("$date $normalizedTime")?.time?.minus(reminderMinutes * 60_000L)
-        } catch (_: ParseException) {
+            formatter.parse("$date $paddedTime")?.time?.minus(reminderMinutes * 60_000L)
+        } catch (e: ParseException) {
+            Log.e(TAG, "calculateTriggerAtMillis: Failed to parse date='$date', time='$paddedTime'", e)
             null
         }
     }
@@ -94,19 +135,34 @@ object EventNotificationScheduler {
         startTime: String,
         reminderMinutes: Int,
         nowMillis: Long,
-        timeZone: TimeZone = TimeZone.getDefault()
+        timeZone: TimeZone = TimeZone.getTimeZone(DateUtils.getDeviceZoneId())
     ): Long? = calculateTriggerAtMillis(date, startTime, reminderMinutes, timeZone)
         ?.takeIf { it > nowMillis }
 
     fun schedule(context: Context, event: CalendarEvent, nowMillis: Long = System.currentTimeMillis()): Boolean {
         cancel(context, event.id)
-        if (event.id <= 0 || !NotificationPreferences.isEnabled(context)) return false
+        if (event.id <= 0) {
+            Log.d(TAG, "schedule() SKIPPED: Invalid event id=${event.id}")
+            return false
+        }
+        if (!NotificationPreferences.areEventRemindersEnabled(context)) {
+            Log.d(TAG, "schedule() SKIPPED: Event reminders disabled in preferences for eventId=${event.id}")
+            return false
+        }
         val triggerAt = calculateFutureTriggerAtMillis(
-            event.date,
-            event.startTime,
-            event.reminderMinutes,
-            nowMillis
-        ) ?: return false
+            date = event.date,
+            startTime = event.startTime,
+            reminderMinutes = event.reminderMinutes,
+            nowMillis = nowMillis
+        )
+        if (triggerAt == null) {
+            val pastTrigger = calculateTriggerAtMillis(event.date, event.startTime, event.reminderMinutes)
+            Log.d(TAG, "schedule() SKIPPED: Trigger time is null or in past (calculated=$pastTrigger, now=$nowMillis) for eventId=${event.id}")
+            return false
+        }
+
+        Log.d(TAG, "EventNotification: scheduling eventId=${event.id} | eventStart=${event.date} ${event.startTime} | reminderMinutes=${event.reminderMinutes} | currentTime=$nowMillis | calculated trigger time=$triggerAt | actual alarm trigger time=$triggerAt")
+
         val alarmManager = context.getSystemService(AlarmManager::class.java)
         val pendingIntent = alarmPendingIntent(context, event.id, PendingIntent.FLAG_UPDATE_CURRENT)
             ?: return false
@@ -116,10 +172,16 @@ object EventNotificationScheduler {
             } else {
                 alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
             }
-        } catch (_: SecurityException) {
+            Log.d(TAG, "Alarm scheduled successfully for eventId=${event.id} at $triggerAt")
+            return true
+        } catch (e: SecurityException) {
+            Log.w(TAG, "Exact alarm permission missing, falling back to setAndAllowWhileIdle for eventId=${event.id}")
             alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to schedule alarm for eventId=${event.id}", e)
+            return false
         }
-        return true
     }
 
     fun cancel(context: Context, eventId: Long) {
@@ -131,6 +193,7 @@ object EventNotificationScheduler {
             it.cancel()
         }
         NotificationManagerCompat.from(context).cancel(requestCode(eventId))
+        Log.d(TAG, "Cancelled alarm and notification for eventId=$eventId")
     }
 
     fun cancelAll(context: Context, events: Iterable<CalendarEvent>) {
@@ -151,22 +214,38 @@ object EventNotificationScheduler {
             enableLights(true)
         }
         manager.createNotificationChannel(channel)
+        Log.d(TAG, "Created/verified channel $CHANNEL_ID with IMPORTANCE_HIGH")
     }
 
     fun show(context: Context, eventId: Long, title: String, time: String, location: String, notes: String) {
-        if (!NotificationPreferences.isEnabled(context) || !hasNotificationPermission(context)) return
+        if (!NotificationPreferences.areEventRemindersEnabled(context)) {
+            Log.d(TAG, "show() SKIPPED: event reminders disabled in preferences")
+            return
+        }
+        if (!hasNotificationPermission(context)) {
+            Log.d(TAG, "show() SKIPPED: missing notification permission")
+            return
+        }
+
         createChannel(context)
-        val contentText = when {
-            location.isNotBlank() -> context.getString(R.string.notification_at_location, time, location)
-            else -> context.getString(R.string.notification_at_time, time)
-        }
+
+        val notifId = requestCode(eventId)
+        Log.d(TAG, "EventNotification: show() eventId=$eventId, notifId=$notifId, title='$title', time='$time', location='$location'")
+
+        val contentText = if (location.isNotBlank()) "$time · $location" else time
         val expandedText = buildString {
-            append(contentText)
-            if (notes.isNotBlank()) append("\n").append(notes)
+            append(time)
+            if (location.isNotBlank()) {
+                append("\n📍 ").append(location)
+            }
+            if (notes.isNotBlank()) {
+                append("\n\n").append(notes)
+            }
         }
+
         val contentIntent = PendingIntent.getActivity(
             context,
-            requestCode(eventId),
+            notifId,
             Intent(context, MainActivity::class.java).apply {
                 action = "${context.packageName}.OPEN_EVENT"
                 data = Uri.parse("luma://event/$eventId")
@@ -175,24 +254,48 @@ object EventNotificationScheduler {
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+
+        val snoozeIntent = Intent(context, LumaNotificationActionReceiver::class.java).apply {
+            action = ACTION_SNOOZE_EVENT_REMINDER
+            putExtra(EXTRA_EVENT_ID, eventId)
+        }
+        val snoozePendingIntent = PendingIntent.getBroadcast(
+            context,
+            notifId + 100000,
+            snoozeIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_luma)
             .setColor(ContextCompat.getColor(context, R.color.notification_accent))
             .setContentTitle(title)
             .setContentText(contentText)
-            .setSubText(context.getString(R.string.app_name))
             .setStyle(NotificationCompat.BigTextStyle().bigText(expandedText))
             .setContentIntent(contentIntent)
+            .addAction(
+                R.drawable.ic_notification_action_today,
+                context.getString(R.string.notification_action_open_event),
+                contentIntent
+            )
+            .addAction(
+                R.drawable.ic_notification_action_snooze,
+                context.getString(R.string.notification_action_snooze_event),
+                snoozePendingIntent
+            )
             .setCategory(NotificationCompat.CATEGORY_EVENT)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setOnlyAlertOnce(true)
             .setAutoCancel(true)
+            .setOngoing(false)
             .build()
+
         try {
-            NotificationManagerCompat.from(context).notify(requestCode(eventId), notification)
-        } catch (_: SecurityException) {
-            // Permission may have been revoked between the check and notify call.
+            NotificationManagerCompat.from(context).notify(notifId, notification)
+            Log.d(TAG, "Event notification posted successfully: id=$notifId")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to post event notification id=$notifId", e)
         }
     }
 
@@ -211,5 +314,5 @@ object EventNotificationScheduler {
         flags or PendingIntent.FLAG_IMMUTABLE
     )
 
-    private fun requestCode(eventId: Long): Int = (eventId xor (eventId ushr 32)).toInt()
+    fun requestCode(eventId: Long): Int = (eventId xor (eventId ushr 32)).toInt()
 }

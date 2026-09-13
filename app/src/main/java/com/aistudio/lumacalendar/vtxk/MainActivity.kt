@@ -74,7 +74,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         EventNotificationScheduler.createChannel(applicationContext)
         LumaNotificationManager.createChannels(applicationContext)
-        if (NotificationPreferences.isEnabled(applicationContext)) {
+        if (NotificationPreferences.isDailyNotificationEnabled(applicationContext) &&
+            EventNotificationScheduler.hasNotificationPermission(applicationContext)) {
             LumaNotificationManager.updateNotificationAsync(applicationContext)
             LumaNotificationManager.scheduleMidnightUpdate(applicationContext)
         }
@@ -91,7 +92,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        LumaNotificationManager.updateNotificationAsync(applicationContext)
+        if (NotificationPreferences.isDailyNotificationEnabled(applicationContext) &&
+            EventNotificationScheduler.hasNotificationPermission(applicationContext)) {
+            LumaNotificationManager.updateNotificationAsync(applicationContext)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -140,7 +144,11 @@ fun LumaApp(viewModel: LumaViewModel) {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         NotificationPreferences.markPermissionRequested(context)
-        if (granted) viewModel.enableNotifications() else viewModel.disableNotifications()
+        if (granted) {
+            viewModel.enableNotifications()
+        } else {
+            viewModel.refreshNotificationState()
+        }
     }
 
     fun requestNotificationAccess() {
@@ -172,6 +180,12 @@ fun LumaApp(viewModel: LumaViewModel) {
             } else {
                 NotificationPreferences.markPermissionRequested(context)
                 viewModel.enableNotifications()
+            }
+        } else if (EventNotificationScheduler.hasNotificationPermission(context)) {
+            viewModel.refreshNotificationState()
+            if (NotificationPreferences.isDailyNotificationEnabled(context)) {
+                LumaNotificationManager.updateNotificationAsync(context)
+                LumaNotificationManager.scheduleMidnightUpdate(context)
             }
         }
     }

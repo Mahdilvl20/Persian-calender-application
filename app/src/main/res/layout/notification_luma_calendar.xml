@@ -16,7 +16,7 @@
         android:contentDescription="Luma Calendar Icon"
         android:scaleType="fitCenter" />
 
-    <!-- Center Content: Header, Main Date & Secondary Date -->
+    <!-- Center Content: Main Date & Secondary Date -->
     <LinearLayout
         android:id="@+id/notification_content_col"
         android:layout_width="0dp"
@@ -26,12 +26,14 @@
         android:layout_marginEnd="10dp"
         android:orientation="vertical">
 
-        <!-- Header: App Name • Timestamp -->
+        <!-- Hidden Header to prevent duplicate header with DecoratedCustomViewStyle -->
         <LinearLayout
+            android:id="@+id/notification_header_row"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/notification_header_title"
@@ -46,7 +48,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="5dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
                 android:text="•"
                 android:textColor="#64748B"
                 android:textSize="11sp" />
@@ -66,7 +69,6 @@
             android:id="@+id/notification_main_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
             android:text="یکشنبه ۲۲ شهریور ۱۴۰۵"
             android:textColor="#FFFFFF"
             android:textSize="14sp"
@@ -81,8 +83,8 @@
             android:id="@+id/notification_secondary_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:text="13 September 2026"
+            android:layout_marginTop="2dp"
+            android:text="13 September 2026 • 10 Rabi' II 1448"
             android:textColor="#94A3B8"
             android:textSize="11sp"
             android:fontFamily="@font/vazirmatn_regular"

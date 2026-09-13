@@ -7,14 +7,15 @@
     android:orientation="vertical"
     android:padding="14dp">
 
-    <!-- Row 1: Header (Icon + Name + Dot + Timestamp) -->
+    <!-- Row 1: App Header (Hidden to avoid duplication with DecoratedCustomViewStyle header) -->
     <LinearLayout
+        android:id="@+id/notification_header_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
-        <!-- App Icon: Dynamic Canvas Bitmap with blue->violet gradient & day number -->
         <ImageView
             android:id="@+id/notification_app_icon"
             android:layout_width="28dp"
@@ -36,7 +37,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="6dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
             android:text="•"
             android:textColor="#64748B"
             android:textSize="12sp" />
@@ -55,7 +57,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -181,16 +182,13 @@
                 android:fontFamily="@font/vazirmatn_medium" />
         </LinearLayout>
 
-        <View
-            android:layout_width="8dp"
-            android:layout_height="1dp" />
-
         <!-- Action 2: New Event -->
         <LinearLayout
             android:id="@+id/notification_action_new_event"
             android:layout_width="0dp"
             android:layout_height="34dp"
             android:layout_weight="1"
+            android:layout_marginStart="8dp"
             android:background="@drawable/notification_action_btn_bg"
             android:gravity="center"
             android:orientation="horizontal">
@@ -212,16 +210,13 @@
                 android:fontFamily="@font/vazirmatn_medium" />
         </LinearLayout>
 
-        <View
-            android:layout_width="8dp"
-            android:layout_height="1dp" />
-
         <!-- Action 3: Remind Later -->
         <LinearLayout
             android:id="@+id/notification_action_remind_later"
             android:layout_width="0dp"
             android:layout_height="34dp"
             android:layout_weight="1"
+            android:layout_marginStart="8dp"
             android:background="@drawable/notification_action_btn_bg"
             android:gravity="center"
             android:orientation="horizontal">

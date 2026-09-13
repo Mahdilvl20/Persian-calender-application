@@ -115,6 +115,7 @@ data class AppStrings(
     val notesPlaceholder: String,
     val reminderSection: String,
     val reminderAtTime: String,
+    val reminder1m: String,
     val reminder5m: String,
     val reminder10m: String,
     val reminder15m: String,
@@ -284,6 +285,7 @@ data class AppStrings(
             notesPlaceholder = "جزئیات، سرفصل‌ها یا یادداشت‌های دیگر...",
             reminderSection = "یادآوری",
             reminderAtTime = "هم‌زمان با رویداد",
+            reminder1m = "۱ دقیقه قبل",
             reminder5m = "۵ دقیقه قبل",
             reminder10m = "۱۰ دقیقه قبل",
             reminder15m = "۱۵ دقیقه قبل",
@@ -403,6 +405,7 @@ data class AppStrings(
             notesPlaceholder = "Additional notes or agenda items...",
             reminderSection = "Reminder",
             reminderAtTime = "At time of event",
+            reminder1m = "1 minute before",
             reminder5m = "5 minutes before",
             reminder10m = "10 minutes before",
             reminder15m = "15 minutes before",
@@ -532,6 +535,7 @@ object LocalizationManager {
     fun getReminderLabel(minutes: Int?, strings: AppStrings): String {
         return when (minutes) {
             0 -> strings.reminderAtTime
+            1 -> strings.reminder1m
             5 -> strings.reminder5m
             10 -> strings.reminder10m
             15 -> strings.reminder15m
