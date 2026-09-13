@@ -56,6 +56,7 @@ class ReminderRescheduleReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 LumaNotificationManager.updateNotification(context)
+                LumaNotificationManager.scheduleMidnightUpdate(context)
                 val events = LumaDatabase.getDatabase(
                     context,
                     CoroutineScope(SupervisorJob() + Dispatchers.IO)

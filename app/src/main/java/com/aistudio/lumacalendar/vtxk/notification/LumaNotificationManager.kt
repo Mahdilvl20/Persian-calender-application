@@ -25,6 +25,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.time.ZonedDateTime
 
@@ -55,11 +57,15 @@ object LumaNotificationManager {
     private const val REQUEST_CODE_TODAY = 1011
     private const val REQUEST_CODE_NEW_EVENT = 1012
     private const val REQUEST_CODE_REMIND_LATER = 1013
-    private const val REQUEST_CODE_MIDNIGHT = 1014
+    const val REQUEST_CODE_MIDNIGHT = 1014
+    const val REQUEST_CODE_SNOOZE = 1015
+
+    private val notificationMutex = Mutex()
 
     fun createChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        if (manager.getNotificationChannel(CHANNEL_ID_DAILY) != null) return
 
         val dailyChannel = NotificationChannel(
             CHANNEL_ID_DAILY,
@@ -91,13 +97,14 @@ object LumaNotificationManager {
      * Builds and posts the redesigned Luma Calendar notification.
      */
     suspend fun updateNotification(context: Context, customMessage: String? = null) = withContext(Dispatchers.IO) {
-        if (!NotificationPreferences.isEnabled(context) || !EventNotificationScheduler.hasNotificationPermission(context)) {
-            return@withContext
-        }
+        notificationMutex.withLock {
+            if (!NotificationPreferences.isEnabled(context) || !EventNotificationScheduler.hasNotificationPermission(context)) {
+                return@withLock
+            }
 
-        createChannels(context)
+            createChannels(context)
 
-        // 1. Resolve ACTUAL current device local date (e.g. "2026-09-13")
+            // 1. Resolve ACTUAL current device local date (e.g. "2026-09-13")
         val todayDateStr = DateUtils.getRealDeviceDate()
         val calendarType = NotificationPreferences.getCalendarType(context)
         val isRtl = LocalizationManager.isRtl(calendarType)
@@ -268,8 +275,9 @@ object LumaNotificationManager {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(NotificationCompat.CATEGORY_EVENT)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setOnlyAlertOnce(true)
+            .setOngoing(true)
             .setAutoCancel(false)
+            .setOnlyAlertOnce(true)
             .addAction(R.drawable.ic_notification_action_today, actionTodayText, todayPendingIntent)
             .addAction(R.drawable.ic_notification_action_add, actionNewEventText, newEventPendingIntent)
             .addAction(R.drawable.ic_notification_action_snooze, actionRemindLaterText, remindLaterPendingIntent)
@@ -280,15 +288,18 @@ object LumaNotificationManager {
         } catch (_: SecurityException) {
             // In case permission changed
         }
-
-        // Schedule next midnight refresh to guarantee dynamic update across day boundary
-        scheduleMidnightUpdate(context)
     }
+}
 
     /**
      * Schedules an alarm to update the notification right after midnight in the local timezone.
      */
     fun scheduleMidnightUpdate(context: Context) {
+        if (!NotificationPreferences.isEnabled(context)) {
+            cancelMidnightUpdate(context)
+            return
+        }
+
         val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
         val zone = DateUtils.getDeviceZoneId()
         val now = ZonedDateTime.now(zone)
@@ -316,7 +327,49 @@ object LumaNotificationManager {
         }
     }
 
+    /**
+     * Cancels any pending midnight update alarm.
+     */
+    fun cancelMidnightUpdate(context: Context) {
+        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
+        val intent = Intent(context, MidnightUpdateReceiver::class.java).apply {
+            action = "${context.packageName}.MIDNIGHT_UPDATE"
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            REQUEST_CODE_MIDNIGHT,
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+        }
+    }
+
+    /**
+     * Cancels any pending snooze / remind later alarm.
+     */
+    fun cancelSnoozeAlarm(context: Context) {
+        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
+        val wakeupIntent = Intent(context, MidnightUpdateReceiver::class.java).apply {
+            action = "${context.packageName}.SNOOZE_WAKEUP"
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            REQUEST_CODE_SNOOZE,
+            wakeupIntent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+        }
+    }
+
     fun cancel(context: Context) {
         NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID_DAILY)
+        cancelMidnightUpdate(context)
+        cancelSnoozeAlarm(context)
     }
 }

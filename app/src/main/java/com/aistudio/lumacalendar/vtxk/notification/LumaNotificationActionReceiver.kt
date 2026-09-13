@@ -51,7 +51,7 @@ class LumaNotificationActionReceiver : BroadcastReceiver() {
                         }
                         val pi = PendingIntent.getBroadcast(
                             context,
-                            2024,
+                            LumaNotificationManager.REQUEST_CODE_SNOOZE,
                             wakeupIntent,
                             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                         )

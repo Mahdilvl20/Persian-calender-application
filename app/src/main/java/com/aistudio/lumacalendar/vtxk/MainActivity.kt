@@ -74,7 +74,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         EventNotificationScheduler.createChannel(applicationContext)
         LumaNotificationManager.createChannels(applicationContext)
-        LumaNotificationManager.updateNotificationAsync(applicationContext)
+        if (NotificationPreferences.isEnabled(applicationContext)) {
+            LumaNotificationManager.updateNotificationAsync(applicationContext)
+            LumaNotificationManager.scheduleMidnightUpdate(applicationContext)
+        }
         // Ensure MainActivity component state is enabled and sync dynamic date safely
         DynamicIconManager.ensureMainActivityEnabled(applicationContext)
         DynamicIconManager.syncIfDateChanged(applicationContext)

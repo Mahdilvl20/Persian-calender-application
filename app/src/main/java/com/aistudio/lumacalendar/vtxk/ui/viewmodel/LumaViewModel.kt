@@ -436,6 +436,7 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
         EventNotificationScheduler.createChannel(getApplication())
         LumaNotificationManager.createChannels(getApplication())
         LumaNotificationManager.updateNotificationAsync(getApplication())
+        LumaNotificationManager.scheduleMidnightUpdate(getApplication())
         val previousJob = notificationSyncJob
         notificationSyncJob = viewModelScope.launch(Dispatchers.IO) {
             previousJob?.cancelAndJoin()
