@@ -7,19 +7,20 @@
     android:orientation="vertical"
     android:padding="14dp">
 
-    <!-- Row 1: App Header (Hidden to avoid duplication with DecoratedCustomViewStyle header) -->
+    <!-- Row 1: App Header (Un-hidden now that DecoratedCustomViewStyle is removed) -->
     <LinearLayout
         android:id="@+id/notification_header_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <ImageView
             android:id="@+id/notification_app_icon"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
             android:contentDescription="Luma Calendar Icon"
             android:scaleType="fitCenter" />
 
@@ -28,29 +29,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Luma Calendar"
-            android:textColor="#CBD5E1"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:fontFamily="@font/vazirmatn_semibold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_marginEnd="6dp"
-            android:text="•"
-            android:textColor="#64748B"
-            android:textSize="12sp" />
-
-        <TextView
-            android:id="@+id/notification_header_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="now"
+            android:text="@string/app_name"
             android:textColor="#94A3B8"
-            android:textSize="11sp"
-            android:fontFamily="@font/vazirmatn_regular" />
+            android:textSize="12sp"
+            android:fontFamily="@font/vazirmatn_medium" />
     </LinearLayout>
 
     <!-- Row 2: Two-Column Content (Left: Main info, Right: Miniature Calendar Tile) -->
@@ -72,11 +54,11 @@
             <!-- Primary Persian Date -->
             <TextView
                 android:id="@+id/notification_main_date"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="یکشنبه ۲۲ شهریور ۱۴۰۵"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:fontFamily="@font/vazirmatn_semibold"
                 android:textDirection="firstStrong"
@@ -86,12 +68,12 @@
             <!-- Secondary Gregorian & Hijri Date -->
             <TextView
                 android:id="@+id/notification_secondary_date"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="13 September 2026 • 10 Rabi' II 1448"
                 android:textColor="#94A3B8"
-                android:textSize="12sp"
+                android:textSize="11.5sp"
                 android:fontFamily="@font/vazirmatn_regular"
                 android:textDirection="firstStrong"
                 android:maxLines="1"
@@ -100,7 +82,7 @@
             <!-- Daily Contextual Message -->
             <TextView
                 android:id="@+id/notification_daily_message"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:text="✨ امروز روز خوبی برای برنامه‌های مهمه"
@@ -115,12 +97,12 @@
         <!-- Right: Miniature Glass Calendar Tile -->
         <LinearLayout
             android:id="@+id/notification_calendar_tile"
-            android:layout_width="60dp"
-            android:layout_height="64dp"
+            android:layout_width="54dp"
+            android:layout_height="58dp"
             android:background="@drawable/notification_calendar_tile_bg"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="4dp">
+            android:padding="3dp">
 
             <TextView
                 android:id="@+id/notification_tile_month"

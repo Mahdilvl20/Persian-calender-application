@@ -243,6 +243,7 @@ object LumaNotificationManager {
             }
 
             val expandedViews = RemoteViews(context.packageName, R.layout.notification_luma_calendar_expanded).apply {
+                setImageViewBitmap(R.id.notification_app_icon, appIconBitmap)
                 setTextViewText(R.id.notification_main_date, mainDateText)
                 setTextViewText(R.id.notification_secondary_date, secondaryDateText)
                 setTextViewText(R.id.notification_daily_message, dailyMessageText)
@@ -306,13 +307,12 @@ object LumaNotificationManager {
             expandedViews.setOnClickPendingIntent(R.id.notification_action_new_event, newEventPendingIntent)
             expandedViews.setOnClickPendingIntent(R.id.notification_action_remind_later, remindLaterPendingIntent)
 
-            // 8. Assemble Notification (NO duplicate subText, NO duplicate OS action buttons)
+            // 8. Assemble Notification without DecoratedCustomViewStyle to eliminate the system container card
             val notification = NotificationCompat.Builder(context, CHANNEL_ID_DAILY)
                 .setSmallIcon(R.drawable.ic_notification_luma)
                 .setColor(ContextCompat.getColor(context, R.color.notification_accent))
                 .setCustomContentView(collapsedViews)
                 .setCustomBigContentView(expandedViews)
-                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
                 .setContentIntent(contentPendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setCategory(NotificationCompat.CATEGORY_EVENT)

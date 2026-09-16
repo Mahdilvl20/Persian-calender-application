@@ -16,7 +16,7 @@
         android:contentDescription="Luma Calendar Icon"
         android:scaleType="fitCenter" />
 
-    <!-- Center Content: Main Date & Secondary Date -->
+    <!-- Center Content: Header, Main Date & Secondary Date -->
     <LinearLayout
         android:id="@+id/notification_content_col"
         android:layout_width="0dp"
@@ -26,48 +26,30 @@
         android:layout_marginEnd="10dp"
         android:orientation="vertical">
 
-        <!-- Hidden Header to prevent duplicate header with DecoratedCustomViewStyle -->
+        <!-- Header: App Name & Dot -->
         <LinearLayout
             android:id="@+id/notification_header_row"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <TextView
                 android:id="@+id/notification_header_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Luma Calendar"
-                android:textColor="#CBD5E1"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/vazirmatn_semibold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
-                android:text="•"
-                android:textColor="#64748B"
-                android:textSize="11sp" />
-
-            <TextView
-                android:id="@+id/notification_header_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="now"
+                android:text="@string/app_name"
                 android:textColor="#94A3B8"
-                android:textSize="10sp"
-                android:fontFamily="@font/vazirmatn_regular" />
+                android:textSize="11sp"
+                android:fontFamily="@font/vazirmatn_medium" />
         </LinearLayout>
 
         <!-- Main Prominent Persian Date -->
         <TextView
             android:id="@+id/notification_main_date"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="یکشنبه ۲۲ شهریور ۱۴۰۵"
             android:textColor="#FFFFFF"
@@ -81,7 +63,7 @@
         <!-- Secondary Date (Gregorian / Hijri) -->
         <TextView
             android:id="@+id/notification_secondary_date"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:text="13 September 2026 • 10 Rabi' II 1448"
@@ -96,8 +78,8 @@
     <!-- Right: Miniature Glass Calendar Tile -->
     <LinearLayout
         android:id="@+id/notification_calendar_tile"
-        android:layout_width="50dp"
-        android:layout_height="54dp"
+        android:layout_width="48dp"
+        android:layout_height="50dp"
         android:background="@drawable/notification_calendar_tile_bg"
         android:gravity="center"
         android:orientation="vertical"

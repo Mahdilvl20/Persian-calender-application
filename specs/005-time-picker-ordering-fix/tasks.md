@@ -14,9 +14,9 @@
 
 **Purpose**: Verify current state
 
-- [ ] T001 Run `./gradlew clean assembleDebug` to verify current build state
-- [ ] T002 Run `./gradlew test` to establish test baseline
-- [ ] T003 [P] Inspect the time-control Row in LiquidGlassTimePickerDialog.kt — find the Row at line ~247 that contains Hour Column, Colon, Minute Column, AM/PM Column and confirm it inherits the global LayoutDirection
+- [x] T001 Run `./gradlew clean assembleDebug` to verify current build state
+- [x] T002 Run `./gradlew test` to establish test baseline
+- [x] T003 [P] Inspect the time-control Row in LiquidGlassTimePickerDialog.kt — find the Row at line ~247 that contains Hour Column, Colon, Minute Column, AM/PM Column and confirm it inherits the global LayoutDirection
 
 ---
 
@@ -28,12 +28,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Wrap the time-control Row in `CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr)` in app/src/main/java/com/aistudio/lumacalendar/vtxk/ui/components/LiquidGlassTimePickerDialog.kt — find the Row containing Hour/Colon/Minute/AM/PM (line ~247), wrap it so LTR is forced on this Row only while the rest of the dialog retains RTL
-- [ ] T005 [US1] Verify the fix in Jalali (RTL) mode — confirm visual order is [Hour] [Colon] [Minute] from left to right, header/buttons remain RTL
-- [ ] T006 [US1] Verify the fix in Gregorian (LTR) mode — confirm visual order is [Hour] [Colon] [Minute] from left to right (unchanged from before)
-- [ ] T007 [US1] Verify Hour plus/minus controls modify hour (not minute) in both RTL and LTR modes
-- [ ] T008 [US1] Verify Minute plus/minus controls modify minute (not hour) in both RTL and LTR modes
-- [ ] T009 [US1] Verify colon separator remains centered between Hour and Minute with balanced spacing
+- [x] T004 [US1] Wrap the time-control Row in `CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr)` in app/src/main/java/com/aistudio/lumacalendar/vtxk/ui/components/LiquidGlassTimePickerDialog.kt — find the Row containing Hour/Colon/Minute/AM/PM (line ~247), wrap it so LTR is forced on this Row only while the rest of the dialog retains RTL
+- [x] T005 [US1] Verify the fix in Jalali (RTL) mode — confirm visual order is [Hour] [Colon] [Minute] from left to right, header/buttons remain RTL
+- [x] T006 [US1] Verify the fix in Gregorian (LTR) mode — confirm visual order is [Hour] [Colon] [Minute] from left to right (unchanged from before)
+- [x] T007 [US1] Verify Hour plus/minus controls modify hour (not minute) in both RTL and LTR modes
+- [x] T008 [US1] Verify Minute plus/minus controls modify minute (not hour) in both RTL and LTR modes
+- [x] T009 [US1] Verify colon separator remains centered between Hour and Minute with balanced spacing
 
 **Checkpoint**: Time ordering is stable — Hour → Minute always left-to-right
 
@@ -47,10 +47,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] Verify dialog header (title, clock icon, 12H/24H toggle) flows RTL in Jalali mode in LiquidGlassTimePickerDialog.kt
-- [ ] T011 [P] [US2] Verify Cancel/Confirm buttons are in RTL positions in Jalali mode (Confirm on left, Cancel on right)
-- [ ] T012 [US2] Verify quick minute pick chips flow RTL in Jalali mode
-- [ ] T013 [US2] Verify AM/PM pills are correctly positioned relative to the LTR time row in 12H mode
+- [x] T010 [P] [US2] Verify dialog header (title, clock icon, 12H/24H toggle) flows RTL in Jalali mode in LiquidGlassTimePickerDialog.kt
+- [x] T011 [P] [US2] Verify Cancel/Confirm buttons are in RTL positions in Jalali mode (Confirm on left, Cancel on right)
+- [x] T012 [US2] Verify quick minute pick chips flow RTL in Jalali mode
+- [x] T013 [US2] Verify AM/PM pills are correctly positioned relative to the LTR time row in 12H mode
 
 **Checkpoint**: Surrounding RTL preserved, only time row is LTR
 
@@ -60,10 +60,10 @@
 
 **Purpose**: Final verification
 
-- [ ] T014 [P] Run `./gradlew clean assembleDebug` — verify build succeeds
-- [ ] T015 [P] Run `./gradlew test` — verify all existing tests pass
-- [ ] T016 Run quickstart.md validation scenarios V1-V7 — verify all outcomes
-- [ ] T017 Verify non-regression — confirm event creation/editing works, Daily Notification (ID 1001) unaffected, Event Reminders unaffected
+- [x] T014 [P] Run `./gradlew clean assembleDebug` — verify build succeeds
+- [x] T015 [P] Run `./gradlew test` — verify all existing tests pass
+- [x] T016 Run quickstart.md validation scenarios V1-V7 — verify all outcomes
+- [x] T017 Verify non-regression — confirm event creation/editing works, Daily Notification (ID 1001) unaffected, Event Reminders unaffected
 
 ---
 

@@ -80,7 +80,6 @@ class LumaNotificationTest {
 
         val icon = view.findViewById<ImageView>(R.id.notification_app_icon)
         val headerTitle = view.findViewById<TextView>(R.id.notification_header_title)
-        val headerTime = view.findViewById<TextView>(R.id.notification_header_time)
         val mainDate = view.findViewById<TextView>(R.id.notification_main_date)
         val secDate = view.findViewById<TextView>(R.id.notification_secondary_date)
         val tileMonth = view.findViewById<TextView>(R.id.notification_tile_month)
@@ -88,7 +87,6 @@ class LumaNotificationTest {
 
         assertNotNull(icon)
         assertNotNull(headerTitle)
-        assertNotNull(headerTime)
         assertNotNull(mainDate)
         assertNotNull(secDate)
         assertNotNull(tileMonth)

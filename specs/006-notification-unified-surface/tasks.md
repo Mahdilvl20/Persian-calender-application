@@ -14,10 +14,10 @@
 
 **Purpose**: Verify current state and confirm root cause
 
-- [ ] T001 Run `./gradlew clean assembleDebug` to verify current build state
-- [ ] T002 Run `./gradlew test` to establish test baseline
-- [ ] T003 [P] Verify DecoratedCustomViewStyle is the source of the outer container — confirm `.setStyle(NotificationCompat.DecoratedCustomViewStyle())` exists in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt (line ~316)
-- [ ] T004 [P] Verify custom header rows are hidden — confirm `android:visibility="gone"` on header LinearLayouts in both app/src/main/res/layout/notification_luma_calendar.xml and notification_luma_calendar_expanded.xml
+- [x] T001 Run `./gradlew clean assembleDebug` to verify current build state
+- [x] T002 Run `./gradlew test` to establish test baseline
+- [x] T003 [P] Verify DecoratedCustomViewStyle is the source of the outer container — confirm `.setStyle(NotificationCompat.DecoratedCustomViewStyle())` exists in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt (line ~316)
+- [x] T004 [P] Verify custom header rows are hidden — confirm `android:visibility="gone"` on header LinearLayouts in both app/src/main/res/layout/notification_luma_calendar.xml and notification_luma_calendar_expanded.xml
 
 ---
 
@@ -27,10 +27,10 @@
 
 **CRITICAL**: The system container from DecoratedCustomViewStyle is the outer rectangle. It must be removed before visual refinement begins.
 
-- [ ] T005 Remove `.setStyle(NotificationCompat.DecoratedCustomViewStyle())` from the NotificationCompat.Builder in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt — this eliminates the Android system container around custom RemoteViews (FR-001, FR-003, research.md Option A)
-- [ ] T006 [P] Un-hide the custom header row in app/src/main/res/layout/notification_luma_calendar.xml — change `android:visibility="gone"` to `android:visibility="visible"` on the header LinearLayout, style it to show app icon + "Luma Calendar" + timestamp (replaces the system header lost by removing DecoratedCustomViewStyle)
-- [ ] T007 [P] Un-hide the custom header row in app/src/main/res/layout/notification_luma_calendar_expanded.xml — same change as T006 for the expanded layout
-- [ ] T008 Build and visually verify on device/emulator — confirm the system container is gone, the notification is now one unified surface with the custom header visible
+- [x] T005 Remove `.setStyle(NotificationCompat.DecoratedCustomViewStyle())` from the NotificationCompat.Builder in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt — this eliminates the Android system container around custom RemoteViews (FR-001, FR-003, research.md Option A)
+- [x] T006 [P] Un-hide the custom header row in app/src/main/res/layout/notification_luma_calendar.xml — change `android:visibility="gone"` to `android:visibility="visible"` on the header LinearLayout, style it to show app icon + "Luma Calendar" + timestamp (replaces the system header lost by removing DecoratedCustomViewStyle)
+- [x] T007 [P] Un-hide the custom header row in app/src/main/res/layout/notification_luma_calendar_expanded.xml — same change as T006 for the expanded layout
+- [x] T008 Build and visually verify on device/emulator — confirm the system container is gone, the notification is now one unified surface with the custom header visible
 
 **Checkpoint**: System container eliminated — notification is now a single unified surface
 
@@ -44,11 +44,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Verify notification constants in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt — confirm NOTIFICATION_ID_DAILY = 1001, CHANNEL_ID_DAILY = "luma_calendar_daily", setOngoing(true), setAutoCancel(false)
-- [ ] T010 [P] [US1] Verify no setSubText() call exists in LumaNotificationManager.kt — app name must appear only once (in the custom header, not duplicated)
-- [ ] T011 [US1] Style the custom header in both notification XML layouts — ensure the header shows: small app icon (ic_notification_luma), "Luma Calendar" text (from string resource), and timestamp. Use existing design tokens for colors.
-- [ ] T012 [US1] Verify the notification is ongoing and non-dismissible — tap the notification, confirm it does NOT dismiss
-- [ ] T013 [US1] Verify single instance — notification ID 1001 exists exactly once in the shade
+- [x] T009 [P] [US1] Verify notification constants in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt — confirm NOTIFICATION_ID_DAILY = 1001, CHANNEL_ID_DAILY = "luma_calendar_daily", setOngoing(true), setAutoCancel(false)
+- [x] T010 [P] [US1] Verify no setSubText() call exists in LumaNotificationManager.kt — app name must appear only once (in the custom header, not duplicated)
+- [x] T011 [US1] Style the custom header in both notification XML layouts — ensure the header shows: small app icon (ic_notification_luma), "Luma Calendar" text (from string resource), and timestamp. Use existing design tokens for colors.
+- [x] T012 [US1] Verify the notification is ongoing and non-dismissible — tap the notification, confirm it does NOT dismiss
+- [x] T013 [US1] Verify single instance — notification ID 1001 exists exactly once in the shade
 
 **Checkpoint**: Unified surface verified — one cohesive notification, correct identity
 
@@ -62,12 +62,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T014 [P] [US2] Verify date population in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt — confirm primary date uses DateUtils.getRealDeviceLocalDate()
-- [ ] T015 [P] [US2] Verify all three calendar conversions in LumaNotificationManager.kt — confirm Jalali, Gregorian, and Hijri are computed from the same real-world day via CalendarConverter
-- [ ] T016 [US2] Fix primary date truncation in app/src/main/res/layout/notification_luma_calendar.xml — evaluate: available width, mini tile width, padding, font size, line count. Ensure primary date is readable and complete. May need to reduce mini tile width or allow text wrapping.
-- [ ] T017 [US2] Fix primary date truncation in app/src/main/res/layout/notification_luma_calendar_expanded.xml — same evaluation for expanded layout
-- [ ] T018 [US2] Verify mini calendar tile population — confirm tile_month and tile_day use the active calendar type
-- [ ] T019 [US2] Test calendar switching — change active calendar type in Settings, verify notification updates correctly
+- [x] T014 [P] [US2] Verify date population in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt — confirm primary date uses DateUtils.getRealDeviceLocalDate()
+- [x] T015 [P] [US2] Verify all three calendar conversions in LumaNotificationManager.kt — confirm Jalali, Gregorian, and Hijri are computed from the same real-world day via CalendarConverter
+- [x] T016 [US2] Fix primary date truncation in app/src/main/res/layout/notification_luma_calendar.xml — evaluate: available width, mini tile width, padding, font size, line count. Ensure primary date is readable and complete. May need to reduce mini tile width or allow text wrapping.
+- [x] T017 [US2] Fix primary date truncation in app/src/main/res/layout/notification_luma_calendar_expanded.xml — same evaluation for expanded layout
+- [x] T018 [US2] Verify mini calendar tile population — confirm tile_month and tile_day use the active calendar type
+- [x] T019 [US2] Test calendar switching — change active calendar type in Settings, verify notification updates correctly
 
 **Checkpoint**: Dates fully readable, no truncation, three calendars synchronized
 
@@ -81,13 +81,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T020 [P] [US3] Simplify action button backgrounds in app/src/main/res/drawable/notification_action_btn_primary_bg.xml — reduce gradient opacity, reduce stroke from 1dp to 0.5dp or remove, ensure buttons are subtle glass controls
-- [ ] T021 [P] [US3] Simplify action button backgrounds in app/src/main/res/drawable/notification_action_btn_bg.xml — same treatment for secondary action buttons
-- [ ] T022 [US3] Verify action button styling in app/src/main/res/layout/notification_luma_calendar_expanded.xml — confirm equal visual weight (weight=1, consistent height), readable labels, proper spacing
-- [ ] T023 [US3] Verify daily message in LumaNotificationManager.kt — confirm it comes from AppStrings via LocalizationManager, not hardcoded
-- [ ] T024 [US3] Verify collapsed layout in notification_luma_calendar.xml — confirm it shows primary date + secondary date, no excessive content, no truncation
-- [ ] T025 [US3] Verify expanded layout in notification_luma_calendar_expanded.xml — confirm it shows full date info, secondary dates, message, and actions on one coherent surface
-- [ ] T026 [US3] Verify RTL layout in Jalali mode — confirm header, dates, and actions all flow RTL correctly
+- [x] T020 [P] [US3] Simplify action button backgrounds in app/src/main/res/drawable/notification_action_btn_primary_bg.xml — reduce gradient opacity, reduce stroke from 1dp to 0.5dp or remove, ensure buttons are subtle glass controls
+- [x] T021 [P] [US3] Simplify action button backgrounds in app/src/main/res/drawable/notification_action_btn_bg.xml — same treatment for secondary action buttons
+- [x] T022 [US3] Verify action button styling in app/src/main/res/layout/notification_luma_calendar_expanded.xml — confirm equal visual weight (weight=1, consistent height), readable labels, proper spacing
+- [x] T023 [US3] Verify daily message in LumaNotificationManager.kt — confirm it comes from AppStrings via LocalizationManager, not hardcoded
+- [x] T024 [US3] Verify collapsed layout in notification_luma_calendar.xml — confirm it shows primary date + secondary date, no excessive content, no truncation
+- [x] T025 [US3] Verify expanded layout in notification_luma_calendar_expanded.xml — confirm it shows full date info, secondary dates, message, and actions on one coherent surface
+- [x] T026 [US3] Verify RTL layout in Jalali mode — confirm header, dates, and actions all flow RTL correctly
 
 **Checkpoint**: Actions compact, message secondary, both states polished
 
@@ -97,12 +97,12 @@
 
 **Purpose**: Cleanup and final verification
 
-- [ ] T027 [P] Delete dead code — remove app/src/main/res/drawable/notification_glass_bg.xml (no longer referenced by any layout)
-- [ ] T028 [P] Verify tile background — confirm notification_calendar_tile_bg.xml uses subtle #0DFFFFFF fill with 8dp corners, no heavy gradient or stroke
-- [ ] T029 [P] Run `./gradlew clean assembleDebug` — verify build succeeds
-- [ ] T030 [P] Run `./gradlew test` — verify all existing tests pass
-- [ ] T031 Run quickstart.md validation scenarios V1-V10 on device/emulator — verify all outcomes
-- [ ] T032 Verify non-regression — confirm Daily Notification (ID 1001) persists, Event Reminders unaffected, midnight update works, reboot restore works
+- [x] T027 [P] Delete dead code — remove app/src/main/res/drawable/notification_glass_bg.xml (no longer referenced by any layout)
+- [x] T028 [P] Verify tile background — confirm notification_calendar_tile_bg.xml uses subtle #0DFFFFFF fill with 8dp corners, no heavy gradient or stroke
+- [x] T029 [P] Run `./gradlew clean assembleDebug` — verify build succeeds
+- [x] T030 [P] Run `./gradlew test` — verify all existing tests pass
+- [x] T031 Run quickstart.md validation scenarios V1-V10 on device/emulator — verify all outcomes
+- [x] T032 Verify non-regression — confirm Daily Notification (ID 1001) persists, Event Reminders unaffected, midnight update works, reboot restore works
 
 ---
 

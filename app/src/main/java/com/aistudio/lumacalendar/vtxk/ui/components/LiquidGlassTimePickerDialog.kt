@@ -256,13 +256,14 @@ fun LiquidGlassTimePickerDialog(
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        // Large Digital Display with Liquid Glass Cards
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Hour Box
+                        // Large Digital Display with Liquid Glass Cards (Forced LTR to guarantee Hour -> Separator -> Minute)
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Hour Box
                             val isHourActive = activeField == "hour"
                             val displayHourVal = if (is24HourMode) {
                                 String.format(Locale.US, "%02d", selectedHour)
@@ -465,6 +466,7 @@ fun LiquidGlassTimePickerDialog(
                                 }
                             }
                         }
+                    }
 
                         Spacer(modifier = Modifier.height(18.dp))
 
