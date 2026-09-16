@@ -646,7 +646,7 @@ fun AddEditEventSheet(
                 LiquidGlassTimePickerDialog(
                     initialTime = eventTime,
                     type = TimePickerType.EVENT,
-                    isRtl = isRtl,
+                    calendarType = activeCalendarType,
                     strings = strings,
                     onDismiss = { showTimePicker = false },
                     onTimeSelected = { selectedTime ->

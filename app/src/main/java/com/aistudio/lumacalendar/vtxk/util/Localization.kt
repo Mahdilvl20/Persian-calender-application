@@ -137,7 +137,15 @@ data class AppStrings(
     val deleteDialogTitle: String,
     val deleteDialogMessage: String,
     val deleteDialogConfirm: String,
-    val deleteDialogCancel: String
+    val deleteDialogCancel: String,
+
+    // Time Picker
+    val quickMinutes: String = "Quick Minutes",
+    val durationFromStart: String = "Duration from Start",
+    val increaseHour: String = "Increase Hour",
+    val decreaseHour: String = "Decrease Hour",
+    val increaseMinute: String = "Increase Minute",
+    val decreaseMinute: String = "Decrease Minute"
 ) {
     val editEvent: String get() = editEventTitle
     val titleSection: String get() = titleLabel
@@ -309,7 +317,13 @@ data class AppStrings(
             deleteDialogTitle = "حذف این رویداد؟",
             deleteDialogMessage = "این رویداد به صورت دائمی حذف خواهد شد و قابلبازگشت نیست.",
             deleteDialogConfirm = "حذف",
-            deleteDialogCancel = "انصراف"
+            deleteDialogCancel = "انصراف",
+            quickMinutes = "دقایق متداول",
+            durationFromStart = "مدت زمان از زمان شروع",
+            increaseHour = "افزایش ساعت",
+            decreaseHour = "کاهش ساعت",
+            increaseMinute = "افزایش دقیقه",
+            decreaseMinute = "کاهش دقیقه"
         )
 
         val English = AppStrings(
@@ -432,7 +446,13 @@ data class AppStrings(
             deleteDialogTitle = "Delete this event?",
             deleteDialogMessage = "This action cannot be undone and will permanently remove this event.",
             deleteDialogConfirm = "Delete",
-            deleteDialogCancel = "Cancel"
+            deleteDialogCancel = "Cancel",
+            quickMinutes = "Quick Minutes",
+            durationFromStart = "Duration from Start",
+            increaseHour = "Increase Hour",
+            decreaseHour = "Decrease Hour",
+            increaseMinute = "Increase Minute",
+            decreaseMinute = "Decrease Minute"
         )
     }
 }

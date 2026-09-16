@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
@@ -49,6 +50,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,15 +59,18 @@ import androidx.compose.ui.window.DialogProperties
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentRoyalViolet
 import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasNavy
+import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasSurface
 import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderBright
 import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderDefault
 import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderSubtle
 import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceDefault
+import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceElevated
 import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceHighlight
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteMuted
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhitePrimary
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteSecondary
 import com.aistudio.lumacalendar.vtxk.util.AppStrings
+import com.aistudio.lumacalendar.vtxk.util.CalendarType
 import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
 import com.aistudio.lumacalendar.vtxk.util.ParsedTime
 import com.aistudio.lumacalendar.vtxk.util.TimeValidator
@@ -87,17 +92,22 @@ enum class TimePickerType {
  * - Interactive stepper and direct interval controls
  * - Full Persian/Arabic numerals and RTL layout support
  * - Defensive state boundaries (hours in 0..23, minutes in 0..59)
+ * - Dynamic CalendarType-driven RTL/LTR layout direction
+ * - 48dp accessibility touch targets & active field focus highlights
  */
 @Composable
 fun LiquidGlassTimePickerDialog(
     initialTime: String,
     type: TimePickerType = TimePickerType.EVENT,
-    isRtl: Boolean,
+    calendarType: CalendarType,
     strings: AppStrings,
     startTimeReference: String? = null,
     onDismiss: () -> Unit,
     onTimeSelected: (String) -> Unit
 ) {
+    val isRtl = LocalizationManager.isRtl(calendarType)
+    val layoutDirection = LocalizationManager.getLayoutDirection(calendarType)
+
     val initialParsed = remember(initialTime) {
         val defHour = when (type) {
             TimePickerType.EVENT -> 11
@@ -110,6 +120,7 @@ fun LiquidGlassTimePickerDialog(
     var is24HourMode by remember { mutableStateOf(true) }
     var selectedHour by remember { mutableIntStateOf(initialParsed.hour) }
     var selectedMinute by remember { mutableIntStateOf(initialParsed.minute) }
+    var activeField by remember { mutableStateOf<String?>(null) }
 
     val currentParsed = remember(selectedHour, selectedMinute) {
         ParsedTime.ofSafe(selectedHour, selectedMinute)
@@ -141,7 +152,7 @@ fun LiquidGlassTimePickerDialog(
             contentAlignment = Alignment.Center
         ) {
             CompositionLocalProvider(
-                LocalLayoutDirection provides if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
+                LocalLayoutDirection provides layoutDirection
             ) {
                 Box(
                     modifier = Modifier
@@ -157,7 +168,7 @@ fun LiquidGlassTimePickerDialog(
                             Brush.verticalGradient(
                                 listOf(
                                     CanvasNavy.copy(alpha = 0.98f),
-                                    Color(0xFF0D1426).copy(alpha = 0.98f)
+                                    CanvasSurface.copy(alpha = 0.98f)
                                 )
                             )
                         )
@@ -220,15 +231,17 @@ fun LiquidGlassTimePickerDialog(
                                 }
                             }
 
-                            // 12h / 24h Toggle Pill
+                            // 12h / 24h Toggle Pill (min 48dp touch target)
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(GlassSurfaceHighlight)
                                     .border(0.8.dp, GlassBorderSubtle, RoundedCornerShape(12.dp))
                                     .clickable { is24HourMode = !is24HourMode }
+                                    .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
-                                    .testTag("btn_toggle_12_24_hour")
+                                    .testTag("btn_toggle_12_24_hour"),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = if (is24HourMode) "24H" else "12H",
@@ -250,6 +263,7 @@ fun LiquidGlassTimePickerDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Hour Box
+                            val isHourActive = activeField == "hour"
                             val displayHourVal = if (is24HourMode) {
                                 String.format(Locale.US, "%02d", selectedHour)
                             } else {
@@ -260,13 +274,14 @@ fun LiquidGlassTimePickerDialog(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 IconButton(
                                     onClick = {
+                                        activeField = "hour"
                                         selectedHour = if (selectedHour >= 23) 0 else selectedHour + 1
                                     },
-                                    modifier = Modifier.size(36.dp).testTag("btn_hour_plus")
+                                    modifier = Modifier.size(48.dp).testTag("btn_hour_plus")
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Add,
-                                        contentDescription = "Increase Hour",
+                                        contentDescription = strings.increaseHour,
                                         tint = AccentElectricBlue
                                     )
                                 }
@@ -275,8 +290,13 @@ fun LiquidGlassTimePickerDialog(
                                     modifier = Modifier
                                         .size(width = 84.dp, height = 72.dp)
                                         .clip(RoundedCornerShape(18.dp))
-                                        .background(GlassSurfaceHighlight)
-                                        .border(1.2.dp, AccentElectricBlue.copy(alpha = 0.6f), RoundedCornerShape(18.dp)),
+                                        .background(if (isHourActive) GlassSurfaceElevated else GlassSurfaceHighlight)
+                                        .border(
+                                            width = if (isHourActive) 1.8.dp else 1.2.dp,
+                                            color = if (isHourActive) AccentElectricBlue else AccentElectricBlue.copy(alpha = 0.5f),
+                                            shape = RoundedCornerShape(18.dp)
+                                        )
+                                        .clickable { activeField = "hour" },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
@@ -291,44 +311,48 @@ fun LiquidGlassTimePickerDialog(
 
                                 IconButton(
                                     onClick = {
+                                        activeField = "hour"
                                         selectedHour = if (selectedHour <= 0) 23 else selectedHour - 1
                                     },
-                                    modifier = Modifier.size(36.dp).testTag("btn_hour_minus")
+                                    modifier = Modifier.size(48.dp).testTag("btn_hour_minus")
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Remove,
-                                        contentDescription = "Decrease Hour",
+                                        contentDescription = strings.decreaseHour,
                                         tint = TextWhiteSecondary
                                     )
                                 }
                             }
 
-                            // Colon separator
+                            // Colon separator with explicit LTR text direction
                             Text(
                                 text = ":",
                                 style = MaterialTheme.typography.headlineLarge.copy(
                                     color = TextWhiteMuted,
                                     fontWeight = FontWeight.Medium,
-                                    letterSpacing = 0.sp
+                                    letterSpacing = 0.sp,
+                                    textDirection = TextDirection.Ltr
                                 ),
                                 modifier = Modifier.padding(horizontal = 10.dp)
                             )
 
                             // Minute Box
+                            val isMinuteActive = activeField == "minute"
                             val displayMinVal = String.format(Locale.US, "%02d", selectedMinute)
                             val displayMinText = if (isRtl) LocalizationManager.formatDigits(displayMinVal) else displayMinVal
 
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 IconButton(
                                     onClick = {
+                                        activeField = "minute"
                                         val next = (selectedMinute / 5 * 5 + 5)
                                         selectedMinute = if (next >= 60) 0 else next
                                     },
-                                    modifier = Modifier.size(36.dp).testTag("btn_minute_plus")
+                                    modifier = Modifier.size(48.dp).testTag("btn_minute_plus")
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Add,
-                                        contentDescription = "Increase Minute",
+                                        contentDescription = strings.increaseMinute,
                                         tint = AccentElectricBlue
                                     )
                                 }
@@ -337,8 +361,13 @@ fun LiquidGlassTimePickerDialog(
                                     modifier = Modifier
                                         .size(width = 84.dp, height = 72.dp)
                                         .clip(RoundedCornerShape(18.dp))
-                                        .background(GlassSurfaceHighlight)
-                                        .border(1.2.dp, AccentRoyalViolet.copy(alpha = 0.6f), RoundedCornerShape(18.dp)),
+                                        .background(if (isMinuteActive) GlassSurfaceElevated else GlassSurfaceHighlight)
+                                        .border(
+                                            width = if (isMinuteActive) 1.8.dp else 1.2.dp,
+                                            color = if (isMinuteActive) AccentRoyalViolet else AccentRoyalViolet.copy(alpha = 0.5f),
+                                            shape = RoundedCornerShape(18.dp)
+                                        )
+                                        .clickable { activeField = "minute" },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
@@ -353,14 +382,15 @@ fun LiquidGlassTimePickerDialog(
 
                                 IconButton(
                                     onClick = {
+                                        activeField = "minute"
                                         val prev = (selectedMinute / 5 * 5 - 5)
                                         selectedMinute = if (prev < 0) 55 else prev
                                     },
-                                    modifier = Modifier.size(36.dp).testTag("btn_minute_minus")
+                                    modifier = Modifier.size(48.dp).testTag("btn_minute_minus")
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Remove,
-                                        contentDescription = "Decrease Minute",
+                                        contentDescription = strings.decreaseMinute,
                                         tint = TextWhiteSecondary
                                     )
                                 }
@@ -377,7 +407,7 @@ fun LiquidGlassTimePickerDialog(
                                     val pmLabel = if (isRtl) "ب.ظ" else "PM"
                                     val isAm = !currentParsed.isPm
 
-                                    // AM Pill
+                                    // AM Pill (min 48dp touch target)
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(12.dp))
@@ -390,8 +420,10 @@ fun LiquidGlassTimePickerDialog(
                                             .clickable {
                                                 if (selectedHour >= 12) selectedHour -= 12
                                             }
+                                            .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
                                             .padding(horizontal = 12.dp, vertical = 8.dp)
-                                            .testTag("btn_am")
+                                            .testTag("btn_am"),
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         Text(
                                             text = amLabel,
@@ -403,7 +435,7 @@ fun LiquidGlassTimePickerDialog(
                                         )
                                     }
 
-                                    // PM Pill
+                                    // PM Pill (min 48dp touch target)
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(12.dp))
@@ -416,8 +448,10 @@ fun LiquidGlassTimePickerDialog(
                                             .clickable {
                                                 if (selectedHour < 12) selectedHour += 12
                                             }
+                                            .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
                                             .padding(horizontal = 12.dp, vertical = 8.dp)
-                                            .testTag("btn_pm")
+                                            .testTag("btn_pm"),
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         Text(
                                             text = pmLabel,
@@ -436,7 +470,7 @@ fun LiquidGlassTimePickerDialog(
 
                         // Minute Quick-Pick Row (00, 15, 30, 45)
                         Text(
-                            text = if (isRtl) "دقایق متداول" else "Quick Minutes",
+                            text = strings.quickMinutes,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = TextWhiteMuted,
                                 fontWeight = FontWeight.SemiBold,
@@ -464,7 +498,11 @@ fun LiquidGlassTimePickerDialog(
                                             color = if (isSelected) AccentElectricBlue else GlassBorderSubtle,
                                             shape = RoundedCornerShape(12.dp)
                                         )
-                                        .clickable { selectedMinute = m }
+                                        .clickable {
+                                            activeField = "minute"
+                                            selectedMinute = m
+                                        }
+                                        .sizeIn(minHeight = 48.dp)
                                         .padding(vertical = 8.dp)
                                         .testTag("quick_minute_$m"),
                                     contentAlignment = Alignment.Center
@@ -488,7 +526,7 @@ fun LiquidGlassTimePickerDialog(
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = if (isRtl) "مدت زمان از زمان شروع" else "Duration from Start",
+                                text = strings.durationFromStart,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = TextWhiteMuted,
                                     fontWeight = FontWeight.SemiBold,
@@ -519,6 +557,7 @@ fun LiquidGlassTimePickerDialog(
                                                 selectedHour = newTotal / 60
                                                 selectedMinute = newTotal % 60
                                             }
+                                            .sizeIn(minHeight = 48.dp)
                                             .padding(vertical = 6.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -543,7 +582,7 @@ fun LiquidGlassTimePickerDialog(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            // Cancel
+                            // Cancel (min 48dp height)
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -551,6 +590,7 @@ fun LiquidGlassTimePickerDialog(
                                     .background(GlassSurfaceHighlight)
                                     .border(0.8.dp, GlassBorderSubtle, RoundedCornerShape(14.dp))
                                     .clickable(onClick = onDismiss)
+                                    .sizeIn(minHeight = 48.dp)
                                     .padding(vertical = 12.dp)
                                     .testTag("btn_time_picker_cancel"),
                                 contentAlignment = Alignment.Center
@@ -565,7 +605,7 @@ fun LiquidGlassTimePickerDialog(
                                 )
                             }
 
-                            // Confirm
+                            // Confirm (min 48dp height)
                             Box(
                                 modifier = Modifier
                                     .weight(1.5f)
@@ -579,6 +619,7 @@ fun LiquidGlassTimePickerDialog(
                                         val canonical = currentParsed.canonicalTime
                                         onTimeSelected(canonical)
                                     }
+                                    .sizeIn(minHeight = 48.dp)
                                     .padding(vertical = 12.dp)
                                     .testTag("btn_time_picker_confirm"),
                                 contentAlignment = Alignment.Center
