@@ -112,7 +112,7 @@ class LumaNotificationActionReceiver : BroadcastReceiver() {
                         } else {
                             alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
                         }
-                        Log.d("EventNotification", "Event reminder snoozed for 10 minutes: eventId=$eventId, triggerAt=$triggerAt")
+                        Log.d("LumaEventReminder", "Event reminder snoozed for 10 minutes: eventId=$eventId, triggerAt=$triggerAt")
                     } catch (_: SecurityException) {
                         alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
                     }

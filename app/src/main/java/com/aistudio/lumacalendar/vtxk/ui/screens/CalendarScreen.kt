@@ -599,7 +599,7 @@ private fun MonthViewContent(
                                 text = "W#",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = TextWhiteMuted.copy(alpha = 0.5f),
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.Medium,
                                     fontSize = 10.sp,
                                     letterSpacing = 0.sp
                                 ),

@@ -98,7 +98,7 @@ fun SettingsScreen(
             Text(
                 text = strings.settings,
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     color = TextWhitePrimary,
                     fontSize = 34.sp,
                     letterSpacing = 0.sp
@@ -507,7 +507,7 @@ fun SettingsScreen(
                                     Text(
                                         text = "7",
                                         style = MaterialTheme.typography.titleLarge.copy(
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.SemiBold,
                                             color = Color.White
                                         )
                                     )
@@ -547,7 +547,7 @@ fun SettingsScreen(
                                     Text(
                                         text = "24",
                                         style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.SemiBold,
                                             color = Color.White
                                         )
                                     )

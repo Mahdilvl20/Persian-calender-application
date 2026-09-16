@@ -214,7 +214,7 @@ fun EventDetailSheet(
                                     text = LocalizationManager.getCategoryName(event.category, strings),
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         color = categoryColor,
-                                        fontWeight = FontWeight.Bold,
+                                        fontWeight = FontWeight.Medium,
                                         letterSpacing = 0.sp
                                     )
                                 )
@@ -234,7 +234,7 @@ fun EventDetailSheet(
                         Text(
                             text = event.title,
                             style = MaterialTheme.typography.headlineLarge.copy(
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.SemiBold,
                                 fontSize = 28.sp,
                                 color = TextWhitePrimary,
                                 letterSpacing = 0.sp
@@ -520,7 +520,7 @@ fun EventDetailSheet(
                             Text(
                                 text = if (isRtl) "حذف این رویداد؟" else strings.deleteDialogTitle,
                                 style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.SemiBold,
                                     fontSize = 20.sp,
                                     color = TextWhitePrimary,
                                     letterSpacing = 0.sp
@@ -651,7 +651,7 @@ private fun DeleteDialogActionButton(
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge.copy(
-                fontWeight = if (isDestructive) FontWeight.Bold else FontWeight.Medium,
+                fontWeight = if (isDestructive) FontWeight.SemiBold else FontWeight.Medium,
                 color = Color.White,
                 fontSize = 15.sp,
                 letterSpacing = 0.sp

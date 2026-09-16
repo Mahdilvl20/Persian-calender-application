@@ -15,9 +15,9 @@ import kotlinx.coroutines.launch
 class EventReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val eventId = intent.getLongExtra(EventNotificationScheduler.EXTRA_EVENT_ID, -1L)
-        Log.d("EventNotification", "EventReminderReceiver.onReceive: eventId=$eventId, action=${intent.action}")
+        Log.d("LumaEventReminder", "EventReminderReceiver.onReceive: receiver fired, eventId=$eventId, action=${intent.action}")
         if (eventId <= 0 || !NotificationPreferences.areEventRemindersEnabled(context)) {
-            Log.d("EventNotification", "EventReminderReceiver: skipped because eventId=$eventId or reminders disabled")
+            Log.d("LumaEventReminder", "EventReminderReceiver: skipped because eventId=$eventId or reminders disabled")
             return
         }
         val pendingResult = goAsync()
@@ -28,6 +28,7 @@ class EventReminderReceiver : BroadcastReceiver() {
                     CoroutineScope(SupervisorJob() + Dispatchers.IO)
                 ).eventDao().getEventById(eventId)
                 if (event != null) {
+                    Log.d("LumaEventReminder", "EventReminderReceiver: event loaded from DB: id=${event.id}, title='${event.title}'")
                     EventNotificationScheduler.show(
                         context = context,
                         eventId = event.id,
@@ -37,7 +38,7 @@ class EventReminderReceiver : BroadcastReceiver() {
                         notes = event.notes
                     )
                 } else {
-                    Log.w("EventNotification", "EventReminderReceiver: event not found for id=$eventId")
+                    Log.w("LumaEventReminder", "EventReminderReceiver: event not found in DB for id=$eventId, aborting notification")
                 }
             } finally {
                 pendingResult.finish()
@@ -58,7 +59,7 @@ class ReminderRescheduleReceiver : BroadcastReceiver() {
             AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED
         )
         if (intent.action !in validActions) return
-        Log.d("LumaDailyNotification", "Triggered by ReminderRescheduleReceiver (action=${intent.action})")
+        Log.d("LumaDailyNotification", "ReminderRescheduleReceiver: receiver fired (action=${intent.action})")
 
         try {
             DynamicIconManager.updateLiveCalendarShortcutAsync(context)
@@ -68,6 +69,7 @@ class ReminderRescheduleReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 if (NotificationPreferences.isDailyNotificationEnabled(context)) {
+                    Log.d("LumaDailyNotification", "ReminderRescheduleReceiver: updating daily notification and scheduling midnight update")
                     LumaNotificationManager.updateNotification(context)
                     LumaNotificationManager.scheduleMidnightUpdate(context)
                 }
@@ -76,6 +78,7 @@ class ReminderRescheduleReceiver : BroadcastReceiver() {
                         context,
                         CoroutineScope(SupervisorJob() + Dispatchers.IO)
                     ).eventDao().getAllEventsSnapshot()
+                    Log.d("LumaDailyNotification", "ReminderRescheduleReceiver: rescheduling ${events.size} event reminders")
                     events.forEach { EventNotificationScheduler.schedule(context, it) }
                 }
             } finally {

@@ -205,7 +205,7 @@ fun LiquidGlassTimePickerDialog(
                                         text = dialogTitle,
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             color = TextWhitePrimary,
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.SemiBold,
                                             letterSpacing = 0.sp
                                         )
                                     )
@@ -234,7 +234,7 @@ fun LiquidGlassTimePickerDialog(
                                     text = if (is24HourMode) "24H" else "12H",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         color = AccentElectricBlue,
-                                        fontWeight = FontWeight.Bold,
+                                        fontWeight = FontWeight.Medium,
                                         letterSpacing = 0.sp
                                     )
                                 )
@@ -283,7 +283,7 @@ fun LiquidGlassTimePickerDialog(
                                         text = displayHourText,
                                         style = MaterialTheme.typography.headlineLarge.copy(
                                             color = TextWhitePrimary,
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.SemiBold,
                                             letterSpacing = 0.sp
                                         )
                                     )
@@ -308,7 +308,7 @@ fun LiquidGlassTimePickerDialog(
                                 text = ":",
                                 style = MaterialTheme.typography.headlineLarge.copy(
                                     color = TextWhiteMuted,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.Medium,
                                     letterSpacing = 0.sp
                                 ),
                                 modifier = Modifier.padding(horizontal = 10.dp)
@@ -345,7 +345,7 @@ fun LiquidGlassTimePickerDialog(
                                         text = displayMinText,
                                         style = MaterialTheme.typography.headlineLarge.copy(
                                             color = TextWhitePrimary,
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.SemiBold,
                                             letterSpacing = 0.sp
                                         )
                                     )
@@ -397,7 +397,7 @@ fun LiquidGlassTimePickerDialog(
                                             text = amLabel,
                                             style = MaterialTheme.typography.labelMedium.copy(
                                                 color = if (isAm) Color.White else TextWhiteSecondary,
-                                                fontWeight = if (isAm) FontWeight.Bold else FontWeight.Medium,
+                                                fontWeight = if (isAm) FontWeight.SemiBold else FontWeight.Medium,
                                                 letterSpacing = 0.sp
                                             )
                                         )
@@ -423,7 +423,7 @@ fun LiquidGlassTimePickerDialog(
                                             text = pmLabel,
                                             style = MaterialTheme.typography.labelMedium.copy(
                                                 color = if (!isAm) Color.White else TextWhiteSecondary,
-                                                fontWeight = if (!isAm) FontWeight.Bold else FontWeight.Medium,
+                                                fontWeight = if (!isAm) FontWeight.SemiBold else FontWeight.Medium,
                                                 letterSpacing = 0.sp
                                             )
                                         )
@@ -473,7 +473,7 @@ fun LiquidGlassTimePickerDialog(
                                         text = label,
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             color = if (isSelected) Color.White else TextWhiteSecondary,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                             letterSpacing = 0.sp
                                         )
                                     )
@@ -598,7 +598,7 @@ fun LiquidGlassTimePickerDialog(
                                         text = strings.save,
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             color = Color.White,
-                                            fontWeight = FontWeight.Bold,
+                                            fontWeight = FontWeight.Medium,
                                             letterSpacing = 0.sp
                                         )
                                     )

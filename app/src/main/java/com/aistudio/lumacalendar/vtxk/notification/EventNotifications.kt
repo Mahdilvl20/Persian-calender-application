@@ -94,7 +94,7 @@ object EventNotificationScheduler {
     const val EXTRA_EVENT_ID = "event_id"
     const val ACTION_SNOOZE_EVENT_REMINDER = "com.aistudio.lumacalendar.vtxk.ACTION_SNOOZE_EVENT_REMINDER"
     private const val CHANNEL_ID = "event_reminders"
-    private const val TAG = "EventNotification"
+    private const val TAG = "LumaEventReminder"
 
     fun hasNotificationPermission(context: Context): Boolean {
         val runtimePermissionGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
@@ -125,7 +125,14 @@ object EventNotificationScheduler {
         return try {
             formatter.parse("$date $paddedTime")?.time?.minus(reminderMinutes * 60_000L)
         } catch (e: ParseException) {
-            Log.e(TAG, "calculateTriggerAtMillis: Failed to parse date='$date', time='$paddedTime'", e)
+            try {
+                Log.e(TAG, "calculateTriggerAtMillis: Failed to parse date='$date', time='$paddedTime'", e)
+            } catch (_: Throwable) {}
+            null
+        } catch (e: Exception) {
+            try {
+                Log.e(TAG, "calculateTriggerAtMillis: Unexpected error for date='$date', time='$paddedTime'", e)
+            } catch (_: Throwable) {}
             null
         }
     }
@@ -202,7 +209,12 @@ object EventNotificationScheduler {
 
     fun createChannel(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val manager = context.getSystemService(NotificationManager::class.java)
+        val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        val existing = manager.getNotificationChannel(CHANNEL_ID)
+        if (existing != null) {
+            Log.d(TAG, "createChannel: Channel $CHANNEL_ID already exists (importance=${existing.importance})")
+            return
+        }
         val channel = NotificationChannel(
             CHANNEL_ID,
             context.getString(R.string.notification_channel_name),
@@ -214,7 +226,7 @@ object EventNotificationScheduler {
             enableLights(true)
         }
         manager.createNotificationChannel(channel)
-        Log.d(TAG, "Created/verified channel $CHANNEL_ID with IMPORTANCE_HIGH")
+        Log.d(TAG, "Created channel $CHANNEL_ID with IMPORTANCE_HIGH")
     }
 
     fun show(context: Context, eventId: Long, title: String, time: String, location: String, notes: String) {
@@ -314,5 +326,9 @@ object EventNotificationScheduler {
         flags or PendingIntent.FLAG_IMMUTABLE
     )
 
-    fun requestCode(eventId: Long): Int = (eventId xor (eventId ushr 32)).toInt()
+    fun requestCode(eventId: Long): Int {
+        val hash = (eventId xor (eventId ushr 32)).toInt()
+        // Ensure event notification / alarm ID never collides with NOTIFICATION_ID_DAILY (1001)
+        return if (hash == LumaNotificationManager.NOTIFICATION_ID_DAILY) 1002 else hash
+    }
 }

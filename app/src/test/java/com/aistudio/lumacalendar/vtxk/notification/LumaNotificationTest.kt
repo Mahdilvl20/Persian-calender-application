@@ -1,5 +1,6 @@
 package com.aistudio.lumacalendar.vtxk.notification
 
+import android.Manifest
 import android.content.Context
 import android.view.LayoutInflater
 import android.widget.ImageView
@@ -14,6 +15,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 
 @RunWith(RobolectricTestRunner::class)
 class LumaNotificationTest {
@@ -121,5 +123,46 @@ class LumaNotificationTest {
         assertNotNull(actionToday)
         assertNotNull(actionNewEvent)
         assertNotNull(actionRemindLater)
+    }
+
+    @Test
+    fun testSingleInstanceDailyNotificationPostsExactlyOnce() {
+        val app = ApplicationProvider.getApplicationContext<android.app.Application>()
+        shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+
+        val notificationManager = context.getSystemService(android.app.NotificationManager::class.java)
+        assertNotNull(notificationManager)
+
+        // Ensure channel exists
+        LumaNotificationManager.createChannels(context)
+
+        // Verify constants
+        assertEquals(1001, LumaNotificationManager.NOTIFICATION_ID_DAILY)
+        assertEquals("luma_calendar_daily", LumaNotificationManager.CHANNEL_ID_DAILY)
+
+        // Enable daily notification preferences
+        NotificationPreferences.setEnabled(context, true)
+        NotificationPreferences.setDailyNotificationEnabled(context, true)
+
+        // Run coroutine to update notification twice synchronously
+        kotlinx.coroutines.runBlocking {
+            LumaNotificationManager.updateNotification(context)
+            LumaNotificationManager.updateNotification(context)
+        }
+
+        val activeNotifications = notificationManager.activeNotifications
+        val dailyNotifications = activeNotifications.filter { it.id == LumaNotificationManager.NOTIFICATION_ID_DAILY }
+
+        assertEquals("Expected exactly 1 daily notification with ID 1001", 1, dailyNotifications.size)
+        val dailyNotif = dailyNotifications[0]
+        assertEquals(LumaNotificationManager.NOTIFICATION_ID_DAILY, dailyNotif.id)
+        assertTrue("Notification must be ongoing", (dailyNotif.notification.flags and android.app.Notification.FLAG_ONGOING_EVENT) != 0)
+        assertTrue("Notification must only alert once", (dailyNotif.notification.flags and android.app.Notification.FLAG_ONLY_ALERT_ONCE) != 0)
+        assertTrue("Notification must not auto-cancel", (dailyNotif.notification.flags and android.app.Notification.FLAG_AUTO_CANCEL) == 0)
+
+        // Test cancellation lifecycle
+        LumaNotificationManager.cancel(context, "Testing cancellation")
+        val activeAfterCancel = notificationManager.activeNotifications.filter { it.id == LumaNotificationManager.NOTIFICATION_ID_DAILY }
+        assertEquals("Daily notification should be removed after cancel()", 0, activeAfterCancel.size)
     }
 }

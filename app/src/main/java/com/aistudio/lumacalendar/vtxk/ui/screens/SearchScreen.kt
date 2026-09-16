@@ -69,7 +69,7 @@ fun SearchScreen(
         Text(
             text = strings.searchEvents,
             style = MaterialTheme.typography.headlineLarge.copy(
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = TextWhitePrimary,
                 fontSize = 32.sp,
                 letterSpacing = 0.sp

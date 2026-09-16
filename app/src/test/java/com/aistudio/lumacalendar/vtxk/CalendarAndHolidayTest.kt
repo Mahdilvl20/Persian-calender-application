@@ -196,4 +196,128 @@ class CalendarAndHolidayTest {
         assertNotNull(nowruzHoliday)
         assertEquals("عیدنوروز (منبع API)", nowruzHoliday?.name)
     }
+
+    @Test
+    fun testComprehensiveJdnRoundTripConversions() {
+        // Test Gregorian round trips across standard years, leap years, century boundaries
+        val gregorianDates = listOf(
+            Triple(2000, 2, 29), // Leap century
+            Triple(1900, 2, 28), // Non-leap century
+            Triple(2024, 2, 29), // Leap year
+            Triple(2025, 2, 28), // Common year
+            Triple(2026, 1, 1),
+            Triple(2026, 9, 16),
+            Triple(2026, 12, 31)
+        )
+        for ((y, m, d) in gregorianDates) {
+            val jdn = CalendarConverter.gregorianToJdn(y, m, d)
+            val gBack = CalendarConverter.jdnToGregorian(jdn)
+            assertEquals("Gregorian round-trip failed for $y-$m-$d", Triple(y, m, d), Triple(gBack.year, gBack.month, gBack.day))
+        }
+
+        // Test Jalali round trips across leap years, month boundaries, and end-of-year
+        val jalaliDates = listOf(
+            Triple(1400, 1, 1),
+            Triple(1400, 12, 29),
+            Triple(1401, 7, 15),
+            Triple(1402, 3, 31),
+            Triple(1403, 12, 29),
+            Triple(1404, 12, 29),
+            Triple(1405, 1, 1),   // Nowruz
+            Triple(1405, 6, 25),
+            Triple(1405, 12, 29)
+        )
+        for ((y, m, d) in jalaliDates) {
+            val jdn = CalendarConverter.jalaliToJdn(y, m, d)
+            val jBack = CalendarConverter.jdnToJalali(jdn)
+            assertEquals("Jalali round-trip failed for $y-$m-$d", Triple(y, m, d), Triple(jBack.year, jBack.month, jBack.day))
+        }
+
+        // Test Hijri round trips across 30-day and 29-day months
+        val hijriDates = listOf(
+            Triple(1445, 1, 1),
+            Triple(1446, 9, 1),
+            Triple(1448, 3, 24),
+            Triple(1448, 12, 29)
+        )
+        for ((y, m, d) in hijriDates) {
+            val jdn = CalendarConverter.hijriToJdn(y, m, d)
+            val hBack = CalendarConverter.jdnToHijri(jdn)
+            assertEquals("Hijri round-trip failed for $y-$m-$d", Triple(y, m, d), Triple(hBack.year, hBack.month, hBack.day))
+        }
+    }
+
+    @Test
+    fun testTimezoneChangeScenarioForRealDeviceDate() {
+        val originalTz = java.util.TimeZone.getDefault()
+        try {
+            val testTimezones = listOf(
+                "Asia/Tehran",
+                "America/New_York",
+                "Pacific/Kiritimati", // UTC+14 (furthest ahead)
+                "Pacific/Pago_Pago",  // UTC-11 (furthest behind)
+                "UTC"
+            )
+
+            for (tzId in testTimezones) {
+                val tz = java.util.TimeZone.getTimeZone(tzId)
+                java.util.TimeZone.setDefault(tz)
+
+                val expectedDate = java.time.LocalDate.now(java.time.ZoneId.of(tzId)).toString()
+                val actualDate = com.aistudio.lumacalendar.vtxk.util.DateUtils.getRealDeviceDate()
+                assertEquals("Real device date must match local date in timezone $tzId", expectedDate, actualDate)
+
+                val actualZoneId = com.aistudio.lumacalendar.vtxk.util.DateUtils.getDeviceZoneId()
+                assertEquals(tz.toZoneId(), actualZoneId)
+            }
+        } finally {
+            java.util.TimeZone.setDefault(originalTz)
+        }
+    }
+
+    @Test
+    fun testLocalizationManagerRtlAndLayoutDirection() {
+        // Jalali and Hijri should be RTL
+        assertTrue(com.aistudio.lumacalendar.vtxk.util.LocalizationManager.isRtl(CalendarType.JALALI))
+        assertTrue(com.aistudio.lumacalendar.vtxk.util.LocalizationManager.isRtl(CalendarType.HIJRI))
+        assertEquals(androidx.compose.ui.unit.LayoutDirection.Rtl, com.aistudio.lumacalendar.vtxk.util.LocalizationManager.getLayoutDirection(CalendarType.JALALI))
+        assertEquals(androidx.compose.ui.unit.LayoutDirection.Rtl, com.aistudio.lumacalendar.vtxk.util.LocalizationManager.getLayoutDirection(CalendarType.HIJRI))
+
+        // Gregorian should be LTR
+        org.junit.Assert.assertFalse(com.aistudio.lumacalendar.vtxk.util.LocalizationManager.isRtl(CalendarType.GREGORIAN))
+        assertEquals(androidx.compose.ui.unit.LayoutDirection.Ltr, com.aistudio.lumacalendar.vtxk.util.LocalizationManager.getLayoutDirection(CalendarType.GREGORIAN))
+
+        // Strings variants
+        assertEquals("تقویم", com.aistudio.lumacalendar.vtxk.util.LocalizationManager.getStrings(CalendarType.JALALI).tabCalendar)
+        assertEquals("Calendar", com.aistudio.lumacalendar.vtxk.util.LocalizationManager.getStrings(CalendarType.GREGORIAN).tabCalendar)
+    }
+
+    @Test
+    fun testCalendarConverterEdgeCaseJdn() {
+        // Safe handling of extreme/edge-case JDNs (day 0, negative JDN)
+        // 0 JDN corresponds to ancient astronomical epoch (~4713 BC)
+        val g0 = CalendarConverter.jdnToGregorian(0L)
+        assertNotNull(g0)
+        assertTrue(g0.month in 1..12)
+        assertTrue(g0.day in 1..31)
+
+        val j0 = CalendarConverter.jdnToJalali(0L)
+        assertNotNull(j0)
+        assertTrue(j0.month in 1..12)
+        assertTrue(j0.day in 1..31)
+
+        val h0 = CalendarConverter.jdnToHijri(0L)
+        assertNotNull(h0)
+        assertTrue(h0.month in 1..12)
+        assertTrue(h0.day in 1..30)
+
+        // Negative JDN
+        val gNeg = CalendarConverter.jdnToGregorian(-1000L)
+        assertNotNull(gNeg)
+        val jNeg = CalendarConverter.jdnToJalali(-1000L)
+        assertNotNull(jNeg)
+        val hNeg = CalendarConverter.jdnToHijri(-1000L)
+        assertNotNull(hNeg)
+    }
 }
+

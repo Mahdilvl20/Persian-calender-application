@@ -209,7 +209,7 @@ fun ManualDateInputDialog(
                                 text = strings.selectDate,
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     color = TextWhitePrimary,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.SemiBold,
                                     letterSpacing = 0.sp
                                 )
                             )
@@ -498,7 +498,7 @@ fun ManualDateInputDialog(
                                 text = strings.confirm,
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     color = Color.White,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Medium
                                 )
                             )
                         }

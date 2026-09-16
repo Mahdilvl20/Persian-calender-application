@@ -94,8 +94,8 @@ object CalendarConverter {
      */
     fun jdnToJalali(jdn: Long): JalaliDate {
         val depoch = jdn - 2121446L
-        val cycle = depoch / 1029983L
-        val cday = depoch % 1029983L
+        val cycle = Math.floorDiv(depoch, 1029983L)
+        val cday = Math.floorMod(depoch, 1029983L)
         val ycycle: Long
         if (cday == 1029982L) {
             ycycle = 2820
@@ -114,7 +114,7 @@ object CalendarConverter {
             (dayseq - 186) / 30 + 7
         }
         val day = (jdn - jalaliToJdn(year, month, 1) + 1).toInt()
-        return JalaliDate(year, month, day)
+        return JalaliDate(year, month.coerceIn(1, 12), day.coerceIn(1, 31))
     }
 
     /**
@@ -133,8 +133,8 @@ object CalendarConverter {
      */
     fun jdnToHijri(jdn: Long): HijriDate {
         val daysSinceEpoch = jdn - 1948440L
-        val cycles = daysSinceEpoch / 10631L
-        val dayInCycle = daysSinceEpoch % 10631L
+        val cycles = Math.floorDiv(daysSinceEpoch, 10631L)
+        val dayInCycle = Math.floorMod(daysSinceEpoch, 10631L)
 
         val yearInCycle = ((30 * dayInCycle + 15) / 10631).toInt()
         val daysBeforeYearInCycle = yearInCycle * 354 + (11 * yearInCycle + 14) / 30
@@ -156,7 +156,7 @@ object CalendarConverter {
             month++
         }
         val day = dayInYear + 1
-        return HijriDate(year, month, day)
+        return HijriDate(year, month.coerceIn(1, 12), day.coerceIn(1, 30))
     }
 
     // --- Direct conversions between Gregorian string "YYYY-MM-DD" and specific systems ---

@@ -17,11 +17,12 @@ import kotlinx.coroutines.launch
 class MidnightUpdateReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent?) {
-        android.util.Log.d("LumaDailyNotification", "Triggered by MidnightUpdateReceiver: action=${intent?.action}")
+        android.util.Log.d("LumaDailyNotification", "MidnightUpdateReceiver: receiver fired, action=${intent?.action}")
         val pendingResult = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 // Refresh notification for the new day
+                android.util.Log.d("LumaDailyNotification", "MidnightUpdateReceiver: notification update triggered")
                 LumaNotificationManager.updateNotification(context)
 
                 // Refresh any launcher shortcuts or widgets
@@ -30,6 +31,7 @@ class MidnightUpdateReceiver : BroadcastReceiver() {
                 } catch (_: Exception) {}
 
                 // Schedule next day's midnight alarm
+                android.util.Log.d("LumaDailyNotification", "MidnightUpdateReceiver: scheduling next midnight alarm")
                 LumaNotificationManager.scheduleMidnightUpdate(context)
             } finally {
                 pendingResult.finish()
