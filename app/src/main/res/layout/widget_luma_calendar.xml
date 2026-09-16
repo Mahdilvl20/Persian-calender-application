@@ -26,6 +26,7 @@
             android:textColor="#FFFFFFFF"
             android:textSize="13sp"
             android:textStyle="normal"
+            android:fontFamily="@font/vazirmatn_medium"
             android:letterSpacing="0.02" />
     </LinearLayout>
 
@@ -48,6 +49,7 @@
             android:textColor="#FFFFFFFF"
             android:textSize="42sp"
             android:textStyle="bold"
+            android:fontFamily="@font/vazirmatn_bold"
             android:includeFontPadding="false" />
 
         <!-- Balanced Secondary Calendars (Gregorian & Hijri) -->
@@ -67,6 +69,7 @@
                 android:textColor="#B3FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="normal"
+                android:fontFamily="@font/vazirmatn_regular"
                 android:includeFontPadding="false" />
 
             <View
@@ -83,6 +86,7 @@
                 android:textColor="#B3FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="normal"
+                android:fontFamily="@font/vazirmatn_regular"
                 android:includeFontPadding="false" />
         </LinearLayout>
     </LinearLayout>
