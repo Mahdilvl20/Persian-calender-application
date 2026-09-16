@@ -14,9 +14,9 @@
 
 **Purpose**: Audit current state and establish baseline
 
-- [ ] T001 Run `./gradlew clean assembleDebug` to verify current build state
-- [ ] T002 Run `./gradlew test` to establish test baseline
-- [ ] T003 [P] Inspect current notification XML layouts to identify exact nesting layers: app/src/main/res/layout/notification_luma_calendar.xml and app/src/main/res/layout/notification_luma_calendar_expanded.xml — document which drawables create the inner card (notification_glass_bg, notification_calendar_tile_bg)
+- [x] T001 Run `./gradlew clean assembleDebug` to verify current build state
+- [x] T002 Run `./gradlew test` to establish test baseline
+- [x] T003 [P] Inspect current notification XML layouts to identify exact nesting layers: app/src/main/res/layout/notification_luma_calendar.xml and app/src/main/res/layout/notification_luma_calendar_expanded.xml — document which drawables create the inner card (notification_glass_bg, notification_calendar_tile_bg)
 
 ---
 
@@ -26,10 +26,10 @@
 
 **CRITICAL**: User story implementation cannot begin until the root cause fix (removing nested backgrounds) is complete
 
-- [ ] T004 Remove `android:background="@drawable/notification_glass_bg"` from the root LinearLayout in app/src/main/res/layout/notification_luma_calendar.xml — set `android:background="@null"` instead, per notification-layout-contract.md root layout rule
-- [ ] T005 [P] Remove `android:background="@drawable/notification_glass_bg"` from the root LinearLayout in app/src/main/res/layout/notification_luma_calendar_expanded.xml — set `android:background="@null"` instead
-- [ ] T006 [P] Simplify the mini calendar tile background in app/src/main/res/drawable/notification_calendar_tile_bg.xml — replace heavy gradient+stroke with a subtle translucent surface: `#0DFFFFFF` solid fill, 8dp corners, no stroke
-- [ ] T007 Build and visually verify the notification on device/emulator — confirm the "rectangle inside rectangle" appearance is eliminated and content sits directly on the system notification surface
+- [x] T004 Remove `android:background="@drawable/notification_glass_bg"` from the root LinearLayout in app/src/main/res/layout/notification_luma_calendar.xml — set `android:background="@null"` instead, per notification-layout-contract.md root layout rule
+- [x] T005 [P] Remove `android:background="@drawable/notification_glass_bg"` from the root LinearLayout in app/src/main/res/layout/notification_luma_calendar_expanded.xml — set `android:background="@null"` instead
+- [x] T006 [P] Simplify the mini calendar tile background in app/src/main/res/drawable/notification_calendar_tile_bg.xml — replace heavy gradient+stroke with a subtle translucent surface: `#0DFFFFFF` solid fill, 8dp corners, no stroke
+- [x] T007 Build and visually verify the notification on device/emulator — confirm the "rectangle inside rectangle" appearance is eliminated and content sits directly on the system notification surface
 
 **Checkpoint**: Root cause fixed — notification is now a single unified surface. Visual verification required before proceeding.
 
@@ -43,10 +43,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [P] [US1] Verify notification constants in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt — confirm NOTIFICATION_ID_DAILY = 1001, CHANNEL_ID_DAILY = "luma_calendar_daily", setOngoing(true), setAutoCancel(false)
-- [ ] T009 [P] [US1] Verify DecoratedCustomViewStyle is used in LumaNotificationManager.kt — confirm .setStyle(NotificationCompat.DecoratedCustomViewStyle()) is present and setCustomContentView/setCustomBigContentView are set
-- [ ] T010 [US1] Verify no setSubText() call exists in LumaNotificationManager.kt — app name duplication must not occur
-- [ ] T011 [US1] Visual verification: build app, enable notification, verify ONE unified surface with Luma Calendar design language (dark glass feel, no inner card), ongoing behavior (tap does not dismiss)
+- [x] T008 [P] [US1] Verify notification constants in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt — confirm NOTIFICATION_ID_DAILY = 1001, CHANNEL_ID_DAILY = "luma_calendar_daily", setOngoing(true), setAutoCancel(false)
+- [x] T009 [P] [US1] Verify DecoratedCustomViewStyle is used in LumaNotificationManager.kt — confirm .setStyle(NotificationCompat.DecoratedCustomViewStyle()) is present and setCustomContentView/setCustomBigContentView are set
+- [x] T010 [US1] Verify no setSubText() call exists in LumaNotificationManager.kt — app name duplication must not occur
+- [x] T011 [US1] Visual verification: build app, enable notification, verify ONE unified surface with Luma Calendar design language (dark glass feel, no inner card), ongoing behavior (tap does not dismiss)
 
 **Checkpoint**: Unified surface verified — notification looks like one cohesive Luma Calendar surface
 
@@ -60,11 +60,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Verify date population logic in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt — confirm primary date uses DateUtils.getRealDeviceLocalDate(), not selectedDate
-- [ ] T013 [P] [US2] Verify all three calendar conversions in LumaNotificationManager.kt — confirm Jalali, Gregorian, and Hijri dates are all computed from the same real-world day via CalendarConverter
-- [ ] T014 [US2] Verify mini tile population in LumaNotificationManager.kt — confirm tile_month and tile_day use the active calendar type's month name and day number
-- [ ] T015 [US2] Verify typography in notification XML layouts — confirm primary date uses `android:textStyle="bold"` (SemiBold equivalent), secondary date uses `android:textStyle="normal"`, text sizes match contract (14sp collapsed/16sp expanded for primary)
-- [ ] T016 [US2] Test calendar switching: change active calendar type in Settings, pull down notification, verify primary/secondary dates update correctly and tile reflects new calendar
+- [x] T012 [P] [US2] Verify date population logic in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationManager.kt — confirm primary date uses DateUtils.getRealDeviceLocalDate(), not selectedDate
+- [x] T013 [P] [US2] Verify all three calendar conversions in LumaNotificationManager.kt — confirm Jalali, Gregorian, and Hijri dates are all computed from the same real-world day via CalendarConverter
+- [x] T014 [US2] Verify mini tile population in LumaNotificationManager.kt — confirm tile_month and tile_day use the active calendar type's month name and day number
+- [x] T015 [US2] Verify typography in notification XML layouts — confirm primary date uses `android:textStyle="bold"` (SemiBold equivalent), secondary date uses `android:textStyle="normal"`, text sizes match contract (14sp collapsed/16sp expanded for primary)
+- [x] T016 [US2] Test calendar switching: change active calendar type in Settings, pull down notification, verify primary/secondary dates update correctly and tile reflects new calendar
 
 **Checkpoint**: Date display accurate across all three calendars, tile integrated
 
@@ -78,13 +78,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T017 [P] [US3] Add snooze duration preference to app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/NotificationReceivers.kt (NotificationPreferences object) — add `getSnoozeMinutes()` and `setSnoozeMinutes()` methods, key "daily_notification_snooze_minutes", type Int, default 60, range 15–480 (clamped)
-- [ ] T018 [US3] Modify app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationActionReceiver.kt — replace hardcoded 60-minute snooze with `NotificationPreferences.getSnoozeMinutes(context)`, compute alarm trigger as `elapsedRealtime() + (snoozeMinutes * 60 * 1000L)`
-- [ ] T019 [US3] Update Toast message in LumaNotificationActionReceiver.kt to reflect actual snooze duration — use localized strings from AppStrings: "Snoozed for {X} minutes" (English) / "به مدت {X} دقیقه یادآوری شد" (Persian)
-- [ ] T020 [US3] Verify Today action opens device-local today's date in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationActionReceiver.kt — confirm it uses DateUtils.getRealDeviceDate() and sets viewModel.setCurrentTab(0) + viewModel.selectDate(today)
-- [ ] T021 [US3] Verify New Event action opens Add Event screen — confirm intent opens MainActivity with EXTRA_ACTION = "NEW_EVENT"
-- [ ] T022 [US3] Verify Remind Later uses same notification ID 1001 — confirm the snooze alarm targets MidnightUpdateReceiver with SNOOZE_WAKEUP action, and updateNotification() re-posts with ID 1001 (no new notification)
-- [ ] T023 [US3] Verify action button styling in expanded XML — confirm three actions have equal visual weight (weight=1, 34dp height), consistent background, and localized labels
+- [x] T017 [P] [US3] Add snooze duration preference to app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/NotificationReceivers.kt (NotificationPreferences object) — add `getSnoozeMinutes()` and `setSnoozeMinutes()` methods, key "daily_notification_snooze_minutes", type Int, default 60, range 15–480 (clamped)
+- [x] T018 [US3] Modify app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationActionReceiver.kt — replace hardcoded 60-minute snooze with `NotificationPreferences.getSnoozeMinutes(context)`, compute alarm trigger as `elapsedRealtime() + (snoozeMinutes * 60 * 1000L)`
+- [x] T019 [US3] Update Toast message in LumaNotificationActionReceiver.kt to reflect actual snooze duration — use localized strings from AppStrings: "Snoozed for {X} minutes" (English) / "به مدت {X} دقیقه یادآوری شد" (Persian)
+- [x] T020 [US3] Verify Today action opens device-local today's date in app/src/main/java/com/aistudio/lumacalendar/vtxk/notification/LumaNotificationActionReceiver.kt — confirm it uses DateUtils.getRealDeviceDate() and sets viewModel.setCurrentTab(0) + viewModel.selectDate(today)
+- [x] T021 [US3] Verify New Event action opens Add Event screen — confirm intent opens MainActivity with EXTRA_ACTION = "NEW_EVENT"
+- [x] T022 [US3] Verify Remind Later uses same notification ID 1001 — confirm the snooze alarm targets MidnightUpdateReceiver with SNOOZE_WAKEUP action, and updateNotification() re-posts with ID 1001 (no new notification)
+- [x] T023 [US3] Verify action button styling in expanded XML — confirm three actions have equal visual weight (weight=1, 34dp height), consistent background, and localized labels
 
 **Checkpoint**: All three actions working correctly, snooze configurable
 
@@ -98,10 +98,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T024 [P] [US4] Verify collapsed layout in app/src/main/res/layout/notification_luma_calendar.xml — confirm it shows: app icon, primary date, secondary date, mini tile. No excessive content.
-- [ ] T025 [P] [US4] Verify expanded layout in app/src/main/res/layout/notification_luma_calendar_expanded.xml — confirm it shows: primary date, secondary dates, daily message, mini tile, three action buttons
-- [ ] T026 [US4] Verify both layouts have NO root background drawable (from Phase 2 fix) — confirm visual consistency between states
-- [ ] T027 [US4] Verify mini tile is visually consistent in both layouts — same integrated treatment, correct size proportions (collapsed: 50x54dp, expanded: 60x64dp)
+- [x] T024 [P] [US4] Verify collapsed layout in app/src/main/res/layout/notification_luma_calendar.xml — confirm it shows: app icon, primary date, secondary date, mini tile. No excessive content.
+- [x] T025 [P] [US4] Verify expanded layout in app/src/main/res/layout/notification_luma_calendar_expanded.xml — confirm it shows: primary date, secondary dates, daily message, mini tile, three action buttons
+- [x] T026 [US4] Verify both layouts have NO root background drawable (from Phase 2 fix) — confirm visual consistency between states
+- [x] T027 [US4] Verify mini tile is visually consistent in both layouts — same integrated treatment, correct size proportions (collapsed: 50x54dp, expanded: 60x64dp)
 
 **Checkpoint**: Both states polished and visually consistent
 
@@ -115,10 +115,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T028 [P] [US5] Verify daily message is sourced from AppStrings in LumaNotificationManager.kt — confirm notification_daily_message text comes from LocalizationManager/AppStrings, NOT hardcoded in XML or Kotlin
-- [ ] T029 [P] [US5] Add localization strings for snooze duration in app/src/main/res/values/strings.xml — add "Snooze Duration" / "مدت یادآوری" and duration format strings for English and Persian
-- [ ] T030 [US5] Verify RTL layout in notification_luma_calendar.xml — confirm android:layoutDirection is set appropriately based on active calendar type (RTL for Jalali/Hijri)
-- [ ] T031 [US5] Verify typography weight hierarchy across both notification layouts — SemiBold (bold) for primary date and day number, Medium (normal) for action labels, Regular for secondary text and message
+- [x] T028 [P] [US5] Verify daily message is sourced from AppStrings in LumaNotificationManager.kt — confirm notification_daily_message text comes from LocalizationManager/AppStrings, NOT hardcoded in XML or Kotlin
+- [x] T029 [P] [US5] Add localization strings for snooze duration in app/src/main/res/values/strings.xml — add "Snooze Duration" / "مدت یادآوری" and duration format strings for English and Persian
+- [x] T030 [US5] Verify RTL layout in notification_luma_calendar.xml — confirm android:layoutDirection is set appropriately based on active calendar type (RTL for Jalali/Hijri)
+- [x] T031 [US5] Verify typography weight hierarchy across both notification layouts — SemiBold (bold) for primary date and day number, Medium (normal) for action labels, Regular for secondary text and message
 
 **Checkpoint**: Content and typography correct, localization working
 
@@ -145,11 +145,11 @@
 
 **Purpose**: Final verification and regression check
 
-- [ ] T036 [P] Run `./gradlew clean assembleDebug` — verify build succeeds
-- [ ] T037 [P] Run `./gradlew test` — verify all existing tests pass
-- [ ] T038 Verify notification lifecycle: enable → appears, force-stop → persists (no duplicate), change timezone → updates, change calendar type → updates, disable → cancels, re-enable → exactly one
-- [ ] T039 Run quickstart.md validation scenarios V1-V9 on device/emulator — verify all expected outcomes
-- [ ] T040 Verify Event Reminder independence — create event with reminder, verify event notification uses "event_reminders" channel with event-specific ID, does NOT affect daily notification 1001
+- [x] T036 [P] Run `./gradlew clean assembleDebug` — verify build succeeds
+- [x] T037 [P] Run `./gradlew test` — verify all existing tests pass
+- [x] T038 Verify notification lifecycle: enable → appears, force-stop → persists (no duplicate), change timezone → updates, change calendar type → updates, disable → cancels, re-enable → exactly one
+- [x] T039 Run quickstart.md validation scenarios V1-V9 on device/emulator — verify all expected outcomes
+- [x] T040 Verify Event Reminder independence — create event with reminder, verify event notification uses "event_reminders" channel with event-specific ID, does NOT affect daily notification 1001
 
 ---
 

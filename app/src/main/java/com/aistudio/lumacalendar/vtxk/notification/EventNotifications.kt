@@ -30,6 +30,24 @@ object NotificationPreferences {
     private const val KEY_EVENT_REMINDERS_ENABLED = "event_reminders_enabled"
     private const val KEY_PERMISSION_REQUESTED = "notification_permission_requested"
     private const val KEY_CALENDAR_TYPE = "active_calendar_type"
+    const val KEY_SNOOZE_MINUTES = "daily_notification_snooze_minutes"
+    const val DEFAULT_SNOOZE_MINUTES = 60
+    const val MIN_SNOOZE_MINUTES = 15
+    const val MAX_SNOOZE_MINUTES = 480
+
+    /**
+     * Controls the snooze duration for the daily notification (in minutes).
+     * Defaults to 60, range clamped between 15 and 480 minutes.
+     */
+    fun getSnoozeMinutes(context: Context): Int {
+        val stored = preferences(context).getInt(KEY_SNOOZE_MINUTES, DEFAULT_SNOOZE_MINUTES)
+        return stored.coerceIn(MIN_SNOOZE_MINUTES, MAX_SNOOZE_MINUTES)
+    }
+
+    fun setSnoozeMinutes(context: Context, minutes: Int) {
+        val clamped = minutes.coerceIn(MIN_SNOOZE_MINUTES, MAX_SNOOZE_MINUTES)
+        preferences(context).edit().putInt(KEY_SNOOZE_MINUTES, clamped).apply()
+    }
 
     /**
      * Controls whether the permanent daily calendar notification is active.

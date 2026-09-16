@@ -3,7 +3,7 @@
     android:id="@+id/notification_collapsed_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/notification_glass_bg"
+    android:background="@null"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:padding="12dp">

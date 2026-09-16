@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">تقویم لوما</string>
+    <string name="notification_channel_name">یادآوری رویدادها</string>
+    <string name="notification_channel_description">یادآوری برای رویدادهای پیش‌رو</string>
+    <string name="notification_daily_channel_name">تقویم لوما</string>
+    <string name="notification_daily_channel_description">نمایش روزانه تقویم و یادآوری‌ها</string>
+    <string name="notification_at_time">ساعت %1$s</string>
+    <string name="notification_at_location">%1$s · %2$s</string>
+    <string name="notification_action_open_event">مشاهده رویداد</string>
+    <string name="notification_action_snooze_event">یادآوری بعداً</string>
+    <string name="snooze_duration_title">مدت یادآوری</string>
+    <string name="snooze_duration_desc">مدت زمان پیش‌فرض برای به تعویق انداختن اعلان</string>
+    <string name="snoozed_for_minutes">به مدت %1$s دقیقه یادآوری شد</string>
+    <string name="snoozed_for_hours">به مدت %1$s ساعت یادآوری شد</string>
+    <string name="notification_daily_msg_empty">✨ امروز روز خوبی برای برنامه‌های مهمه</string>
+    <string name="notification_daily_msg_events">✨ %1$s رویداد برای امروز ثبت شده است</string>
+</resources>

@@ -233,6 +233,7 @@ fun LumaApp(viewModel: LumaViewModel) {
     val workVisible by viewModel.calendarWorkVisible.collectAsState()
     val holidaysVisible by viewModel.calendarHolidaysVisible.collectAsState()
     val themeName by viewModel.themeName.collectAsState()
+    val snoozeMinutes by viewModel.snoozeMinutes.collectAsState()
     val persianDaysMap by viewModel.persianDaysMap.collectAsState()
     val isPersianLoading by viewModel.isPersianLoading.collectAsState()
 
@@ -322,6 +323,8 @@ fun LumaApp(viewModel: LumaViewModel) {
                                 onNotificationsChange = { enabled ->
                                     if (enabled) requestNotificationAccess() else viewModel.disableNotifications()
                                 },
+                                snoozeMinutes = snoozeMinutes,
+                                onSnoozeMinutesChange = { viewModel.setSnoozeMinutes(it) },
                                 personalVisible = personalVisible,
                                 onTogglePersonal = { viewModel.toggleCalendarPersonal() },
                                 workVisible = workVisible,

@@ -27,6 +27,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.ViewWeek
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -74,6 +75,8 @@ fun SettingsScreen(
     onShowWeekNumbersChange: (Boolean) -> Unit,
     notificationsEnabled: Boolean,
     onNotificationsChange: (Boolean) -> Unit,
+    snoozeMinutes: Int = 60,
+    onSnoozeMinutesChange: (Int) -> Unit = {},
     personalVisible: Boolean,
     onTogglePersonal: () -> Unit,
     workVisible: Boolean,
@@ -285,45 +288,162 @@ fun SettingsScreen(
         item {
             SectionHeader(title = strings.notifications)
             GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Outlined.Notifications,
-                            contentDescription = null,
-                            tint = AccentElectricBlue,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = strings.eventReminders,
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    color = TextWhitePrimary,
-                                    fontWeight = FontWeight.Medium,
-                                    letterSpacing = 0.sp
-                                )
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Outlined.Notifications,
+                                contentDescription = null,
+                                tint = AccentElectricBlue,
+                                modifier = Modifier.size(20.dp)
                             )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = strings.eventReminders,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        color = TextWhitePrimary,
+                                        fontWeight = FontWeight.Medium,
+                                        letterSpacing = 0.sp
+                                    )
+                                )
+                                Text(
+                                    text = strings.eventRemindersDesc,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = TextWhiteSecondary,
+                                        letterSpacing = 0.sp
+                                    )
+                                )
+                            }
+                        }
+
+                        GlassToggle(
+                            checked = notificationsEnabled,
+                            onCheckedChange = onNotificationsChange,
+                            testTag = "toggle_notifications"
+                        )
+                    }
+
+                    // Snooze Duration Setting Row
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(GlassBorderSubtle)
+                    )
+
+                    val snoozePresets = listOf(15, 30, 45, 60, 90, 120, 180, 240, 480)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Schedule,
+                                    contentDescription = null,
+                                    tint = AccentElectricBlue,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = strings.snoozeDurationTitle,
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            color = TextWhitePrimary,
+                                            fontWeight = FontWeight.Medium,
+                                            letterSpacing = 0.sp
+                                        )
+                                    )
+                                    Text(
+                                        text = strings.snoozeDurationDesc,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = TextWhiteSecondary,
+                                            letterSpacing = 0.sp
+                                        )
+                                    )
+                                }
+                            }
+
+                            val currentPresetLabel = when (snoozeMinutes) {
+                                15 -> "15m"
+                                30 -> "30m"
+                                45 -> "45m"
+                                60 -> "1h"
+                                90 -> "1.5h"
+                                120 -> "2h"
+                                180 -> "3h"
+                                240 -> "4h"
+                                480 -> "8h"
+                                else -> "${snoozeMinutes}m"
+                            }
                             Text(
-                                text = strings.eventRemindersDesc,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = TextWhiteSecondary,
-                                    letterSpacing = 0.sp
+                                text = currentPresetLabel,
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    color = AccentElectricBlue,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             )
                         }
-                    }
 
-                    GlassToggle(
-                        checked = notificationsEnabled,
-                        onCheckedChange = onNotificationsChange,
-                        testTag = "toggle_notifications"
-                    )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Preset chips selector
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            val displayPresets = listOf(15, 30, 60, 120, 240, 480)
+                            displayPresets.forEach { minutes ->
+                                val isSelected = snoozeMinutes == minutes
+                                val label = when (minutes) {
+                                    15 -> "15m"
+                                    30 -> "30m"
+                                    60 -> "1h"
+                                    120 -> "2h"
+                                    240 -> "4h"
+                                    480 -> "8h"
+                                    else -> "${minutes}m"
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(
+                                            if (isSelected) AccentElectricBlue.copy(alpha = 0.25f)
+                                            else GlassSurfaceDefault
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (isSelected) AccentElectricBlue else GlassBorderSubtle,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable { onSnoozeMinutesChange(minutes) }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = if (isSelected) AccentElectricBlue else TextWhiteSecondary,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

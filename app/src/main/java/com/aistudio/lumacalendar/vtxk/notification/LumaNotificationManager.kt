@@ -168,6 +168,8 @@ object LumaNotificationManager {
             val hYearPersian = CalendarConverter.toPersianDigits(h.year.toString())
             val hijriDate = "$hDayPersian $hMonthName $hYearPersian"
 
+            val appStrings = LocalizationManager.getStrings(calendarType)
+
             // 4. Determine display content based on active calendar
             val mainDateText: String
             val secondaryDateText: String
@@ -176,32 +178,49 @@ object LumaNotificationManager {
             val iconDayText: String
             val dailyMessageText: String
 
-            val actionTodayText = if (isRtl) "امروز" else "Today"
-            val actionNewEventText = if (isRtl) "رویداد جدید" else "New Event"
+            val actionTodayText = appStrings.today
+            val actionNewEventText = appStrings.newEvent
             val actionRemindLaterText = if (isRtl) "یادآوری بعداً" else "Remind Later"
 
-            if (calendarType == CalendarType.GREGORIAN) {
-                mainDateText = gregorianFullDate
-                secondaryDateText = "$persianFullDate  •  $hijriDate"
-                tileMonthText = gMonthName.take(3).uppercase()
-                tileDayText = g.day.toString()
-                iconDayText = g.day.toString()
-                dailyMessageText = customMessage ?: when {
-                    eventsToday.isNotEmpty() -> "✨ ${eventsToday.size} event${if (eventsToday.size > 1) "s" else ""} scheduled for today"
-                    else -> "✨ Today is a great day for what matters most"
-                }
-            } else {
-                mainDateText = persianFullDate
-                secondaryDateText = "$gregorianDate  •  $hijriDate"
-                tileMonthText = jMonthName
-                tileDayText = jDayPersian
-                iconDayText = jDayPersian
-                dailyMessageText = customMessage ?: when {
-                    eventsToday.isNotEmpty() -> {
-                        val count = CalendarConverter.toPersianDigits(eventsToday.size.toString())
-                        "✨ $count رویداد برای امروز ثبت شده است"
+            when (calendarType) {
+                CalendarType.GREGORIAN -> {
+                    mainDateText = gregorianFullDate
+                    secondaryDateText = "$persianFullDate  •  $hijriDate"
+                    tileMonthText = gMonthName.take(3).uppercase()
+                    tileDayText = g.day.toString()
+                    iconDayText = g.day.toString()
+                    dailyMessageText = customMessage ?: when {
+                        eventsToday.isNotEmpty() -> "✨ ${eventsToday.size} event${if (eventsToday.size > 1) "s" else ""} scheduled for today"
+                        else -> appStrings.notificationDailyMsgEmpty
                     }
-                    else -> "✨ امروز روز خوبی برای برنامه‌های مهمه"
+                }
+                CalendarType.HIJRI -> {
+                    mainDateText = "$jWeekday $hijriDate"
+                    secondaryDateText = "$persianFullDate  •  $gregorianDate"
+                    tileMonthText = hMonthName
+                    tileDayText = hDayPersian
+                    iconDayText = hDayPersian
+                    dailyMessageText = customMessage ?: when {
+                        eventsToday.isNotEmpty() -> {
+                            val count = CalendarConverter.toPersianDigits(eventsToday.size.toString())
+                            "✨ $count رویداد برای امروز ثبت شده است"
+                        }
+                        else -> "✨ امروز روز پر برکتی برای شما باشد"
+                    }
+                }
+                CalendarType.JALALI -> {
+                    mainDateText = persianFullDate
+                    secondaryDateText = "$gregorianDate  •  $hijriDate"
+                    tileMonthText = jMonthName
+                    tileDayText = jDayPersian
+                    iconDayText = jDayPersian
+                    dailyMessageText = customMessage ?: when {
+                        eventsToday.isNotEmpty() -> {
+                            val count = CalendarConverter.toPersianDigits(eventsToday.size.toString())
+                            "✨ $count رویداد برای امروز ثبت شده است"
+                        }
+                        else -> appStrings.notificationDailyMsgEmpty
+                    }
                 }
             }
 

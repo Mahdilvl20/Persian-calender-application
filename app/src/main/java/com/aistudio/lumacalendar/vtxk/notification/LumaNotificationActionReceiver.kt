@@ -31,11 +31,24 @@ class LumaNotificationActionReceiver : BroadcastReceiver() {
             val pendingResult = goAsync()
             val calendarType = NotificationPreferences.getCalendarType(context)
             val isRtl = LocalizationManager.isRtl(calendarType)
+            val snoozeMinutes = NotificationPreferences.getSnoozeMinutes(context)
 
             val snoozeMessage = if (isRtl) {
-                "✨ یادآوری برای ۱ ساعت دیگر تنظیم شد"
+                if (snoozeMinutes % 60 == 0) {
+                    val hours = snoozeMinutes / 60
+                    val hoursStr = com.aistudio.lumacalendar.vtxk.util.CalendarConverter.toPersianDigits(hours.toString())
+                    "به مدت $hoursStr ساعت یادآوری شد"
+                } else {
+                    val minsStr = com.aistudio.lumacalendar.vtxk.util.CalendarConverter.toPersianDigits(snoozeMinutes.toString())
+                    "به مدت $minsStr دقیقه یادآوری شد"
+                }
             } else {
-                "✨ Reminder snoozed for 1 hour"
+                if (snoozeMinutes % 60 == 0) {
+                    val hours = snoozeMinutes / 60
+                    "Snoozed for $hours hour${if (hours > 1) "s" else ""}"
+                } else {
+                    "Snoozed for $snoozeMinutes minutes"
+                }
             }
 
             try {
@@ -44,13 +57,13 @@ class LumaNotificationActionReceiver : BroadcastReceiver() {
 
             CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                 try {
-                    // Update notification with snooze acknowledgment
-                    LumaNotificationManager.updateNotification(context, snoozeMessage)
+                    // Update notification with snooze acknowledgment (same notification ID 1001)
+                    LumaNotificationManager.updateNotification(context, "✨ $snoozeMessage")
 
-                    // Schedule alarm to re-alert / update in 60 minutes
+                    // Schedule alarm to re-alert / update using configured snooze duration
                     val alarmManager = context.getSystemService(AlarmManager::class.java)
                     if (alarmManager != null) {
-                        val triggerAtMillis = SystemClock.elapsedRealtime() + (60 * 60 * 1000L)
+                        val triggerAtMillis = SystemClock.elapsedRealtime() + (snoozeMinutes * 60 * 1000L)
                         val wakeupIntent = Intent(context, MidnightUpdateReceiver::class.java).apply {
                             this.action = "${context.packageName}.SNOOZE_WAKEUP"
                         }

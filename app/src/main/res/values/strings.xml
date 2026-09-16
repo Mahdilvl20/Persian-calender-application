@@ -8,4 +8,10 @@
     <string name="notification_at_location">%1$s · %2$s</string>
     <string name="notification_action_open_event">Open Event</string>
     <string name="notification_action_snooze_event">Remind Later</string>
+    <string name="snooze_duration_title">Snooze Duration</string>
+    <string name="snooze_duration_desc">Default snooze time when reminding later</string>
+    <string name="snoozed_for_minutes">Snoozed for %1$d minutes</string>
+    <string name="snoozed_for_hours">Snoozed for %1$d hours</string>
+    <string name="notification_daily_msg_empty">✨ Today is a great day for what matters most</string>
+    <string name="notification_daily_msg_events">✨ %1$d event(s) scheduled for today</string>
 </resources>

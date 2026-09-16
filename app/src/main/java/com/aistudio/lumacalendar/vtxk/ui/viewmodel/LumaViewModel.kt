@@ -198,6 +198,11 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     val notificationsEnabled: StateFlow<Boolean> = _notificationsEnabled.asStateFlow()
     private var notificationSyncJob: Job? = null
 
+    private val _snoozeMinutes = MutableStateFlow(
+        NotificationPreferences.getSnoozeMinutes(application)
+    )
+    val snoozeMinutes: StateFlow<Int> = _snoozeMinutes.asStateFlow()
+
     private val _calendarPersonalVisible = MutableStateFlow(true)
     val calendarPersonalVisible: StateFlow<Boolean> = _calendarPersonalVisible.asStateFlow()
 
@@ -473,6 +478,11 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setShowWeekNumbers(show: Boolean) {
         _showWeekNumbers.value = show
+    }
+
+    fun setSnoozeMinutes(minutes: Int) {
+        NotificationPreferences.setSnoozeMinutes(getApplication(), minutes)
+        _snoozeMinutes.value = NotificationPreferences.getSnoozeMinutes(getApplication())
     }
 
     fun toggleCalendarPersonal() {
