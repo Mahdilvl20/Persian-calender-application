@@ -11,7 +11,9 @@ import android.widget.RemoteViews
 import com.aistudio.lumacalendar.vtxk.MainActivity
 import com.aistudio.lumacalendar.vtxk.R
 import com.aistudio.lumacalendar.vtxk.data.holiday.HolidayService
+import com.aistudio.lumacalendar.vtxk.util.CalendarConverter
 import com.aistudio.lumacalendar.vtxk.util.CalendarType
+import com.aistudio.lumacalendar.vtxk.util.DateUtils
 import com.aistudio.lumacalendar.vtxk.util.DynamicIconManager
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -57,28 +59,34 @@ class LumaCalendarWidgetProvider : AppWidgetProvider() {
 
         fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
             val views = RemoteViews(context.packageName, R.layout.widget_luma_calendar)
-            val now = com.aistudio.lumacalendar.vtxk.util.DateUtils.getRealDeviceLocalDate()
+            val now = DateUtils.getRealDeviceLocalDate()
+            val todayIsoStr = String.format(Locale.US, "%04d-%02d-%02d", now.year, now.monthValue, now.dayOfMonth)
 
-            val dayNumber = now.dayOfMonth
-            val monthName = now.month.getDisplayName(TextStyle.FULL, Locale.getDefault()).uppercase()
-            val weekdayName = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
+            // Convert to Jalali and Hijri via canonical JDN pathway
+            val jalaliDate = CalendarConverter.gregorianToJalali(todayIsoStr)
+            val hijriDate = CalendarConverter.gregorianToHijri(todayIsoStr)
 
-            // Single digit days (1..9) and double digit days (10..31) format cleanly
-            views.setTextViewText(R.id.widget_day_number, dayNumber.toString())
-            views.setTextViewText(R.id.widget_month_text, monthName)
-            views.setTextViewText(R.id.widget_weekday_text, weekdayName)
+            // Level 1: Persian Month at Top
+            val jalaliMonthName = CalendarConverter.getMonthName(jalaliDate.month, CalendarType.JALALI)
+            views.setTextViewText(R.id.widget_month_text, jalaliMonthName)
 
-            // Check if today is a holiday
-            val todayStr = String.format("%04d-%02d-%02d", now.year, now.monthValue, now.dayOfMonth)
-            val holiday = HolidayService.default.getHoliday(todayStr, CalendarType.GREGORIAN)
+            // Level 2: Dominant Jalali Day Number in Persian Digits
+            val jalaliDayStr = CalendarConverter.toPersianDigits(jalaliDate.day.toString())
+            views.setTextViewText(R.id.widget_day_number, jalaliDayStr)
 
-            if (holiday != null) {
-                views.setTextViewText(R.id.widget_event_text, "★ ${holiday.name}")
-                views.setTextColor(R.id.widget_event_text, Color.parseColor("#FF453A"))
+            // Level 3: Balanced Secondary Calendars (Gregorian on Left, Hijri on Right)
+            val gregorianDayStr = CalendarConverter.toPersianDigits(now.dayOfMonth.toString())
+            val hijriDayStr = CalendarConverter.toPersianDigits(hijriDate.day.toString())
+            views.setTextViewText(R.id.widget_secondary_left, gregorianDayStr)
+            views.setTextViewText(R.id.widget_secondary_right, hijriDayStr)
+
+            // Holiday check for Jalali calendar
+            val holiday = HolidayService.default.getHoliday(todayIsoStr, CalendarType.JALALI)
+            val isOfficialHoliday = holiday?.isOfficialHoliday == true
+
+            if (isOfficialHoliday) {
                 views.setTextColor(R.id.widget_day_number, Color.parseColor("#FF453A"))
             } else {
-                views.setTextViewText(R.id.widget_event_text, "Luma Calendar")
-                views.setTextColor(R.id.widget_event_text, Color.parseColor("#38BDF8"))
                 views.setTextColor(R.id.widget_day_number, Color.WHITE)
             }
 

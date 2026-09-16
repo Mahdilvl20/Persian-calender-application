@@ -319,5 +319,29 @@ class CalendarAndHolidayTest {
         val hNeg = CalendarConverter.jdnToHijri(-1000L)
         assertNotNull(hNeg)
     }
+
+    @Test
+    fun testWidgetDateValuesConsistency() {
+        // Test date: 2026-09-16 (from spec User Story 2)
+        val dateStr = "2026-09-16"
+        val jalali = CalendarConverter.gregorianToJalali(dateStr)
+        val hijri = CalendarConverter.gregorianToHijri(dateStr)
+
+        assertEquals("Jalali year should be 1405", 1405, jalali.year)
+        assertEquals("Jalali month should be 6 (Shahrivar)", 6, jalali.month)
+        assertEquals("Jalali day should be 25", 25, jalali.day)
+
+        val monthName = CalendarConverter.getMonthName(jalali.month, CalendarType.JALALI)
+        assertEquals("شهریور", monthName)
+
+        val jalaliDayFarsi = CalendarConverter.toPersianDigits(jalali.day.toString())
+        assertEquals("۲۵", jalaliDayFarsi)
+
+        val gregDayFarsi = CalendarConverter.toPersianDigits("16")
+        assertEquals("۱۶", gregDayFarsi)
+
+        val hijriDayFarsi = CalendarConverter.toPersianDigits(hijri.day.toString())
+        assertTrue("Hijri day formatted with Persian digits", hijriDayFarsi.isNotEmpty())
+    }
 }
 

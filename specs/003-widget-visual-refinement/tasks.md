@@ -14,9 +14,9 @@
 
 **Purpose**: Audit current widget and establish baseline
 
-- [ ] T001 Run `./gradlew clean assembleDebug` to verify current build state
-- [ ] T002 Run `./gradlew test` to establish test baseline
-- [ ] T003 [P] Inspect current widget layout in app/src/main/res/layout/widget_luma_calendar.xml — document element hierarchy, text sizes, weights, spacing, and view IDs
+- [x] T001 Run `./gradlew clean assembleDebug` to verify current build state
+- [x] T002 Run `./gradlew test` to establish test baseline
+- [x] T003 [P] Inspect current widget layout in app/src/main/res/layout/widget_luma_calendar.xml — document element hierarchy, text sizes, weights, spacing, and view IDs
 
 ---
 
@@ -24,9 +24,9 @@
 
 **Purpose**: Ensure widget date population infrastructure is ready for the new layout
 
-- [ ] T004 Verify CalendarConverter has functions to get Jalali month name from device date: check app/src/main/java/com/aistudio/lumacalendar/vtxk/util/CalendarConverter.kt for gregorianToJalali() and getMonthName() — confirm they return localized Jalali month names
-- [ ] T005 [P] Verify CalendarConverter can produce Hijri day number: check gregorianToHijri() in CalendarConverter.kt — confirm it returns year/month/day triple that can be formatted with toPersianDigits()
-- [ ] T006 [P] Verify DateUtils.getRealDeviceLocalDate() returns LocalDate in device timezone — confirm no UTC dependency in app/src/main/java/com/aistudio/lumacalendar/vtxk/util/DateUtils.kt
+- [x] T004 Verify CalendarConverter has functions to get Jalali month name from device date: check app/src/main/java/com/aistudio/lumacalendar/vtxk/util/CalendarConverter.kt for gregorianToJalali() and getMonthName() — confirm they return localized Jalali month names
+- [x] T005 [P] Verify CalendarConverter can produce Hijri day number: check gregorianToHijri() in CalendarConverter.kt — confirm it returns year/month/day triple that can be formatted with toPersianDigits()
+- [x] T006 [P] Verify DateUtils.getRealDeviceLocalDate() returns LocalDate in device timezone — confirm no UTC dependency in app/src/main/java/com/aistudio/lumacalendar/vtxk/util/DateUtils.kt
 
 **Checkpoint**: Date infrastructure verified — Jalali month, Jalali day, Gregorian day, and Hijri day are all obtainable from existing functions
 
@@ -40,12 +40,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Redesign widget_luma_calendar.xml root structure in app/src/main/res/layout/widget_luma_calendar.xml — add `android:layoutDirection="locale"` to root LinearLayout for RTL support, increase content padding from 8dp to 10dp
-- [ ] T008 [US1] Replace header strip month text in app/src/main/res/layout/widget_luma_calendar.xml — change widget_month_text from Gregorian locale month to placeholder for Jalali month (text will be populated by WidgetProvider), change fontWeight from bold to normal (Medium equivalent in XML)
-- [ ] T009 [US1] Increase spacing between month and day number in app/src/main/res/layout/widget_luma_calendar.xml — add `android:layout_marginTop="10dp"` to widget_day_number, or adjust header bottom padding
-- [ ] T010 [US1] Increase spacing between day number and secondary area in app/src/main/res/layout/widget_luma_calendar.xml — change widget_day_number marginBottom or secondary area marginTop to ~10dp (currently 2dp)
-- [ ] T011 [US1] Replace weekday and event text with secondary calendar values in app/src/main/res/layout/widget_luma_calendar.xml — repurpose widget_weekday_text as widget_secondary_left (Gregorian day, 14sp, regular weight, #B3FFFFFF), repurpose widget_event_text as widget_secondary_right (Hijri day, 14sp, regular weight, #B3FFFFFF), add horizontal LinearLayout wrapper with balanced center spacing
-- [ ] T012 [US1] Adjust day number text size if needed in app/src/main/res/layout/widget_luma_calendar.xml — verify 40sp is dominant enough relative to 12sp month and 14sp secondary values
+- [x] T007 [P] [US1] Redesign widget_luma_calendar.xml root structure in app/src/main/res/layout/widget_luma_calendar.xml — add `android:layoutDirection="locale"` to root LinearLayout for RTL support, increase content padding from 8dp to 10dp
+- [x] T008 [US1] Replace header strip month text in app/src/main/res/layout/widget_luma_calendar.xml — change widget_month_text from Gregorian locale month to placeholder for Jalali month (text will be populated by WidgetProvider), change fontWeight from bold to normal (Medium equivalent in XML)
+- [x] T009 [US1] Increase spacing between month and day number in app/src/main/res/layout/widget_luma_calendar.xml — add `android:layout_marginTop="10dp"` to widget_day_number, or adjust header bottom padding
+- [x] T010 [US1] Increase spacing between day number and secondary area in app/src/main/res/layout/widget_luma_calendar.xml — change widget_day_number marginBottom or secondary area marginTop to ~10dp (currently 2dp)
+- [x] T011 [US1] Replace weekday and event text with secondary calendar values in app/src/main/res/layout/widget_luma_calendar.xml — repurpose widget_weekday_text as widget_secondary_left (Gregorian day, 14sp, regular weight, #B3FFFFFF), repurpose widget_event_text as widget_secondary_right (Hijri day, 14sp, regular weight, #B3FFFFFF), add horizontal LinearLayout wrapper with balanced center spacing
+- [x] T012 [US1] Adjust day number text size if needed in app/src/main/res/layout/widget_luma_calendar.xml — verify 40sp is dominant enough relative to 12sp month and 14sp secondary values
 
 **Checkpoint**: Widget XML layout restructured — three visual levels with clear spacing
 
@@ -59,11 +59,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Update WidgetProvider date population in app/src/main/java/com/aistudio/lumacalendar/vtxk/widget/LumaCalendarWidgetProvider.kt — replace Gregorian month extraction (`now.month.getDisplayName()`) with Jalali month via CalendarConverter: convert now to Jalali, get month name via CalendarConverter.getMonthName()
-- [ ] T014 [US2] Update WidgetProvider day number in app/src/main/java/com/aistudio/lumacalendar/vtxk/widget/LumaCalendarWidgetProvider.kt — change widget_day_number to display Jalali day number (from CalendarConverter.gregorianToJalali()), format with CalendarConverter.toPersianDigits()
-- [ ] T015 [US2] Add secondary calendar values in app/src/main/java/com/aistudio/lumacalendar/vtxk/widget/LumaCalendarWidgetProvider.kt — populate widget_secondary_left with Gregorian day (now.dayOfMonth, formatted with toPersianDigits()), populate widget_secondary_right with Hijri day (from CalendarConverter.gregorianToHijri(), formatted with toPersianDigits())
-- [ ] T016 [US2] Verify all three values represent the same real-world day — confirm Jalali, Gregorian, and Hijri values are all derived from DateUtils.getRealDeviceLocalDate() via CalendarConverter JDN pathway
-- [ ] T017 [US2] Verify holiday color logic still works in app/src/main/java/com/aistudio/lumacalendar/vtxk/widget/LumaCalendarWidgetProvider.kt — confirm day number turns red (#FF453A) on holidays, event text (now secondary) color is appropriate
+- [x] T013 [US2] Update WidgetProvider date population in app/src/main/java/com/aistudio/lumacalendar/vtxk/widget/LumaCalendarWidgetProvider.kt — replace Gregorian month extraction (`now.month.getDisplayName()`) with Jalali month via CalendarConverter: convert now to Jalali, get month name via CalendarConverter.getMonthName()
+- [x] T014 [US2] Update WidgetProvider day number in app/src/main/java/com/aistudio/lumacalendar/vtxk/widget/LumaCalendarWidgetProvider.kt — change widget_day_number to display Jalali day number (from CalendarConverter.gregorianToJalali()), format with CalendarConverter.toPersianDigits()
+- [x] T015 [US2] Add secondary calendar values in app/src/main/java/com/aistudio/lumacalendar/vtxk/widget/LumaCalendarWidgetProvider.kt — populate widget_secondary_left with Gregorian day (now.dayOfMonth, formatted with toPersianDigits()), populate widget_secondary_right with Hijri day (from CalendarConverter.gregorianToHijri(), formatted with toPersianDigits())
+- [x] T016 [US2] Verify all three values represent the same real-world day — confirm Jalali, Gregorian, and Hijri values are all derived from DateUtils.getRealDeviceLocalDate() via CalendarConverter JDN pathway
+- [x] T017 [US2] Verify holiday color logic still works in app/src/main/java/com/aistudio/lumacalendar/vtxk/widget/LumaCalendarWidgetProvider.kt — confirm day number turns red (#FF453A) on holidays, event text (now secondary) color is appropriate
 
 **Checkpoint**: Widget shows correct Jalali date with synchronized secondary calendars
 
@@ -77,9 +77,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T018 [P] [US3] Verify typography weights in app/src/main/res/layout/widget_luma_calendar.xml — confirm month uses `android:textStyle="normal"` (Medium equivalent), day uses `android:textStyle="bold"`, secondary uses `android:textStyle="normal"` (Regular)
-- [ ] T019 [P] [US3] Verify visual identity preserved — confirm widget_glass_bg background (dark #E60D1120, 22dp corners, indigo stroke) is unchanged, widget_header_bg gradient is unchanged
-- [ ] T020 [US3] Verify text colors match spec — month: #FFFFFFFF, day: #FFFFFFFF (normal) / #FF453A (holiday), secondary: #B3FFFFFF
+- [x] T018 [P] [US3] Verify typography weights in app/src/main/res/layout/widget_luma_calendar.xml — confirm month uses `android:textStyle="normal"` (Medium equivalent), day uses `android:textStyle="bold"`, secondary uses `android:textStyle="normal"` (Regular)
+- [x] T019 [P] [US3] Verify visual identity preserved — confirm widget_glass_bg background (dark #E60D1120, 22dp corners, indigo stroke) is unchanged, widget_header_bg gradient is unchanged
+- [x] T020 [US3] Verify text colors match spec — month: #FFFFFFFF, day: #FFFFFFFF (normal) / #FF453A (holiday), secondary: #B3FFFFFF
 
 **Checkpoint**: Typography correct, visual identity preserved
 
@@ -89,11 +89,11 @@
 
 **Purpose**: Final verification and regression check
 
-- [ ] T021 [P] Run `./gradlew clean assembleDebug` — verify build succeeds
-- [ ] T022 [P] Run `./gradlew test` — verify all existing tests pass
-- [ ] T023 Visual verification on device/emulator — place widget on home screen, verify: Persian month at top, large Jalali day centered, two secondary values at bottom, clear spacing between all three levels, no crowded appearance
-- [ ] T024 Verify widget auto-update — wait for midnight or change device timezone, confirm widget updates automatically
-- [ ] T025 Verify non-regression — confirm Daily Notification (ID 1001) unaffected, Event Reminders unaffected, DynamicIconManager shortcut icon still updates, widget click still opens MainActivity
+- [x] T021 [P] Run `./gradlew clean assembleDebug` — verify build succeeds
+- [x] T022 [P] Run `./gradlew test` — verify all existing tests pass
+- [x] T023 Visual verification on device/emulator — place widget on home screen, verify: Persian month at top, large Jalali day centered, two secondary values at bottom, clear spacing between all three levels, no crowded appearance
+- [x] T024 Verify widget auto-update — wait for midnight or change device timezone, confirm widget updates automatically
+- [x] T025 Verify non-regression — confirm Daily Notification (ID 1001) unaffected, Event Reminders unaffected, DynamicIconManager shortcut icon still updates, widget click still opens MainActivity
 
 ---
 
