@@ -8,43 +8,13 @@
     android:orientation="horizontal"
     android:padding="12dp">
 
-    <!-- App Icon: Dynamic Canvas Bitmap with blue->violet gradient & day number -->
-    <ImageView
-        android:id="@+id/notification_app_icon"
-        android:layout_width="38dp"
-        android:layout_height="38dp"
-        android:contentDescription="Luma Calendar Icon"
-        android:scaleType="fitCenter" />
-
-    <!-- Center Content: Header, Main Date & Secondary Date -->
+    <!-- Center Content: Main Date & Secondary Date -->
     <LinearLayout
         android:id="@+id/notification_content_col"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
         android:orientation="vertical">
-
-        <!-- Header: App Name & Dot -->
-        <LinearLayout
-            android:id="@+id/notification_header_row"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:visibility="visible">
-
-            <TextView
-                android:id="@+id/notification_header_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:textColor="#94A3B8"
-                android:textSize="11sp"
-                android:fontFamily="@font/vazirmatn_medium" />
-        </LinearLayout>
 
         <!-- Main Prominent Persian Date -->
         <TextView

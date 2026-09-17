@@ -175,7 +175,6 @@ object LumaNotificationManager {
             val secondaryDateText: String
             val tileMonthText: String
             val tileDayText: String
-            val iconDayText: String
             val dailyMessageText: String
 
             val actionTodayText = appStrings.today
@@ -188,7 +187,6 @@ object LumaNotificationManager {
                     secondaryDateText = "$persianFullDate  •  $hijriDate"
                     tileMonthText = gMonthName.take(3).uppercase()
                     tileDayText = g.day.toString()
-                    iconDayText = g.day.toString()
                     dailyMessageText = customMessage ?: when {
                         eventsToday.isNotEmpty() -> "✨ ${eventsToday.size} event${if (eventsToday.size > 1) "s" else ""} scheduled for today"
                         else -> appStrings.notificationDailyMsgEmpty
@@ -199,7 +197,6 @@ object LumaNotificationManager {
                     secondaryDateText = "$persianFullDate  •  $gregorianDate"
                     tileMonthText = hMonthName
                     tileDayText = hDayPersian
-                    iconDayText = hDayPersian
                     dailyMessageText = customMessage ?: when {
                         eventsToday.isNotEmpty() -> {
                             val count = CalendarConverter.toPersianDigits(eventsToday.size.toString())
@@ -213,7 +210,6 @@ object LumaNotificationManager {
                     secondaryDateText = "$gregorianDate  •  $hijriDate"
                     tileMonthText = jMonthName
                     tileDayText = jDayPersian
-                    iconDayText = jDayPersian
                     dailyMessageText = customMessage ?: when {
                         eventsToday.isNotEmpty() -> {
                             val count = CalendarConverter.toPersianDigits(eventsToday.size.toString())
@@ -224,18 +220,10 @@ object LumaNotificationManager {
                 }
             }
 
-            Log.d(TAG, "Display data resolved: mainDate='$mainDateText', secondary='$secondaryDateText', iconDay='$iconDayText'")
+            Log.d(TAG, "Display data resolved: mainDate='$mainDateText', secondary='$secondaryDateText'")
 
-            // 5. Generate Dynamic App Icon with current day number & glass gradient
-            val appIconBitmap = LumaNotificationIconGenerator.generateIcon(
-                context = context,
-                dayText = iconDayText,
-                sizePx = 120
-            )
-
-            // 6. Build RemoteViews for Collapsed and Expanded notifications
+            // 5. Build RemoteViews for Collapsed and Expanded notifications
             val collapsedViews = RemoteViews(context.packageName, R.layout.notification_luma_calendar).apply {
-                setImageViewBitmap(R.id.notification_app_icon, appIconBitmap)
                 setTextViewText(R.id.notification_main_date, mainDateText)
                 setTextViewText(R.id.notification_secondary_date, secondaryDateText)
                 setTextViewText(R.id.notification_tile_month, tileMonthText)
@@ -243,7 +231,6 @@ object LumaNotificationManager {
             }
 
             val expandedViews = RemoteViews(context.packageName, R.layout.notification_luma_calendar_expanded).apply {
-                setImageViewBitmap(R.id.notification_app_icon, appIconBitmap)
                 setTextViewText(R.id.notification_main_date, mainDateText)
                 setTextViewText(R.id.notification_secondary_date, secondaryDateText)
                 setTextViewText(R.id.notification_daily_message, dailyMessageText)

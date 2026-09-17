@@ -7,35 +7,7 @@
     android:orientation="vertical"
     android:padding="14dp">
 
-    <!-- Row 1: App Header (Un-hidden now that DecoratedCustomViewStyle is removed) -->
-    <LinearLayout
-        android:id="@+id/notification_header_row"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:visibility="visible">
-
-        <ImageView
-            android:id="@+id/notification_app_icon"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:contentDescription="Luma Calendar Icon"
-            android:scaleType="fitCenter" />
-
-        <TextView
-            android:id="@+id/notification_header_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="@string/app_name"
-            android:textColor="#94A3B8"
-            android:textSize="12sp"
-            android:fontFamily="@font/vazirmatn_medium" />
-    </LinearLayout>
-
-    <!-- Row 2: Two-Column Content (Left: Main info, Right: Miniature Calendar Tile) -->
+    <!-- Row 1: Two-Column Content (Left: Main info, Right: Miniature Calendar Tile) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
