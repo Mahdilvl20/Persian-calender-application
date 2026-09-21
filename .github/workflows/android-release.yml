@@ -49,6 +49,8 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew clean assembleRelease -PabiSplits --stacktrace
 
+      # Upload the exact APK files as individual Release assets (not zipped).
+      # Filenames come from archivesName "LumaCalendar" + ABI + build type.
       - name: Create GitHub Release and attach APKs
         uses: softprops/action-gh-release@v2
         with:
@@ -56,12 +58,11 @@ jobs:
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: |
-            app/build/outputs/apk/release/*universal*.apk
-            app/build/outputs/apk/release/*arm64-v8a*.apk
-            app/build/outputs/apk/release/*armeabi-v7a*.apk
-            app/build/outputs/apk/release/*x86_64*.apk
-            app/build/outputs/apk/release/*_x86.apk
-            app/build/outputs/apk/release/*-x86-release.apk
+            app/build/outputs/apk/release/LumaCalendar-universal-release.apk
+            app/build/outputs/apk/release/LumaCalendar-arm64-v8a-release.apk
+            app/build/outputs/apk/release/LumaCalendar-armeabi-v7a-release.apk
+            app/build/outputs/apk/release/LumaCalendar-x86_64-release.apk
+            app/build/outputs/apk/release/LumaCalendar-x86-release.apk
 
       # Remove the decoded keystore even if a previous step failed.
       - name: Clean up keystore
