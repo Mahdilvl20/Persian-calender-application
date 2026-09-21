@@ -9,9 +9,26 @@ plugins {
   alias(libs.plugins.google.services)
 }
 
+// Gate ABI splits behind a Gradle property so normal debug/IDE builds stay a
+// single universal APK. Produce per-ABI release APKs with:
+//   ./gradlew assembleRelease -PabiSplits
+val abiSplitsEnabled = project.hasProperty("abiSplits")
+
+// Branded artifact base name → outputs are LumaCalendar-<abi>-<buildType>.apk
+base { archivesName.set("LumaCalendar") }
+
 android {
   namespace = "com.aistudio.lumacalendar.vtxk"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
+
+  splits {
+    abi {
+      isEnable = abiSplitsEnabled
+      reset()
+      include("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+      isUniversalApk = true
+    }
+  }
 
   defaultConfig {
     applicationId = "com.aistudio.lumacalendar.vtxk"

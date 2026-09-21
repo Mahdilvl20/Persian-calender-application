@@ -1,0 +1,105 @@
+name: Android CI
+
+# Builds and tests on every push. Does NOT create GitHub Releases.
+on:
+  push:
+  pull_request:
+
+# Avoid redundant runs on the same ref.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Test & build release APKs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Configures Gradle and enables read/write dependency + build caching.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # Decode the base64 keystore secret into a temp file for release signing.
+      # The secret is piped through env (never echoed) and the file lives only
+      # under $RUNNER_TEMP; it is deleted by the cleanup step below.
+      - name: Decode release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/lumacalendar.keystore"
+
+      - name: Run unit tests
+        run: ./gradlew test --stacktrace
+
+      - name: Build normal release APK
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/lumacalendar.keystore
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Build ABI-split release APKs
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/lumacalendar.keystore
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew clean assembleRelease -PabiSplits --stacktrace
+
+      # Remove the decoded keystore even if a previous step failed.
+      - name: Clean up keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/lumacalendar.keystore"
+
+      - name: Upload universal APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LumaCalendar-universal
+          path: app/build/outputs/apk/release/*universal*.apk
+          if-no-files-found: error
+
+      - name: Upload arm64-v8a APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LumaCalendar-arm64-v8a
+          path: app/build/outputs/apk/release/*arm64-v8a*.apk
+          if-no-files-found: error
+
+      - name: Upload armeabi-v7a APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LumaCalendar-armeabi-v7a
+          path: app/build/outputs/apk/release/*armeabi-v7a*.apk
+          if-no-files-found: error
+
+      - name: Upload x86_64 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LumaCalendar-x86_64
+          path: app/build/outputs/apk/release/*x86_64*.apk
+          if-no-files-found: error
+
+      - name: Upload x86 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LumaCalendar-x86
+          # Match x86 but not x86_64.
+          path: |
+            app/build/outputs/apk/release/*_x86.apk
+            app/build/outputs/apk/release/*-x86-release.apk
+          if-no-files-found: error
