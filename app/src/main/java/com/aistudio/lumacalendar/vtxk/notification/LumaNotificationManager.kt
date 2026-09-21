@@ -14,6 +14,7 @@ import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.IconCompat
 import com.aistudio.lumacalendar.vtxk.MainActivity
 import com.aistudio.lumacalendar.vtxk.R
 import com.aistudio.lumacalendar.vtxk.data.CalendarEvent
@@ -222,6 +223,11 @@ object LumaNotificationManager {
 
             Log.d(TAG, "Display data resolved: mainDate='$mainDateText', secondary='$secondaryDateText'")
 
+            // 4b. Small-icon day number: always the real device-local Jalali day.
+            // Digit form follows active localization (Persian for JALALI, Latin otherwise).
+            val smallIconDayText = if (calendarType == CalendarType.JALALI) jDayPersian else j.day.toString()
+            val smallIconBitmap = LumaNotificationIconGenerator.generateSmallIcon(context, smallIconDayText)
+
             // 5. Build RemoteViews for Collapsed and Expanded notifications
             val collapsedViews = RemoteViews(context.packageName, R.layout.notification_luma_calendar).apply {
                 setTextViewText(R.id.notification_main_date, mainDateText)
@@ -296,7 +302,7 @@ object LumaNotificationManager {
 
             // 8. Assemble Notification without DecoratedCustomViewStyle to eliminate the system container card
             val notification = NotificationCompat.Builder(context, CHANNEL_ID_DAILY)
-                .setSmallIcon(R.drawable.ic_notification_luma)
+                .setSmallIcon(IconCompat.createWithBitmap(smallIconBitmap))
                 .setColor(ContextCompat.getColor(context, R.color.notification_accent))
                 .setCustomContentView(collapsedViews)
                 .setCustomBigContentView(expandedViews)

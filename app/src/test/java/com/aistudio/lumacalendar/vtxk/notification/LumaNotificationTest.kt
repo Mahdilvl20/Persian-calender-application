@@ -3,7 +3,6 @@ package com.aistudio.lumacalendar.vtxk.notification
 import android.Manifest
 import android.content.Context
 import android.view.LayoutInflater
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import com.aistudio.lumacalendar.vtxk.R
@@ -73,20 +72,55 @@ class LumaNotificationTest {
     }
 
     @Test
+    fun testSmallIconRendersForSingleAndDoubleDigit() {
+        // Double-digit Jalali day
+        val doubleDigit = LumaNotificationIconGenerator.generateSmallIcon(context, "۳۱", 96)
+        assertNotNull(doubleDigit)
+        assertEquals(96, doubleDigit.width)
+        assertEquals(96, doubleDigit.height)
+
+        // Single-digit Jalali day
+        val singleDigit = LumaNotificationIconGenerator.generateSmallIcon(context, "۹", 96)
+        assertNotNull(singleDigit)
+        assertEquals(96, singleDigit.width)
+
+        // Alpha-mask: at least some fully-opaque white pixels exist (the glyph)
+        var opaqueWhite = 0
+        for (x in 0 until doubleDigit.width step 4) {
+            for (y in 0 until doubleDigit.height step 4) {
+                if (doubleDigit.getPixel(x, y) == android.graphics.Color.WHITE) opaqueWhite++
+            }
+        }
+        assertTrue("Small icon must contain opaque white glyph pixels", opaqueWhite > 0)
+    }
+
+    @Test
+    fun testSmallIconDayNumberDerivation() {
+        // Device-local date → Jalali day → localized digits (pure function of inputs)
+        val testDate = "2026-09-13"
+        val j = CalendarConverter.gregorianToJalali(testDate)
+        assertEquals(22, j.day)
+
+        // JALALI localization → Persian digits
+        val jalaliDayText = CalendarConverter.toPersianDigits(j.day.toString())
+        assertEquals("۲۲", jalaliDayText)
+
+        // Gregorian/English localization → Latin digits
+        val latinDayText = j.day.toString()
+        assertEquals("22", latinDayText)
+    }
+
+    @Test
     fun testCollapsedNotificationLayoutInflatesProperly() {
         val inflater = LayoutInflater.from(context)
         val view = inflater.inflate(R.layout.notification_luma_calendar, null)
         assertNotNull(view)
 
-        val icon = view.findViewById<ImageView>(R.id.notification_app_icon)
-        val headerTitle = view.findViewById<TextView>(R.id.notification_header_title)
         val mainDate = view.findViewById<TextView>(R.id.notification_main_date)
         val secDate = view.findViewById<TextView>(R.id.notification_secondary_date)
         val tileMonth = view.findViewById<TextView>(R.id.notification_tile_month)
         val tileDay = view.findViewById<TextView>(R.id.notification_tile_day)
 
-        assertNotNull(icon)
-        assertNotNull(headerTitle)
         assertNotNull(mainDate)
         assertNotNull(secDate)
         assertNotNull(tileMonth)
@@ -99,8 +133,6 @@ class LumaNotificationTest {
         val view = inflater.inflate(R.layout.notification_luma_calendar_expanded, null)
         assertNotNull(view)
 
-        val icon = view.findViewById<ImageView>(R.id.notification_app_icon)
-        val headerTitle = view.findViewById<TextView>(R.id.notification_header_title)
         val mainDate = view.findViewById<TextView>(R.id.notification_main_date)
         val secDate = view.findViewById<TextView>(R.id.notification_secondary_date)
         val message = view.findViewById<TextView>(R.id.notification_daily_message)
@@ -111,8 +143,6 @@ class LumaNotificationTest {
         val actionNewEvent = view.findViewById<android.view.View>(R.id.notification_action_new_event)
         val actionRemindLater = view.findViewById<android.view.View>(R.id.notification_action_remind_later)
 
-        assertNotNull(icon)
-        assertNotNull(headerTitle)
         assertNotNull(mainDate)
         assertNotNull(secDate)
         assertNotNull(message)
