@@ -15,7 +15,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.GraphicsMode
 
+// NATIVE graphics mode makes Robolectric actually rasterize Canvas draw calls;
+// the legacy default treats them as no-ops, leaving generated bitmaps blank.
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @RunWith(RobolectricTestRunner::class)
 class LumaNotificationTest {
 
