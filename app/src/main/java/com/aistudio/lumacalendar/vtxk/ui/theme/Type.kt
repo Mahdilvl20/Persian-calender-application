@@ -1,6 +1,7 @@
 package com.aistudio.lumacalendar.vtxk.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -244,12 +245,13 @@ object VazirmatnTypography {
         lineHeight = 28.sp,
         color = TextWhitePrimary
     )
+    // Color intentionally unset here: applied from the selected accent by the composable
+    // accessor below, because a plain TextStyle cannot read a CompositionLocal (FR-012).
     val importantDate = TextStyle(
         fontFamily = VazirmatnFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp,
-        lineHeight = 22.sp,
-        color = AccentElectricBlue
+        lineHeight = 22.sp
     )
     val dialogTitle = TextStyle(
         fontFamily = VazirmatnFontFamily,
@@ -289,12 +291,13 @@ object VazirmatnTypography {
         letterSpacing = 0.sp,
         color = TextWhitePrimary
     )
+    // Color intentionally unset here: applied from the selected accent by the composable
+    // accessor below (FR-012).
     val highlightedInfo = TextStyle(
         fontFamily = VazirmatnFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp,
-        lineHeight = 22.sp,
-        color = AccentElectricBlue
+        lineHeight = 22.sp
     )
     val majorHeading = TextStyle(
         fontFamily = VazirmatnFontFamily,
@@ -469,14 +472,18 @@ val Typography.calendarYear: TextStyle get() = VazirmatnTypography.calendarYear
 val Typography.sectionTitle: TextStyle get() = VazirmatnTypography.sectionTitle
 val Typography.eventTitle: TextStyle get() = VazirmatnTypography.eventTitle
 val Typography.screenTitle: TextStyle get() = VazirmatnTypography.screenTitle
-val Typography.importantDate: TextStyle get() = VazirmatnTypography.importantDate
+@get:Composable
+val Typography.importantDate: TextStyle
+    get() = VazirmatnTypography.importantDate.copy(color = LocalLumaAppearance.current.accentPrimary)
 val Typography.dialogTitle: TextStyle get() = VazirmatnTypography.dialogTitle
 val Typography.cardTitle: TextStyle get() = VazirmatnTypography.cardTitle
 val Typography.activeLabel: TextStyle get() = VazirmatnTypography.activeLabel
 val Typography.importantNumber: TextStyle get() = VazirmatnTypography.importantNumber
 
 val Typography.mainScreenTitle: TextStyle get() = VazirmatnTypography.mainScreenTitle
-val Typography.highlightedInfo: TextStyle get() = VazirmatnTypography.highlightedInfo
+@get:Composable
+val Typography.highlightedInfo: TextStyle
+    get() = VazirmatnTypography.highlightedInfo.copy(color = LocalLumaAppearance.current.accentPrimary)
 val Typography.majorHeading: TextStyle get() = VazirmatnTypography.majorHeading
 val Typography.specialEmphasis: TextStyle get() = VazirmatnTypography.specialEmphasis
 val Typography.alertErrorText: TextStyle get() = VazirmatnTypography.alertErrorText

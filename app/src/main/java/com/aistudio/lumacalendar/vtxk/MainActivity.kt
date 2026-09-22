@@ -59,7 +59,6 @@ import com.aistudio.lumacalendar.vtxk.ui.screens.CalendarScreen
 import com.aistudio.lumacalendar.vtxk.ui.screens.SearchScreen
 import com.aistudio.lumacalendar.vtxk.ui.screens.SettingsScreen
 import com.aistudio.lumacalendar.vtxk.ui.theme.LumaCalendarTheme
-import com.aistudio.lumacalendar.vtxk.ui.viewmodel.AccentPresets
 import com.aistudio.lumacalendar.vtxk.ui.viewmodel.LumaViewModel
 import com.aistudio.lumacalendar.vtxk.util.DynamicIconManager
 import com.aistudio.lumacalendar.vtxk.util.LocalAppStrings
@@ -83,7 +82,12 @@ class MainActivity : ComponentActivity() {
         DynamicIconManager.ensureMainActivityEnabled(applicationContext)
         DynamicIconManager.syncIfDateChanged(applicationContext)
         setContent {
-            LumaCalendarTheme {
+            val appearanceThemeName by viewModel.themeName.collectAsState()
+            val appearanceAccentIndex by viewModel.accentColorIndex.collectAsState()
+            LumaCalendarTheme(
+                themeName = appearanceThemeName,
+                accentColorIndex = appearanceAccentIndex
+            ) {
                 LumaApp(viewModel = viewModel)
             }
         }
@@ -211,7 +215,7 @@ fun LumaApp(viewModel: LumaViewModel) {
     val selectedDate by viewModel.selectedDate.collectAsState()
     val calendarViewMode by viewModel.calendarViewMode.collectAsState()
     val calendarType by viewModel.calendarType.collectAsState()
-    val allEvents by viewModel.allEvents.collectAsState()
+    val visibleEvents by viewModel.visibleEvents.collectAsState()
 
     val selectedDayEvents by viewModel.selectedDateEvents.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -235,9 +239,6 @@ fun LumaApp(viewModel: LumaViewModel) {
     val themeName by viewModel.themeName.collectAsState()
     val snoozeMinutes by viewModel.snoozeMinutes.collectAsState()
     val persianDaysMap by viewModel.persianDaysMap.collectAsState()
-    val isPersianLoading by viewModel.isPersianLoading.collectAsState()
-
-    val currentAccent = AccentPresets.getOrElse(accentIndex) { AccentPresets[0] }.primary
 
     val layoutDirection = LocalizationManager.getLayoutDirection(calendarType)
     val appStrings = LocalizationManager.getStrings(calendarType)
@@ -256,8 +257,7 @@ fun LumaApp(viewModel: LumaViewModel) {
         LocalAppStrings provides appStrings,
         LocalCalendarType provides calendarType
     ) {
-        val isOledTheme = themeName.contains("OLED", ignoreCase = true)
-        AmbientBackground(accentGlow = currentAccent, isOled = isOledTheme) {
+        AmbientBackground {
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxSize()
@@ -288,7 +288,7 @@ fun LumaApp(viewModel: LumaViewModel) {
                                 selectedDate = selectedDate,
                                 calendarViewMode = calendarViewMode,
                                 calendarType = calendarType,
-                                events = allEvents,
+                                events = visibleEvents,
                                 selectedDayEvents = selectedDayEvents,
                                 firstDayMonday = firstDayMonday,
                                 showWeekNumbers = showWeekNumbers,
@@ -300,8 +300,7 @@ fun LumaApp(viewModel: LumaViewModel) {
                                 onCalendarTypeChange = { viewModel.setCalendarType(it) },
                                 onEventClick = { viewModel.openEventDetail(it) },
                                 onAddEventClick = { viewModel.openAddEvent(it) },
-                                persianDaysMap = persianDaysMap,
-                                isPersianLoading = isPersianLoading
+                                persianDaysMap = persianDaysMap
                             )
                             1 -> SearchScreen(
                                 searchQuery = searchQuery,

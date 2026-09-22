@@ -33,8 +33,6 @@ import com.aistudio.lumacalendar.vtxk.ui.components.EventCard
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassCard
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassIconButton
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassInput
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceUltraLight
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteMuted
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhitePrimary
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteSecondary
@@ -43,6 +41,7 @@ import com.aistudio.lumacalendar.vtxk.util.CalendarType
 import com.aistudio.lumacalendar.vtxk.util.DateUtils
 import com.aistudio.lumacalendar.vtxk.util.LocalAppStrings
 import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
+import com.aistudio.lumacalendar.vtxk.ui.theme.LocalLumaAppearance
 
 @Composable
 fun SearchScreen(
@@ -107,7 +106,7 @@ fun SearchScreen(
             item {
                 CategoryChip(
                     name = strings.all,
-                    color = AccentElectricBlue,
+                    color = LocalLumaAppearance.current.accentPrimary,
                     isSelected = selectedCategory == "All",
                     onSelect = { onCategoryChange("All") },
                     testTag = "chip_search_all"
@@ -131,7 +130,7 @@ fun SearchScreen(
                     .fillMaxWidth()
                     .padding(vertical = 24.dp),
                 cornerRadius = 20.dp,
-                surfaceColor = GlassSurfaceUltraLight
+                surfaceColor = LocalLumaAppearance.current.surfaceUltraLight
             ) {
                 Column(
                     modifier = Modifier
@@ -176,7 +175,7 @@ fun SearchScreen(
                             text = DateUtils.formatMonthDay(dateStr, calendarType = calendarType),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold,
-                                color = AccentElectricBlue
+                                color = LocalLumaAppearance.current.accentPrimary
                             ),
                             modifier = Modifier.padding(start = 4.dp, top = 6.dp)
                         )

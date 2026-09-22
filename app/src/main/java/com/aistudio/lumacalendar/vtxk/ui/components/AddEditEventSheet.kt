@@ -60,15 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.aistudio.lumacalendar.vtxk.data.CalendarEvent
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentRoyalViolet
-import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasBlack
-import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasNavy
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderBright
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderSubtle
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceHighlight
+import com.aistudio.lumacalendar.vtxk.ui.theme.CategorySpecial
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteMuted
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhitePrimary
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteSecondary
@@ -78,6 +70,15 @@ import com.aistudio.lumacalendar.vtxk.util.DateUtils
 import com.aistudio.lumacalendar.vtxk.util.LocalAppStrings
 import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
 import java.util.Locale
+import com.aistudio.lumacalendar.vtxk.ui.theme.LocalLumaAppearance
+
+/**
+ * VB-001/VB-003: blank titles (empty or whitespace-only, including Unicode
+ * whitespace) are rejected; valid titles are returned trimmed.
+ * Returns null when the title must not be saved.
+ */
+internal fun sanitizeEventTitle(title: String): String? =
+    title.trim().takeIf { it.isNotEmpty() }
 
 @Composable
 fun AddEditEventSheet(
@@ -105,6 +106,7 @@ fun AddEditEventSheet(
     val isRtl = LocalizationManager.isRtl(activeCalendarType)
 
     var title by remember(event) { mutableStateOf(event?.title ?: "") }
+    var titleError by remember(event) { mutableStateOf(false) }
     var date by remember(event, defaultDate) { mutableStateOf(event?.date ?: defaultDate) }
     var showManualDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -152,8 +154,8 @@ fun AddEditEventSheet(
                     .background(
                         Brush.verticalGradient(
                             listOf(
-                                CanvasNavy.copy(alpha = 0.95f),
-                                CanvasBlack.copy(alpha = 0.98f)
+                                LocalLumaAppearance.current.canvasMid.copy(alpha = 0.95f),
+                                LocalLumaAppearance.current.canvasBase.copy(alpha = 0.98f)
                             )
                         )
                     )
@@ -161,8 +163,8 @@ fun AddEditEventSheet(
                         1.dp,
                         Brush.linearGradient(
                             listOf(
-                                GlassBorderBright.copy(alpha = 0.5f),
-                                GlassBorderSubtle
+                                LocalLumaAppearance.current.borderBright.copy(alpha = 0.5f),
+                                LocalLumaAppearance.current.borderSubtle
                             )
                         ),
                         RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
@@ -219,19 +221,25 @@ fun AddEditEventSheet(
                             text = strings.save,
                             isPrimary = true,
                             onClick = {
-                                val normTime = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(eventTime, "11:00")
-                                onSave(
-                                    event?.id ?: 0L,
-                                    title.ifBlank { strings.newEvent },
-                                    date,
-                                    normTime,
-                                    selectedCategory.name,
-                                    selectedCategory.hex,
-                                    location,
-                                    notes,
-                                    reminderMinutes,
-                                    calendarType
-                                )
+                                val safeTitle = sanitizeEventTitle(title)
+                                if (safeTitle == null) {
+                                    titleError = true
+                                } else {
+                                    titleError = false
+                                    val normTime = com.aistudio.lumacalendar.vtxk.util.TimeValidator.normalizeTime(eventTime, "11:00")
+                                    onSave(
+                                        event?.id ?: 0L,
+                                        safeTitle,
+                                        date,
+                                        normTime,
+                                        selectedCategory.name,
+                                        selectedCategory.hex,
+                                        location,
+                                        notes,
+                                        reminderMinutes,
+                                        calendarType
+                                    )
+                                }
                             },
                             testTag = "btn_save_event"
                         )
@@ -258,10 +266,26 @@ fun AddEditEventSheet(
                         )
                         GlassInput(
                             value = title,
-                            onValueChange = { title = it },
+                            onValueChange = {
+                                title = it
+                                if (titleError) titleError = false
+                            },
                             placeholder = strings.eventTitlePlaceholder,
                             testTag = "input_event_title"
                         )
+                        if (titleError) {
+                            Text(
+                                text = strings.titleRequiredError,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = CategorySpecial,
+                                    fontWeight = FontWeight.Medium,
+                                    letterSpacing = 0.sp
+                                ),
+                                modifier = Modifier
+                                    .padding(start = 4.dp, top = 6.dp)
+                                    .testTag("text_title_required_error")
+                            )
+                        }
 
                         Spacer(modifier = Modifier.height(18.dp))
 
@@ -324,7 +348,7 @@ fun AddEditEventSheet(
                                         Icon(
                                             imageVector = Icons.Outlined.CalendarMonth,
                                             contentDescription = null,
-                                            tint = AccentElectricBlue,
+                                            tint = LocalLumaAppearance.current.accentPrimary,
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
@@ -345,7 +369,7 @@ fun AddEditEventSheet(
                                         Text(
                                             text = DateUtils.formatDisplayDate(date, activeCalendarType),
                                             style = MaterialTheme.typography.bodyMedium.copy(
-                                                color = AccentElectricBlue,
+                                                color = LocalLumaAppearance.current.accentPrimary,
                                                 fontWeight = FontWeight.SemiBold,
                                                 letterSpacing = 0.sp
                                             )
@@ -372,12 +396,12 @@ fun AddEditEventSheet(
                                             modifier = Modifier
                                                 .clip(RoundedCornerShape(12.dp))
                                                 .background(
-                                                    if (isSel) AccentRoyalViolet.copy(alpha = 0.4f)
-                                                    else GlassSurfaceDefault
+                                                    if (isSel) LocalLumaAppearance.current.accentSecondary.copy(alpha = 0.4f)
+                                                    else LocalLumaAppearance.current.surfaceDefault
                                                 )
                                                 .border(
                                                     0.8.dp,
-                                                    if (isSel) AccentElectricBlue else GlassBorderSubtle,
+                                                    if (isSel) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.borderSubtle,
                                                     RoundedCornerShape(12.dp)
                                                 )
                                                 .clickable { date = qDate }
@@ -398,8 +422,8 @@ fun AddEditEventSheet(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(12.dp))
-                                            .background(GlassSurfaceHighlight)
-                                            .border(0.8.dp, AccentElectricBlue.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                                            .background(LocalLumaAppearance.current.surfaceHighlight)
+                                            .border(0.8.dp, LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                                             .clickable { showManualDatePicker = true }
                                             .padding(horizontal = 10.dp, vertical = 6.dp)
                                             .testTag("btn_custom_date_picker")
@@ -407,7 +431,7 @@ fun AddEditEventSheet(
                                         Text(
                                             text = strings.selectDate,
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                color = AccentElectricBlue,
+                                                color = LocalLumaAppearance.current.accentPrimary,
                                                 fontWeight = FontWeight.SemiBold,
                                                 letterSpacing = 0.sp
                                             )
@@ -420,7 +444,7 @@ fun AddEditEventSheet(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(0.8.dp)
-                                        .background(GlassBorderSubtle)
+                                        .background(LocalLumaAppearance.current.borderSubtle)
                                 )
                                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -434,7 +458,7 @@ fun AddEditEventSheet(
                                         Icon(
                                             imageVector = Icons.Outlined.Schedule,
                                             contentDescription = null,
-                                            tint = AccentElectricBlue,
+                                            tint = LocalLumaAppearance.current.accentPrimary,
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
@@ -505,7 +529,7 @@ fun AddEditEventSheet(
                                         Icon(
                                             imageVector = Icons.Outlined.Notifications,
                                             contentDescription = null,
-                                            tint = AccentElectricBlue,
+                                            tint = LocalLumaAppearance.current.accentPrimary,
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
@@ -526,8 +550,8 @@ fun AddEditEventSheet(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(10.dp))
-                                            .background(GlassSurfaceHighlight)
-                                            .border(0.8.dp, GlassBorderSubtle, RoundedCornerShape(10.dp))
+                                            .background(LocalLumaAppearance.current.surfaceHighlight)
+                                            .border(0.8.dp, LocalLumaAppearance.current.borderSubtle, RoundedCornerShape(10.dp))
                                             .clickable {
                                                 val nextIdx = (reminderMinutesOptions.indexOf(reminderMinutes) + 1) % reminderMinutesOptions.size
                                                 reminderMinutes = reminderMinutesOptions[nextIdx]
@@ -537,7 +561,7 @@ fun AddEditEventSheet(
                                         Text(
                                             text = curReminderText,
                                             style = MaterialTheme.typography.bodySmall.copy(
-                                                color = AccentElectricBlue,
+                                                color = LocalLumaAppearance.current.accentPrimary,
                                                 fontWeight = FontWeight.Medium,
                                                 letterSpacing = 0.sp
                                             )
@@ -550,7 +574,7 @@ fun AddEditEventSheet(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(0.8.dp)
-                                        .background(GlassBorderSubtle)
+                                        .background(LocalLumaAppearance.current.borderSubtle)
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -579,12 +603,12 @@ fun AddEditEventSheet(
                                                 modifier = Modifier
                                                     .clip(RoundedCornerShape(8.dp))
                                                     .background(
-                                                        if (isSelected) AccentRoyalViolet.copy(alpha = 0.4f)
-                                                        else GlassSurfaceDefault
+                                                        if (isSelected) LocalLumaAppearance.current.accentSecondary.copy(alpha = 0.4f)
+                                                        else LocalLumaAppearance.current.surfaceDefault
                                                     )
                                                     .border(
                                                         0.8.dp,
-                                                        if (isSelected) AccentElectricBlue else Color.Transparent,
+                                                        if (isSelected) LocalLumaAppearance.current.accentPrimary else Color.Transparent,
                                                         RoundedCornerShape(8.dp)
                                                     )
                                                     .clickable { calendarType = calKey }
@@ -679,8 +703,8 @@ private fun TimePill(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(GlassSurfaceHighlight)
-            .border(0.8.dp, GlassBorderDefault, RoundedCornerShape(10.dp))
+            .background(LocalLumaAppearance.current.surfaceHighlight)
+            .border(0.8.dp, LocalLumaAppearance.current.borderDefault, RoundedCornerShape(10.dp))
             .semantics { contentDescription = "$label: $displayTime" }
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp)

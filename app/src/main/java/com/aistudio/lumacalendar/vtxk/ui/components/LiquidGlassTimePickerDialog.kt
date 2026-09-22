@@ -56,16 +56,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentRoyalViolet
-import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasNavy
-import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasSurface
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderBright
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderSubtle
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceElevated
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceHighlight
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteMuted
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhitePrimary
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteSecondary
@@ -75,6 +65,7 @@ import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
 import com.aistudio.lumacalendar.vtxk.util.ParsedTime
 import com.aistudio.lumacalendar.vtxk.util.TimeValidator
 import java.util.Locale
+import com.aistudio.lumacalendar.vtxk.ui.theme.LocalLumaAppearance
 
 enum class TimePickerType {
     EVENT,
@@ -167,8 +158,8 @@ fun LiquidGlassTimePickerDialog(
                         .background(
                             Brush.verticalGradient(
                                 listOf(
-                                    CanvasNavy.copy(alpha = 0.98f),
-                                    CanvasSurface.copy(alpha = 0.98f)
+                                    LocalLumaAppearance.current.canvasMid.copy(alpha = 0.98f),
+                                    LocalLumaAppearance.current.canvasSurface.copy(alpha = 0.98f)
                                 )
                             )
                         )
@@ -176,8 +167,8 @@ fun LiquidGlassTimePickerDialog(
                             width = 1.dp,
                             brush = Brush.verticalGradient(
                                 listOf(
-                                    GlassBorderBright.copy(alpha = 0.40f),
-                                    GlassBorderDefault.copy(alpha = 0.15f)
+                                    LocalLumaAppearance.current.borderBright.copy(alpha = 0.40f),
+                                    LocalLumaAppearance.current.borderDefault.copy(alpha = 0.15f)
                                 )
                             ),
                             shape = RoundedCornerShape(28.dp)
@@ -199,14 +190,14 @@ fun LiquidGlassTimePickerDialog(
                                     modifier = Modifier
                                         .size(38.dp)
                                         .clip(CircleShape)
-                                        .background(AccentElectricBlue.copy(alpha = 0.15f))
-                                        .border(0.8.dp, AccentElectricBlue.copy(alpha = 0.35f), CircleShape),
+                                        .background(LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.15f))
+                                        .border(0.8.dp, LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.35f), CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Outlined.Schedule,
                                         contentDescription = null,
-                                        tint = AccentElectricBlue,
+                                        tint = LocalLumaAppearance.current.accentPrimary,
                                         modifier = Modifier.size(20.dp)
                                     )
                                 }
@@ -223,7 +214,7 @@ fun LiquidGlassTimePickerDialog(
                                     Text(
                                         text = if (is24HourMode) currentParsed.format24Hour(isRtl) else currentParsed.format12Hour(isRtl),
                                         style = MaterialTheme.typography.bodySmall.copy(
-                                            color = AccentElectricBlue,
+                                            color = LocalLumaAppearance.current.accentPrimary,
                                             fontWeight = FontWeight.Medium,
                                             letterSpacing = 0.sp
                                         )
@@ -235,8 +226,8 @@ fun LiquidGlassTimePickerDialog(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(GlassSurfaceHighlight)
-                                    .border(0.8.dp, GlassBorderSubtle, RoundedCornerShape(12.dp))
+                                    .background(LocalLumaAppearance.current.surfaceHighlight)
+                                    .border(0.8.dp, LocalLumaAppearance.current.borderSubtle, RoundedCornerShape(12.dp))
                                     .clickable { is24HourMode = !is24HourMode }
                                     .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
@@ -246,7 +237,7 @@ fun LiquidGlassTimePickerDialog(
                                 Text(
                                     text = if (is24HourMode) "24H" else "12H",
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = AccentElectricBlue,
+                                        color = LocalLumaAppearance.current.accentPrimary,
                                         fontWeight = FontWeight.Medium,
                                         letterSpacing = 0.sp
                                     )
@@ -283,7 +274,7 @@ fun LiquidGlassTimePickerDialog(
                                     Icon(
                                         imageVector = Icons.Default.Add,
                                         contentDescription = strings.increaseHour,
-                                        tint = AccentElectricBlue
+                                        tint = LocalLumaAppearance.current.accentPrimary
                                     )
                                 }
 
@@ -291,10 +282,10 @@ fun LiquidGlassTimePickerDialog(
                                     modifier = Modifier
                                         .size(width = 84.dp, height = 72.dp)
                                         .clip(RoundedCornerShape(18.dp))
-                                        .background(if (isHourActive) GlassSurfaceElevated else GlassSurfaceHighlight)
+                                        .background(if (isHourActive) LocalLumaAppearance.current.surfaceElevated else LocalLumaAppearance.current.surfaceHighlight)
                                         .border(
                                             width = if (isHourActive) 1.8.dp else 1.2.dp,
-                                            color = if (isHourActive) AccentElectricBlue else AccentElectricBlue.copy(alpha = 0.5f),
+                                            color = if (isHourActive) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.5f),
                                             shape = RoundedCornerShape(18.dp)
                                         )
                                         .clickable { activeField = "hour" },
@@ -354,7 +345,7 @@ fun LiquidGlassTimePickerDialog(
                                     Icon(
                                         imageVector = Icons.Default.Add,
                                         contentDescription = strings.increaseMinute,
-                                        tint = AccentElectricBlue
+                                        tint = LocalLumaAppearance.current.accentPrimary
                                     )
                                 }
 
@@ -362,10 +353,10 @@ fun LiquidGlassTimePickerDialog(
                                     modifier = Modifier
                                         .size(width = 84.dp, height = 72.dp)
                                         .clip(RoundedCornerShape(18.dp))
-                                        .background(if (isMinuteActive) GlassSurfaceElevated else GlassSurfaceHighlight)
+                                        .background(if (isMinuteActive) LocalLumaAppearance.current.surfaceElevated else LocalLumaAppearance.current.surfaceHighlight)
                                         .border(
                                             width = if (isMinuteActive) 1.8.dp else 1.2.dp,
-                                            color = if (isMinuteActive) AccentRoyalViolet else AccentRoyalViolet.copy(alpha = 0.5f),
+                                            color = if (isMinuteActive) LocalLumaAppearance.current.accentSecondary else LocalLumaAppearance.current.accentSecondary.copy(alpha = 0.5f),
                                             shape = RoundedCornerShape(18.dp)
                                         )
                                         .clickable { activeField = "minute" },
@@ -412,10 +403,10 @@ fun LiquidGlassTimePickerDialog(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(12.dp))
-                                            .background(if (isAm) AccentElectricBlue else GlassSurfaceHighlight)
+                                            .background(if (isAm) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.surfaceHighlight)
                                             .border(
                                                 width = 0.8.dp,
-                                                color = if (isAm) AccentElectricBlue else GlassBorderSubtle,
+                                                color = if (isAm) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.borderSubtle,
                                                 shape = RoundedCornerShape(12.dp)
                                             )
                                             .clickable {
@@ -440,10 +431,10 @@ fun LiquidGlassTimePickerDialog(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(12.dp))
-                                            .background(if (!isAm) AccentElectricBlue else GlassSurfaceHighlight)
+                                            .background(if (!isAm) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.surfaceHighlight)
                                             .border(
                                                 width = 0.8.dp,
-                                                color = if (!isAm) AccentElectricBlue else GlassBorderSubtle,
+                                                color = if (!isAm) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.borderSubtle,
                                                 shape = RoundedCornerShape(12.dp)
                                             )
                                             .clickable {
@@ -494,10 +485,10 @@ fun LiquidGlassTimePickerDialog(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(12.dp))
-                                        .background(if (isSelected) AccentElectricBlue else GlassSurfaceHighlight)
+                                        .background(if (isSelected) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.surfaceHighlight)
                                         .border(
                                             width = 0.8.dp,
-                                            color = if (isSelected) AccentElectricBlue else GlassBorderSubtle,
+                                            color = if (isSelected) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.borderSubtle,
                                             shape = RoundedCornerShape(12.dp)
                                         )
                                         .clickable {
@@ -552,8 +543,8 @@ fun LiquidGlassTimePickerDialog(
                                         modifier = Modifier
                                             .weight(1f)
                                             .clip(RoundedCornerShape(10.dp))
-                                            .background(GlassSurfaceHighlight)
-                                            .border(0.8.dp, GlassBorderSubtle, RoundedCornerShape(10.dp))
+                                            .background(LocalLumaAppearance.current.surfaceHighlight)
+                                            .border(0.8.dp, LocalLumaAppearance.current.borderSubtle, RoundedCornerShape(10.dp))
                                             .clickable {
                                                 val newTotal = (startParsed.minutesOfDay + minutes).coerceAtMost(23 * 60 + 59)
                                                 selectedHour = newTotal / 60
@@ -566,7 +557,7 @@ fun LiquidGlassTimePickerDialog(
                                         Text(
                                             text = label,
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                color = AccentElectricBlue,
+                                                color = LocalLumaAppearance.current.accentPrimary,
                                                 fontWeight = FontWeight.Medium,
                                                 letterSpacing = 0.sp
                                             ),
@@ -589,8 +580,8 @@ fun LiquidGlassTimePickerDialog(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(GlassSurfaceHighlight)
-                                    .border(0.8.dp, GlassBorderSubtle, RoundedCornerShape(14.dp))
+                                    .background(LocalLumaAppearance.current.surfaceHighlight)
+                                    .border(0.8.dp, LocalLumaAppearance.current.borderSubtle, RoundedCornerShape(14.dp))
                                     .clickable(onClick = onDismiss)
                                     .sizeIn(minHeight = 48.dp)
                                     .padding(vertical = 12.dp)
@@ -614,7 +605,7 @@ fun LiquidGlassTimePickerDialog(
                                     .clip(RoundedCornerShape(14.dp))
                                     .background(
                                         Brush.horizontalGradient(
-                                            listOf(AccentElectricBlue, AccentRoyalViolet)
+                                            listOf(LocalLumaAppearance.current.accentPrimary, LocalLumaAppearance.current.accentSecondary)
                                         )
                                     )
                                     .clickable {
