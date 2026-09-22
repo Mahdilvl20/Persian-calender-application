@@ -154,8 +154,8 @@ object LumaNotificationIconGenerator {
     }
 
     /**
-     * Generates a monochrome notification SMALL icon: an alpha mask of a
-     * minimal calendar silhouette with the current day number centered inside.
+     * Generates a monochrome notification SMALL icon: an alpha mask of the
+     * current day number and nothing else.
      *
      * Android renders small icons as alpha masks and tints them (white on most
      * system UIs). Therefore this bitmap is opaque white on a transparent
@@ -170,45 +170,9 @@ object LumaNotificationIconGenerator {
         val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         val size = sizePx.toFloat()
+        val safeRadius = size * 0.46f
 
-        // Calendar silhouette bounds (leave breathing room so the system tint
-        // circle doesn't clip it)
-        val left = size * 0.16f
-        val top = size * 0.20f
-        val right = size * 0.84f
-        val bottom = size * 0.86f
-        val calRadius = size * 0.10f
-        val calRect = RectF(left, top, right, bottom)
-
-        val whitePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE
-            strokeWidth = size * 0.055f
-            color = Color.WHITE
-        }
-        canvas.drawRoundRect(calRect, calRadius, calRadius, whitePaint)
-
-        // Header separator bar
-        val headerY = top + (bottom - top) * 0.26f
-        canvas.drawLine(left, headerY, right, headerY, whitePaint)
-
-        // Two binder tabs
-        val tabPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.FILL
-            color = Color.WHITE
-        }
-        val tabW = size * 0.06f
-        val tabH = size * 0.11f
-        val tabY = top - tabH * 0.5f
-        canvas.drawRoundRect(
-            RectF(size * 0.34f, tabY, size * 0.34f + tabW, tabY + tabH),
-            tabW * 0.5f, tabW * 0.5f, tabPaint
-        )
-        canvas.drawRoundRect(
-            RectF(size * 0.66f - tabW, tabY, size * 0.66f, tabY + tabH),
-            tabW * 0.5f, tabW * 0.5f, tabPaint
-        )
-
-        // Day number (opaque white), size adapts to digit count so 1–31 fit
+        // Day number (opaque white) only — no calendar outline, header, or tabs.
         var typeface: Typeface? = null
         try {
             typeface = ResourcesCompat.getFont(context, R.font.vazirmatn_bold)
@@ -216,14 +180,28 @@ object LumaNotificationIconGenerator {
 
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
-            textAlign = Paint.Align.CENTER
+            textAlign = Paint.Align.LEFT
             this.typeface = typeface ?: Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            textSize = if (dayText.length > 1) size * 0.34f else size * 0.42f
         }
+
+        // Measure-then-fit: start large, shrink until half-diagonal(ink) <= safeRadius.
         val bounds = android.graphics.Rect()
+        var textSize = size
+        textPaint.textSize = textSize
         textPaint.getTextBounds(dayText, 0, dayText.length, bounds)
-        val cx = size * 0.5f
-        val cy = headerY + (bottom - headerY) * 0.5f - bounds.exactCenterY()
+        var halfDiagonal = kotlin.math.sqrt(
+            bounds.width().toFloat() * bounds.width() +
+                bounds.height().toFloat() * bounds.height()
+        ) / 2f
+        if (halfDiagonal > safeRadius && halfDiagonal > 0f) {
+            textSize *= safeRadius / halfDiagonal
+            textPaint.textSize = textSize
+            textPaint.getTextBounds(dayText, 0, dayText.length, bounds)
+        }
+
+        // Center the ink box on the icon's own axes.
+        val cx = size / 2f - bounds.exactCenterX()
+        val cy = size / 2f - bounds.exactCenterY()
         canvas.drawText(dayText, cx, cy, textPaint)
 
         return bitmap
