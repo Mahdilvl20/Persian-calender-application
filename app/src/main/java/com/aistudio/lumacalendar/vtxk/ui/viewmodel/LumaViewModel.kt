@@ -70,6 +70,25 @@ val AccentPresets = listOf(
     AccentPreset("Radiant Coral", CategorySpecial, AccentRoyalViolet)
 )
 
+/**
+ * Applies the three category-visibility toggles to an event list.
+ * An event whose `calendarType` is outside the known three stays visible so
+ * nothing silently vanishes (FR-003).
+ */
+internal fun filterVisibleEvents(
+    events: List<CalendarEvent>,
+    personalVisible: Boolean,
+    workVisible: Boolean,
+    holidaysVisible: Boolean
+): List<CalendarEvent> = events.filter { event ->
+    when (event.calendarType) {
+        "Personal" -> personalVisible
+        "Work" -> workVisible
+        "Holidays" -> holidaysVisible
+        else -> true
+    }
+}
+
 class LumaViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: EventRepository
     val persianCalendarRepository: PersianCalendarRepository = PersianCalendarRepositoryImpl(application)
@@ -130,14 +149,45 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = emptyList()
         )
 
-    // Events for the selected date
-    val selectedDateEvents: StateFlow<List<CalendarEvent>> = combine(allEvents, _selectedDate) { events, selDate ->
-        events.filter { it.date == selDate }
+    // Category visibility (Settings toggles), restored from preferences on startup
+    private val _calendarPersonalVisible = MutableStateFlow(
+        NotificationPreferences.getCategoryPersonalVisible(application)
+    )
+    val calendarPersonalVisible: StateFlow<Boolean> = _calendarPersonalVisible.asStateFlow()
+
+    private val _calendarWorkVisible = MutableStateFlow(
+        NotificationPreferences.getCategoryWorkVisible(application)
+    )
+    val calendarWorkVisible: StateFlow<Boolean> = _calendarWorkVisible.asStateFlow()
+
+    private val _calendarHolidaysVisible = MutableStateFlow(
+        NotificationPreferences.getCategoryHolidaysVisible(application)
+    )
+    val calendarHolidaysVisible: StateFlow<Boolean> = _calendarHolidaysVisible.asStateFlow()
+
+    // Calendar views honour the toggles; Search keeps using unfiltered allEvents (FR-002a)
+    val visibleEvents: StateFlow<List<CalendarEvent>> = combine(
+        allEvents,
+        _calendarPersonalVisible,
+        _calendarWorkVisible,
+        _calendarHolidaysVisible
+    ) { events, personal, work, holidays ->
+        filterVisibleEvents(events, personal, work, holidays)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
+
+    // Events for the selected date, respecting category visibility
+    val selectedDateEvents: StateFlow<List<CalendarEvent>> =
+        combine(visibleEvents, _selectedDate) { events, selDate ->
+            events.filter { it.date == selDate }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     // Search & Filter State
     private val _searchQuery = MutableStateFlow("")
@@ -181,14 +231,21 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     private val _viewingEvent = MutableStateFlow<CalendarEvent?>(null)
     val viewingEvent: StateFlow<CalendarEvent?> = _viewingEvent.asStateFlow()
 
-    // Settings State
-    private val _accentColorIndex = MutableStateFlow(0)
+    // Settings State (restored from preferences on startup, SP-003)
+    private val _accentColorIndex = MutableStateFlow(
+        NotificationPreferences.getAccentColorIndex(application)
+            .coerceIn(0, AccentPresets.lastIndex)
+    )
     val accentColorIndex: StateFlow<Int> = _accentColorIndex.asStateFlow()
 
-    private val _firstDayMonday = MutableStateFlow(false) // Prompt: Sun, Mon, Tue...
+    private val _firstDayMonday = MutableStateFlow(
+        NotificationPreferences.getFirstDayMonday(application)
+    ) // Prompt: Sun, Mon, Tue...
     val firstDayMonday: StateFlow<Boolean> = _firstDayMonday.asStateFlow()
 
-    private val _showWeekNumbers = MutableStateFlow(false)
+    private val _showWeekNumbers = MutableStateFlow(
+        NotificationPreferences.getShowWeekNumbers(application)
+    )
     val showWeekNumbers: StateFlow<Boolean> = _showWeekNumbers.asStateFlow()
 
     private val _notificationsEnabled = MutableStateFlow(
@@ -203,17 +260,21 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     )
     val snoozeMinutes: StateFlow<Int> = _snoozeMinutes.asStateFlow()
 
-    private val _calendarPersonalVisible = MutableStateFlow(true)
-    val calendarPersonalVisible: StateFlow<Boolean> = _calendarPersonalVisible.asStateFlow()
-
-    private val _calendarWorkVisible = MutableStateFlow(true)
-    val calendarWorkVisible: StateFlow<Boolean> = _calendarWorkVisible.asStateFlow()
-
-    private val _calendarHolidaysVisible = MutableStateFlow(true)
-    val calendarHolidaysVisible: StateFlow<Boolean> = _calendarHolidaysVisible.asStateFlow()
-
-    private val _themeName = MutableStateFlow("Liquid Glass (Dark)")
+    private val _themeName = MutableStateFlow(
+        sanitizeThemeName(NotificationPreferences.getThemeName(application))
+    )
     val themeName: StateFlow<String> = _themeName.asStateFlow()
+
+    /**
+     * VR-002: a stored theme that matches neither offered option falls back to the default,
+     * so a restart never applies an unknown theme.
+     */
+    private fun sanitizeThemeName(name: String): String =
+        if (name.contains("Liquid Glass", ignoreCase = true) || name.contains("OLED", ignoreCase = true)) {
+            name
+        } else {
+            NotificationPreferences.DEFAULT_THEME_NAME
+        }
 
     // Actions
     fun loadPersianYear(year: Int) {
@@ -387,7 +448,7 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
 
             val event = CalendarEvent(
                 id = id,
-                title = title.ifBlank { "Untitled Event" },
+                title = title.trim(),
                 date = date,
                 startTime = safeStart,
                 endTime = safeEnd,
@@ -467,16 +528,21 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // Settings mutators
+    // Settings mutators: persist first, then update the StateFlow so a restart
+    // reproduces the last in-session value.
     fun setAccentColorIndex(index: Int) {
-        _accentColorIndex.value = index
+        val safe = index.coerceIn(0, AccentPresets.lastIndex)
+        NotificationPreferences.setAccentColorIndex(getApplication(), safe)
+        _accentColorIndex.value = safe
     }
 
     fun setFirstDayMonday(isMonday: Boolean) {
+        NotificationPreferences.setFirstDayMonday(getApplication(), isMonday)
         _firstDayMonday.value = isMonday
     }
 
     fun setShowWeekNumbers(show: Boolean) {
+        NotificationPreferences.setShowWeekNumbers(getApplication(), show)
         _showWeekNumbers.value = show
     }
 
@@ -486,19 +552,27 @@ class LumaViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleCalendarPersonal() {
-        _calendarPersonalVisible.value = !_calendarPersonalVisible.value
+        val next = !_calendarPersonalVisible.value
+        NotificationPreferences.setCategoryPersonalVisible(getApplication(), next)
+        _calendarPersonalVisible.value = next
     }
 
     fun toggleCalendarWork() {
-        _calendarWorkVisible.value = !_calendarWorkVisible.value
+        val next = !_calendarWorkVisible.value
+        NotificationPreferences.setCategoryWorkVisible(getApplication(), next)
+        _calendarWorkVisible.value = next
     }
 
     fun toggleCalendarHolidays() {
-        _calendarHolidaysVisible.value = !_calendarHolidaysVisible.value
+        val next = !_calendarHolidaysVisible.value
+        NotificationPreferences.setCategoryHolidaysVisible(getApplication(), next)
+        _calendarHolidaysVisible.value = next
     }
 
     fun setThemeName(name: String) {
-        _themeName.value = name
+        val safe = sanitizeThemeName(name)
+        NotificationPreferences.setThemeName(getApplication(), safe)
+        _themeName.value = safe
     }
 
     fun resetToSampleData() {

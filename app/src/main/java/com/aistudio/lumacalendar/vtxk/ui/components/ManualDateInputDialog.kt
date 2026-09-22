@@ -54,14 +54,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentRoyalViolet
-import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasNavy
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderBright
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderSubtle
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceHighlight
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteMuted
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhitePrimary
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteSecondary
@@ -72,6 +64,7 @@ import com.aistudio.lumacalendar.vtxk.util.DateValidationResult
 import com.aistudio.lumacalendar.vtxk.util.DateValidator
 import com.aistudio.lumacalendar.vtxk.util.LocalAppStrings
 import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
+import com.aistudio.lumacalendar.vtxk.ui.theme.LocalLumaAppearance
 
 /**
  * Liquid Glass Modal Dialog for safe manual date input.
@@ -155,7 +148,7 @@ fun ManualDateInputDialog(
                     .background(
                         Brush.verticalGradient(
                             listOf(
-                                CanvasNavy.copy(alpha = 0.95f),
+                                LocalLumaAppearance.current.canvasMid.copy(alpha = 0.95f),
                                 Color(0xFF090D18).copy(alpha = 0.98f)
                             )
                         )
@@ -164,9 +157,9 @@ fun ManualDateInputDialog(
                         1.2.dp,
                         Brush.linearGradient(
                             listOf(
-                                GlassBorderBright.copy(alpha = 0.45f),
-                                AccentElectricBlue.copy(alpha = 0.25f),
-                                GlassBorderSubtle
+                                LocalLumaAppearance.current.borderBright.copy(alpha = 0.45f),
+                                LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.25f),
+                                LocalLumaAppearance.current.borderSubtle
                             )
                         ),
                         dialogShape
@@ -193,14 +186,14 @@ fun ManualDateInputDialog(
                                 modifier = Modifier
                                     .size(38.dp)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(AccentElectricBlue.copy(alpha = 0.18f))
-                                    .border(1.dp, AccentElectricBlue.copy(alpha = 0.35f), RoundedCornerShape(12.dp)),
+                                    .background(LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.18f))
+                                    .border(1.dp, LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.35f), RoundedCornerShape(12.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Outlined.CalendarMonth,
                                     contentDescription = null,
-                                    tint = AccentElectricBlue,
+                                    tint = LocalLumaAppearance.current.accentPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -229,8 +222,8 @@ fun ManualDateInputDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .background(GlassSurfaceDefault)
-                            .border(0.8.dp, GlassBorderSubtle, RoundedCornerShape(14.dp))
+                            .background(LocalLumaAppearance.current.surfaceDefault)
+                            .border(0.8.dp, LocalLumaAppearance.current.borderSubtle, RoundedCornerShape(14.dp))
                             .padding(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -247,12 +240,12 @@ fun ManualDateInputDialog(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(
-                                        if (isSelected) AccentElectricBlue.copy(alpha = 0.28f)
+                                        if (isSelected) LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.28f)
                                         else Color.Transparent
                                     )
                                     .border(
                                         if (isSelected) 1.dp else 0.dp,
-                                        if (isSelected) AccentElectricBlue.copy(alpha = 0.6f)
+                                        if (isSelected) LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.6f)
                                         else Color.Transparent,
                                         RoundedCornerShape(10.dp)
                                     )
@@ -382,8 +375,8 @@ fun ManualDateInputDialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(AccentElectricBlue.copy(alpha = 0.12f))
-                                    .border(0.8.dp, AccentElectricBlue.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                                    .background(LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.12f))
+                                    .border(0.8.dp, LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
                                     .padding(horizontal = 12.dp, vertical = 8.dp)
                             ) {
                                 Row(
@@ -393,7 +386,7 @@ fun ManualDateInputDialog(
                                     Icon(
                                         imageVector = Icons.Default.Check,
                                         contentDescription = null,
-                                        tint = AccentElectricBlue,
+                                        tint = LocalLumaAppearance.current.accentPrimary,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
@@ -417,8 +410,8 @@ fun ManualDateInputDialog(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(GlassSurfaceHighlight)
-                                .border(0.8.dp, GlassBorderDefault, RoundedCornerShape(10.dp))
+                                .background(LocalLumaAppearance.current.surfaceHighlight)
+                                .border(0.8.dp, LocalLumaAppearance.current.borderDefault, RoundedCornerShape(10.dp))
                                 .clickable {
                                     val today = DateUtils.getRealDeviceDate()
                                     inputText = DateValidator.formatForManualInput(today, selectedCalendarType)
@@ -436,13 +429,13 @@ fun ManualDateInputDialog(
                                 Icon(
                                     imageVector = Icons.Outlined.Today,
                                     contentDescription = null,
-                                    tint = AccentElectricBlue,
+                                    tint = LocalLumaAppearance.current.accentPrimary,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Text(
                                     text = strings.today,
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = AccentElectricBlue,
+                                        color = LocalLumaAppearance.current.accentPrimary,
                                         fontWeight = FontWeight.Medium
                                     )
                                 )
@@ -463,8 +456,8 @@ fun ManualDateInputDialog(
                                 .weight(1f)
                                 .height(46.dp)
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(GlassSurfaceDefault)
-                                .border(1.dp, GlassBorderSubtle, RoundedCornerShape(14.dp))
+                                .background(LocalLumaAppearance.current.surfaceDefault)
+                                .border(1.dp, LocalLumaAppearance.current.borderSubtle, RoundedCornerShape(14.dp))
                                 .clickable { onDismiss() }
                                 .testTag("btn_cancel_manual_date"),
                             contentAlignment = Alignment.Center
@@ -486,10 +479,10 @@ fun ManualDateInputDialog(
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(
                                     Brush.horizontalGradient(
-                                        listOf(AccentRoyalViolet, AccentElectricBlue)
+                                        listOf(LocalLumaAppearance.current.accentSecondary, LocalLumaAppearance.current.accentPrimary)
                                     )
                                 )
-                                .border(1.dp, GlassBorderBright.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
+                                .border(1.dp, LocalLumaAppearance.current.borderBright.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
                                 .clickable { submitDate() }
                                 .testTag("btn_confirm_manual_date"),
                             contentAlignment = Alignment.Center

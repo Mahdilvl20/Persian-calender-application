@@ -26,6 +26,82 @@ class LumaNotificationTest {
     private val context: Context
         get() = ApplicationProvider.getApplicationContext()
 
+    /**
+     * Geometry constraints from data-model.md / contracts/day-icon-contract.md.
+     *
+     * - safe radius = 0.46 × size
+     * - centering tolerance = ink center within 1% of size of the canvas center on both axes
+     * - fill = >= 60% of the safe area along its constraining dimension
+     * - fit = half-diagonal(ink box) <= safeRadius
+     */
+    private companion object Geometry {
+        const val SAFE_RADIUS_RATIO = 0.46f
+        const val CENTER_TOLERANCE_RATIO = 0.01f
+        const val MIN_FILL_RATIO_OF_SAFE = 0.60f
+    }
+
+    private data class InkBounds(
+        val left: Int,
+        val top: Int,
+        val right: Int,
+        val bottom: Int,
+        val opaqueWhiteCount: Int,
+    ) {
+        val width: Int get() = right - left + 1
+        val height: Int get() = bottom - top + 1
+        val centerX: Float get() = (left + right) / 2f
+        val centerY: Float get() = (top + bottom) / 2f
+        val halfDiagonal: Float
+            get() {
+                val w = width.toFloat()
+                val h = height.toFloat()
+                return kotlin.math.sqrt(w * w + h * h) / 2f
+            }
+
+        /** Constraining dimension of the safe area: longer ink axis vs the safe circle diameter. */
+        val constrainingDimension: Int
+            get() = maxOf(width, height)
+    }
+
+    /**
+     * Measure the ink bounding box of a rendered icon: left/top/right/bottom of its
+     * non-transparent pixels plus the count of fully-opaque white pixels.
+     *
+     * Requires `@GraphicsMode(GraphicsMode.Mode.NATIVE)` on this class (line ~22) so
+     * `drawText` actually rasterizes — otherwise the measured box is empty and every
+     * geometry assertion is meaningless.
+     */
+    private fun measureInkBounds(bitmap: android.graphics.Bitmap): InkBounds {
+        var left = Int.MAX_VALUE
+        var top = Int.MAX_VALUE
+        var right = Int.MIN_VALUE
+        var bottom = Int.MIN_VALUE
+        var opaqueWhiteCount = 0
+        var nonTransparentCount = 0
+
+        for (x in 0 until bitmap.width) {
+            for (y in 0 until bitmap.height) {
+                val pixel = bitmap.getPixel(x, y)
+                val alpha = android.graphics.Color.alpha(pixel)
+                if (alpha == 0) continue
+                nonTransparentCount++
+                if (pixel == android.graphics.Color.WHITE) opaqueWhiteCount++
+                if (x < left) left = x
+                if (y < top) top = y
+                if (x > right) right = x
+                if (y > bottom) bottom = y
+            }
+        }
+
+        assertTrue(
+            "Rendered icon has no non-transparent pixels; GraphicsMode.NATIVE is required",
+            nonTransparentCount > 0
+        )
+        return InkBounds(left, top, right, bottom, opaqueWhiteCount)
+    }
+
+    private fun safeRadius(size: Int): Float = SAFE_RADIUS_RATIO * size
+
     @Test
     fun testRealWorldDateEquivalenceForSeptember13_2026() {
         val testDate = "2026-09-13"
@@ -96,6 +172,135 @@ class LumaNotificationTest {
             }
         }
         assertTrue("Small icon must contain opaque white glyph pixels", opaqueWhite > 0)
+    }
+
+    @Test
+    fun testSmallIconFrameAbsenceDayNumberOnly() {
+        // VI-001 / TR-006: every opaque pixel lies inside the ink box returned by the
+        // helper (the box is defined as the opaque bbox, so this also proves there is
+        // no detached frame/tab fragment outside the measured region) and at least one
+        // fully-opaque white pixel exists (VI-005). The calendar outline, header
+        // separator, and both binder tabs would force a near-square canvas-scale box
+        // for BOTH single- and double-digit days; a day-number-only icon has the digit
+        // aspect instead (tall for one glyph, wide for two).
+        listOf("۳۱", "۹").forEach { dayText ->
+            val size = 96
+            val bitmap = LumaNotificationIconGenerator.generateSmallIcon(context, dayText, size)
+            val ink = measureInkBounds(bitmap)
+
+            assertTrue(
+                "Day $dayText must contain fully-opaque white glyph pixels (VI-005)",
+                ink.opaqueWhiteCount > 0
+            )
+
+            var opaqueOutsideInk = 0
+            for (x in 0 until bitmap.width) {
+                for (y in 0 until bitmap.height) {
+                    if (android.graphics.Color.alpha(bitmap.getPixel(x, y)) == 0) continue
+                    if (x < ink.left || x > ink.right || y < ink.top || y > ink.bottom) {
+                        opaqueOutsideInk++
+                    }
+                }
+            }
+            assertEquals(
+                "Day $dayText: opaque pixels outside the measured ink box must be 0 (VI-001)",
+                0, opaqueOutsideInk
+            )
+
+            // Frame silhouette is ~square (calendar body + tabs). Digit glyphs are not.
+            if (dayText.length == 1) {
+                assertTrue(
+                    "Day $dayText: single-digit ink must be taller than wide (frame gone), " +
+                        "got ${ink.width}x${ink.height}",
+                    ink.height >= ink.width
+                )
+            } else {
+                assertTrue(
+                    "Day $dayText: double-digit ink must be wider than tall (frame gone), " +
+                        "got ${ink.width}x${ink.height}",
+                    ink.width > ink.height
+                )
+            }
+
+            // The old frame + tabs spanned nearly the full canvas on both axes.
+            assertTrue(
+                "Day $dayText: ink box must not span the old calendar-frame height " +
+                    "(${ink.height}px vs canvas $size)",
+                ink.height < size * 0.95f
+            )
+            assertTrue(
+                "Day $dayText: ink box must not span the old calendar-frame width " +
+                    "(${ink.width}px vs canvas $size)",
+                ink.width < size * 0.95f
+            )
+        }
+    }
+
+    @Test
+    fun testSmallIconCenteredOnIconAxes() {
+        // TR-003 / VI-002: ink box center within 0.01 * size of the canvas center on both axes.
+        listOf("۹", "۳۱").forEach { dayText ->
+            val size = 96
+            val bitmap = LumaNotificationIconGenerator.generateSmallIcon(context, dayText, size)
+            val ink = measureInkBounds(bitmap)
+            val tolerance = CENTER_TOLERANCE_RATIO * size
+
+            val dx = kotlin.math.abs(ink.centerX - size / 2f)
+            val dy = kotlin.math.abs(ink.centerY - size / 2f)
+
+            assertTrue(
+                "Day $dayText: horizontal center off by $dx (tolerance $tolerance)",
+                dx <= tolerance
+            )
+            assertTrue(
+                "Day $dayText: vertical center off by $dy (tolerance $tolerance)",
+                dy <= tolerance
+            )
+        }
+    }
+
+    @Test
+    fun testSmallIconNeverClipped() {
+        // TR-004 / VI-003: ink box fully inside image bounds and half-diagonal <= 0.46 * size.
+        listOf("۹", "۳۱").forEach { dayText ->
+            val size = 96
+            val bitmap = LumaNotificationIconGenerator.generateSmallIcon(context, dayText, size)
+            val ink = measureInkBounds(bitmap)
+            val safeRadius = safeRadius(size)
+
+            assertTrue("Day $dayText: ink.left ${ink.left} out of bounds", ink.left >= 0)
+            assertTrue("Day $dayText: ink.top ${ink.top} out of bounds", ink.top >= 0)
+            assertTrue("Day $dayText: ink.right ${ink.right} out of bounds", ink.right < size)
+            assertTrue("Day $dayText: ink.bottom ${ink.bottom} out of bounds", ink.bottom < size)
+
+            assertTrue(
+                "Day $dayText: half-diagonal ${ink.halfDiagonal} exceeds safe radius $safeRadius",
+                ink.halfDiagonal <= safeRadius + 0.5f
+            )
+        }
+    }
+
+    @Test
+    fun testSmallIconLargeCenteredLegible() {
+        // TR-005 / VI-004 / VI-005: ink box spans >= 60% of the safe area along its
+        // constraining dimension and contains fully-opaque white pixels (unbroken mark).
+        listOf("۹", "۳۱").forEach { dayText ->
+            val size = 96
+            val bitmap = LumaNotificationIconGenerator.generateSmallIcon(context, dayText, size)
+            val ink = measureInkBounds(bitmap)
+            val safeDiameter = 2f * safeRadius(size)
+            val fillRatio = ink.constrainingDimension / safeDiameter
+
+            assertTrue(
+                "Day $dayText: fill ratio $fillRatio below $MIN_FILL_RATIO_OF_SAFE " +
+                    "(ink ${ink.width}x${ink.height}, safe diameter $safeDiameter)",
+                fillRatio >= MIN_FILL_RATIO_OF_SAFE
+            )
+            assertTrue(
+                "Day $dayText: needs fully-opaque white pixels forming an unbroken mark (VI-005)",
+                ink.opaqueWhiteCount > 0
+            )
+        }
     }
 
     @Test

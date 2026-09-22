@@ -71,15 +71,6 @@ import com.aistudio.lumacalendar.vtxk.ui.components.GlassIconButton
 import com.aistudio.lumacalendar.vtxk.ui.components.HolidayCard
 import com.aistudio.lumacalendar.vtxk.ui.components.ManualDateInputDialog
 import com.aistudio.lumacalendar.vtxk.util.TimeValidator
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentRoyalViolet
-import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasBlack
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderBright
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderSubtle
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceHighlight
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceUltraLight
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteMuted
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhitePrimary
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteSecondary
@@ -87,6 +78,7 @@ import com.aistudio.lumacalendar.vtxk.util.CalendarType
 import com.aistudio.lumacalendar.vtxk.util.DateUtils
 import com.aistudio.lumacalendar.vtxk.util.LocalAppStrings
 import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
+import com.aistudio.lumacalendar.vtxk.ui.theme.LocalLumaAppearance
 
 @Composable
 fun CalendarScreen(
@@ -108,8 +100,7 @@ fun CalendarScreen(
     onEventClick: (CalendarEvent) -> Unit,
     onAddEventClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    persianDaysMap: Map<String, PersianCalendarDay> = emptyMap(),
-    isPersianLoading: Boolean = false
+    persianDaysMap: Map<String, PersianCalendarDay> = emptyMap()
 ) {
     val strings = LocalAppStrings.current
     val monthName = DateUtils.getMonthName(year, month, calendarType)
@@ -182,13 +173,13 @@ fun CalendarScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .background(GlassSurfaceDefault)
+                        .background(LocalLumaAppearance.current.surfaceDefault)
                         .border(
                             1.dp,
                             Brush.linearGradient(
                                 listOf(
-                                    GlassBorderBright.copy(alpha = 0.4f),
-                                    GlassBorderSubtle
+                                    LocalLumaAppearance.current.borderBright.copy(alpha = 0.4f),
+                                    LocalLumaAppearance.current.borderSubtle
                                 )
                             ),
                             RoundedCornerShape(16.dp)
@@ -202,7 +193,7 @@ fun CalendarScreen(
                         text = strings.today,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Medium,
-                            color = AccentElectricBlue,
+                            color = LocalLumaAppearance.current.accentPrimary,
                             letterSpacing = 0.sp
                         ),
                         maxLines = 1,
@@ -355,13 +346,13 @@ fun CalendarTypeSegmentedControl(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(GlassSurfaceUltraLight)
+            .background(LocalLumaAppearance.current.surfaceUltraLight)
             .border(
                 1.dp,
                 Brush.linearGradient(
                     listOf(
-                        GlassBorderBright.copy(alpha = 0.35f),
-                        GlassBorderSubtle
+                        LocalLumaAppearance.current.borderBright.copy(alpha = 0.35f),
+                        LocalLumaAppearance.current.borderSubtle
                     )
                 ),
                 shape
@@ -393,8 +384,8 @@ fun CalendarTypeSegmentedControl(
                                     .background(
                                         Brush.verticalGradient(
                                             listOf(
-                                                GlassSurfaceHighlight,
-                                                GlassSurfaceDefault
+                                                LocalLumaAppearance.current.surfaceHighlight,
+                                                LocalLumaAppearance.current.surfaceDefault
                                             )
                                         )
                                     )
@@ -402,8 +393,8 @@ fun CalendarTypeSegmentedControl(
                                         0.8.dp,
                                         Brush.linearGradient(
                                             listOf(
-                                                GlassBorderBright.copy(alpha = 0.6f),
-                                                GlassBorderSubtle
+                                                LocalLumaAppearance.current.borderBright.copy(alpha = 0.6f),
+                                                LocalLumaAppearance.current.borderSubtle
                                             )
                                         ),
                                         itemShape
@@ -467,8 +458,8 @@ private fun SegmentedViewSwitcher(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(GlassSurfaceUltraLight)
-            .border(1.dp, GlassBorderSubtle, shape)
+            .background(LocalLumaAppearance.current.surfaceUltraLight)
+            .border(1.dp, LocalLumaAppearance.current.borderSubtle, shape)
             .padding(3.dp)
     ) {
         Row(
@@ -488,8 +479,8 @@ private fun SegmentedViewSwitcher(
                                     .background(
                                         Brush.verticalGradient(
                                             listOf(
-                                                GlassSurfaceHighlight,
-                                                GlassSurfaceDefault
+                                                LocalLumaAppearance.current.surfaceHighlight,
+                                                LocalLumaAppearance.current.surfaceDefault
                                             )
                                         )
                                     )
@@ -497,8 +488,8 @@ private fun SegmentedViewSwitcher(
                                         0.8.dp,
                                         Brush.linearGradient(
                                             listOf(
-                                                GlassBorderBright.copy(alpha = 0.5f),
-                                                GlassBorderSubtle
+                                                LocalLumaAppearance.current.borderBright.copy(alpha = 0.5f),
+                                                LocalLumaAppearance.current.borderSubtle
                                             )
                                         ),
                                         itemShape
@@ -560,14 +551,16 @@ private fun MonthViewContent(
         )
     }
 
-    // Map of dateString to event colors
-    val eventsByDate = remember(events) {
+    // Map of dateString to event colors. The accent fallback is read in composition and keyed
+    // so an accent change re-derives this map instead of serving a stale cached color (FR-012, T026).
+    val fallbackAccent = LocalLumaAppearance.current.accentSecondary
+    val eventsByDate = remember(events, fallbackAccent) {
         events.groupBy { it.date }.mapValues { entry ->
             entry.value.map { ev ->
                 try {
                     Color(android.graphics.Color.parseColor(ev.colorHex))
                 } catch (e: Exception) {
-                    AccentRoyalViolet
+                    fallbackAccent
                 }
             }
         }
@@ -582,7 +575,7 @@ private fun MonthViewContent(
             GlassCard(
                 modifier = Modifier.fillMaxWidth(),
                 cornerRadius = 24.dp,
-                surfaceColor = GlassSurfaceDefault
+                surfaceColor = LocalLumaAppearance.current.surfaceDefault
             ) {
                 Column(
                     modifier = Modifier
@@ -690,7 +683,7 @@ private fun MonthViewContent(
                 Text(
                     text = "+ ${strings.addEvent}",
                     style = MaterialTheme.typography.labelMedium.copy(
-                        color = AccentElectricBlue,
+                        color = LocalLumaAppearance.current.accentPrimary,
                         fontWeight = FontWeight.Medium
                     ),
                     modifier = Modifier
@@ -720,7 +713,7 @@ private fun MonthViewContent(
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     cornerRadius = 16.dp,
-                    surfaceColor = GlassSurfaceUltraLight
+                    surfaceColor = LocalLumaAppearance.current.surfaceUltraLight
                 ) {
                     Column(
                         modifier = Modifier
@@ -815,12 +808,12 @@ private fun WeekViewContent(
                                         .background(
                                             Brush.radialGradient(
                                                 listOf(
-                                                    AccentRoyalViolet.copy(alpha = 0.5f),
-                                                    AccentElectricBlue.copy(alpha = 0.2f)
+                                                    LocalLumaAppearance.current.accentSecondary.copy(alpha = 0.5f),
+                                                    LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.2f)
                                                 )
                                             )
                                         )
-                                        .border(1.dp, AccentElectricBlue, RoundedCornerShape(14.dp))
+                                        .border(1.dp, LocalLumaAppearance.current.accentPrimary, RoundedCornerShape(14.dp))
                                 } else Modifier
                             )
                             .clickable { onDateSelect(wDay.dateString) }
@@ -829,7 +822,7 @@ private fun WeekViewContent(
                         Text(
                             text = wDay.dayOfWeekName,
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = if (isSelected) AccentElectricBlue else TextWhiteMuted,
+                                color = if (isSelected) LocalLumaAppearance.current.accentPrimary else TextWhiteMuted,
                                 letterSpacing = 0.sp
                             )
                         )
@@ -907,7 +900,7 @@ private fun WeekViewContent(
                                     .height(26.dp)
                                     .clip(RoundedCornerShape(6.dp))
                                     .background(Color.Transparent)
-                                    .border(0.5.dp, GlassBorderSubtle.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+                                    .border(0.5.dp, LocalLumaAppearance.current.borderSubtle.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
                                     .clickable { onAddEventClick(selectedDate) }
                             )
                         } else {
@@ -969,7 +962,7 @@ private fun DayViewContent(
                     Text(
                         text = DateUtils.formatDisplayDate(selectedDate, calendarType),
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = AccentElectricBlue,
+                            color = LocalLumaAppearance.current.accentPrimary,
                             letterSpacing = 0.sp
                         )
                     )
@@ -979,8 +972,8 @@ private fun DayViewContent(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(AccentRoyalViolet.copy(alpha = 0.35f))
-                        .border(0.8.dp, AccentElectricBlue, RoundedCornerShape(12.dp))
+                        .background(LocalLumaAppearance.current.accentSecondary.copy(alpha = 0.35f))
+                        .border(0.8.dp, LocalLumaAppearance.current.accentPrimary, RoundedCornerShape(12.dp))
                         .clickable { onAddEventClick(selectedDate) }
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
@@ -1044,7 +1037,7 @@ private fun DayViewContent(
                                     .fillMaxWidth()
                                     .height(36.dp)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .border(0.5.dp, GlassBorderSubtle.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                                    .border(0.5.dp, LocalLumaAppearance.current.borderSubtle.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                                     .clickable { onAddEventClick(selectedDate) }
                             )
                         } else {

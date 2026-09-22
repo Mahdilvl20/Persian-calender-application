@@ -35,11 +35,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -47,23 +49,22 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aistudio.lumacalendar.vtxk.ui.components.ConfirmActionDialog
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassButton
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassCard
 import com.aistudio.lumacalendar.vtxk.ui.components.GlassToggle
 import com.aistudio.lumacalendar.vtxk.ui.components.SectionHeader
 import com.aistudio.lumacalendar.vtxk.util.DynamicIconManager
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
 import com.aistudio.lumacalendar.vtxk.ui.theme.CategoryHealth
 import com.aistudio.lumacalendar.vtxk.ui.theme.CategoryPersonal
 import com.aistudio.lumacalendar.vtxk.ui.theme.CategorySpecial
 import com.aistudio.lumacalendar.vtxk.ui.theme.CategoryWork
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderSubtle
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceDefault
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteMuted
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhitePrimary
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteSecondary
 import com.aistudio.lumacalendar.vtxk.ui.viewmodel.AccentPresets
 import com.aistudio.lumacalendar.vtxk.util.LocalAppStrings
+import com.aistudio.lumacalendar.vtxk.ui.theme.LocalLumaAppearance
 
 @Composable
 fun SettingsScreen(
@@ -90,6 +91,8 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     val strings = LocalAppStrings.current
+    var showResetConfirm by remember { mutableStateOf(false) }
+    var showClearConfirm by remember { mutableStateOf(false) }
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -125,7 +128,7 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.Outlined.Palette,
                                 contentDescription = null,
-                                tint = AccentElectricBlue,
+                                tint = LocalLumaAppearance.current.accentPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -146,12 +149,12 @@ fun SettingsScreen(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(8.dp))
                                         .background(
-                                            if (isSel) AccentElectricBlue.copy(alpha = 0.25f)
+                                            if (isSel) LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.25f)
                                              else Color.Transparent
                                         )
                                         .border(
                                             0.8.dp,
-                                            if (isSel) AccentElectricBlue else GlassBorderSubtle,
+                                            if (isSel) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.borderSubtle,
                                             RoundedCornerShape(8.dp)
                                         )
                                         .clickable { onThemeSelect(th) }
@@ -170,7 +173,7 @@ fun SettingsScreen(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(GlassBorderSubtle))
+                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(LocalLumaAppearance.current.borderSubtle))
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Accent Color Presets
@@ -194,10 +197,24 @@ fun SettingsScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(26.dp)
+                                        // Halo is drawn outside the 26dp bounds, so the row
+                                        // layout, labels, order and positions do not move (FR-018)
+                                        .then(
+                                            if (isSelected) {
+                                                Modifier.shadow(
+                                                    elevation = 8.dp,
+                                                    shape = CircleShape,
+                                                    spotColor = Color.White,
+                                                    ambientColor = Color.White
+                                                )
+                                            } else {
+                                                Modifier
+                                            }
+                                        )
                                         .clip(CircleShape)
                                         .background(preset.primary)
                                         .border(
-                                            if (isSelected) 2.dp else 1.dp,
+                                            if (isSelected) 3.dp else 1.dp,
                                             if (isSelected) Color.White else Color.Transparent,
                                             CircleShape
                                         )
@@ -225,7 +242,7 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.Outlined.DateRange,
                                 contentDescription = null,
-                                tint = AccentElectricBlue,
+                                tint = LocalLumaAppearance.current.accentPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -247,7 +264,7 @@ fun SettingsScreen(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(GlassBorderSubtle))
+                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(LocalLumaAppearance.current.borderSubtle))
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Show Week Numbers
@@ -260,7 +277,7 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.Outlined.ViewWeek,
                                 contentDescription = null,
-                                tint = AccentElectricBlue,
+                                tint = LocalLumaAppearance.current.accentPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -300,7 +317,7 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.Outlined.Notifications,
                                 contentDescription = null,
-                                tint = AccentElectricBlue,
+                                tint = LocalLumaAppearance.current.accentPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -335,10 +352,9 @@ fun SettingsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(1.dp)
-                            .background(GlassBorderSubtle)
+                            .background(LocalLumaAppearance.current.borderSubtle)
                     )
 
-                    val snoozePresets = listOf(15, 30, 45, 60, 90, 120, 180, 240, 480)
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -353,7 +369,7 @@ fun SettingsScreen(
                                 Icon(
                                     imageVector = Icons.Outlined.Schedule,
                                     contentDescription = null,
-                                    tint = AccentElectricBlue,
+                                    tint = LocalLumaAppearance.current.accentPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -391,7 +407,7 @@ fun SettingsScreen(
                             Text(
                                 text = currentPresetLabel,
                                 style = MaterialTheme.typography.labelLarge.copy(
-                                    color = AccentElectricBlue,
+                                    color = LocalLumaAppearance.current.accentPrimary,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             )
@@ -421,12 +437,12 @@ fun SettingsScreen(
                                         .weight(1f)
                                         .clip(RoundedCornerShape(8.dp))
                                         .background(
-                                            if (isSelected) AccentElectricBlue.copy(alpha = 0.25f)
-                                            else GlassSurfaceDefault
+                                            if (isSelected) LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.25f)
+                                            else LocalLumaAppearance.current.surfaceDefault
                                         )
                                         .border(
                                             width = 1.dp,
-                                            color = if (isSelected) AccentElectricBlue else GlassBorderSubtle,
+                                            color = if (isSelected) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.borderSubtle,
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                         .clickable { onSnoozeMinutesChange(minutes) }
@@ -436,7 +452,7 @@ fun SettingsScreen(
                                     Text(
                                         text = label,
                                         style = MaterialTheme.typography.bodySmall.copy(
-                                            color = if (isSelected) AccentElectricBlue else TextWhiteSecondary,
+                                            color = if (isSelected) LocalLumaAppearance.current.accentPrimary else TextWhiteSecondary,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                         )
                                     )
@@ -474,7 +490,7 @@ fun SettingsScreen(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(GlassBorderSubtle))
+                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(LocalLumaAppearance.current.borderSubtle))
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Work
@@ -498,7 +514,7 @@ fun SettingsScreen(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(GlassBorderSubtle))
+                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(LocalLumaAppearance.current.borderSubtle))
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Holidays
@@ -542,7 +558,7 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.Outlined.DateRange,
                                 contentDescription = null,
-                                tint = AccentElectricBlue,
+                                tint = LocalLumaAppearance.current.accentPrimary,
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -569,14 +585,14 @@ fun SettingsScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(AccentElectricBlue.copy(alpha = 0.15f))
-                                .border(0.8.dp, AccentElectricBlue.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                                .background(LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.15f))
+                                .border(0.8.dp, LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
                                 text = if (strings.tabCalendar == "تقویم") "امروز: $realDay" else "Today: $realDay",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = AccentElectricBlue,
+                                    color = LocalLumaAppearance.current.accentPrimary,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             )
@@ -608,7 +624,7 @@ fun SettingsScreen(
                                 .background(Color(0xFF13172B))
                                 .border(
                                     1.dp,
-                                    if (previewDay <= 9) AccentElectricBlue else GlassBorderSubtle,
+                                    if (previewDay <= 9) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.borderSubtle,
                                     RoundedCornerShape(16.dp)
                                 )
                                 .clickable { previewDay = 7 }
@@ -648,7 +664,7 @@ fun SettingsScreen(
                                 .background(Color(0xFF13172B))
                                 .border(
                                     1.dp,
-                                    if (previewDay > 9) AccentElectricBlue else GlassBorderSubtle,
+                                    if (previewDay > 9) LocalLumaAppearance.current.accentPrimary else LocalLumaAppearance.current.borderSubtle,
                                     RoundedCornerShape(16.dp)
                                 )
                                 .clickable { previewDay = 24 }
@@ -746,13 +762,13 @@ fun SettingsScreen(
                         GlassButton(
                             text = strings.resetSampleButton,
                             icon = Icons.Outlined.Refresh,
-                            onClick = onResetSampleData,
+                            onClick = { showResetConfirm = true },
                             testTag = "btn_reset_sample"
                         )
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(GlassBorderSubtle))
+                    Box(modifier = Modifier.fillMaxWidth().height(0.8.dp).background(LocalLumaAppearance.current.borderSubtle))
                     Spacer(modifier = Modifier.height(14.dp))
 
                     Text(
@@ -775,7 +791,7 @@ fun SettingsScreen(
                         GlassButton(
                             text = strings.clearAllTitle,
                             icon = Icons.Outlined.DeleteSweep,
-                            onClick = onClearAllData,
+                            onClick = { showClearConfirm = true },
                             testTag = "btn_clear_all_data"
                         )
                     }
@@ -792,7 +808,7 @@ fun SettingsScreen(
                         Icon(
                             imageVector = Icons.Outlined.Info,
                             contentDescription = null,
-                            tint = AccentElectricBlue,
+                            tint = LocalLumaAppearance.current.accentPrimary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -831,5 +847,36 @@ fun SettingsScreen(
         item {
             Spacer(modifier = Modifier.height(110.dp))
         }
+    }
+
+    // Destructive actions require confirmation (FR-007); cancel or dismiss does nothing.
+    if (showResetConfirm) {
+        ConfirmActionDialog(
+            title = strings.resetConfirmTitle,
+            message = strings.resetConfirmMessage,
+            confirmLabel = strings.resetConfirmAction,
+            icon = Icons.Outlined.Refresh,
+            onConfirm = {
+                showResetConfirm = false
+                onResetSampleData()
+            },
+            onDismiss = { showResetConfirm = false },
+            modifier = Modifier.testTag("dialog_reset_sample_confirmation")
+        )
+    }
+
+    if (showClearConfirm) {
+        ConfirmActionDialog(
+            title = strings.clearConfirmTitle,
+            message = strings.clearConfirmMessage,
+            confirmLabel = strings.clearConfirmAction,
+            icon = Icons.Outlined.DeleteSweep,
+            onConfirm = {
+                showClearConfirm = false
+                onClearAllData()
+            },
+            onDismiss = { showClearConfirm = false },
+            modifier = Modifier.testTag("dialog_clear_all_confirmation")
+        )
     }
 }

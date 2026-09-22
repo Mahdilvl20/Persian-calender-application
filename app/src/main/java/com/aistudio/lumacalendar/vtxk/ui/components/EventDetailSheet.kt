@@ -61,16 +61,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.aistudio.lumacalendar.vtxk.data.CalendarEvent
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentRoyalViolet
-import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasBlack
-import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasNavy
 import com.aistudio.lumacalendar.vtxk.ui.theme.CategorySpecial
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderBright
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderSubtle
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceHighlight
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteMuted
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhitePrimary
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteSecondary
@@ -78,6 +69,7 @@ import com.aistudio.lumacalendar.vtxk.util.CalendarType
 import com.aistudio.lumacalendar.vtxk.util.DateUtils
 import com.aistudio.lumacalendar.vtxk.util.LocalAppStrings
 import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
+import com.aistudio.lumacalendar.vtxk.ui.theme.LocalLumaAppearance
 
 @Composable
 fun EventDetailSheet(
@@ -97,7 +89,7 @@ fun EventDetailSheet(
     val categoryColor = try {
         Color(android.graphics.Color.parseColor(event.colorHex))
     } catch (e: Exception) {
-        AccentRoyalViolet
+        LocalLumaAppearance.current.accentSecondary
     }
 
     Dialog(
@@ -122,8 +114,8 @@ fun EventDetailSheet(
                     .background(
                         Brush.verticalGradient(
                             listOf(
-                                CanvasNavy.copy(alpha = 0.95f),
-                                CanvasBlack.copy(alpha = 0.98f)
+                                LocalLumaAppearance.current.canvasMid.copy(alpha = 0.95f),
+                                LocalLumaAppearance.current.canvasBase.copy(alpha = 0.98f)
                             )
                         )
                     )
@@ -131,8 +123,8 @@ fun EventDetailSheet(
                         1.dp,
                         Brush.linearGradient(
                             listOf(
-                                GlassBorderBright.copy(alpha = 0.5f),
-                                GlassBorderSubtle
+                                LocalLumaAppearance.current.borderBright.copy(alpha = 0.5f),
+                                LocalLumaAppearance.current.borderSubtle
                             )
                         ),
                         RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
@@ -176,7 +168,7 @@ fun EventDetailSheet(
                                 onClick = { onEdit(event) },
                                 contentDescription = "Edit Event",
                                 size = 36.dp,
-                                tint = AccentElectricBlue,
+                                tint = LocalLumaAppearance.current.accentPrimary,
                                 testTag = "btn_edit_detail"
                             )
 
@@ -247,14 +239,14 @@ fun EventDetailSheet(
                         GlassCard(
                             modifier = Modifier.fillMaxWidth(),
                             cornerRadius = 20.dp,
-                            surfaceColor = GlassSurfaceDefault
+                            surfaceColor = LocalLumaAppearance.current.surfaceDefault
                         ) {
                             Column(modifier = Modifier.padding(18.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         imageVector = Icons.Outlined.CalendarMonth,
                                         contentDescription = null,
-                                        tint = AccentElectricBlue,
+                                        tint = LocalLumaAppearance.current.accentPrimary,
                                         modifier = Modifier.size(22.dp)
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -282,7 +274,7 @@ fun EventDetailSheet(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(0.8.dp)
-                                        .background(GlassBorderSubtle)
+                                        .background(LocalLumaAppearance.current.borderSubtle)
                                 )
                                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -290,7 +282,7 @@ fun EventDetailSheet(
                                     Icon(
                                         imageVector = Icons.Outlined.Schedule,
                                         contentDescription = null,
-                                        tint = AccentElectricBlue,
+                                        tint = LocalLumaAppearance.current.accentPrimary,
                                         modifier = Modifier.size(22.dp)
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -320,7 +312,7 @@ fun EventDetailSheet(
                                     Icon(
                                         imageVector = Icons.Outlined.LocationOn,
                                         contentDescription = null,
-                                        tint = AccentElectricBlue,
+                                        tint = LocalLumaAppearance.current.accentPrimary,
                                         modifier = Modifier.size(22.dp)
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -358,7 +350,7 @@ fun EventDetailSheet(
                                 Icon(
                                     imageVector = Icons.Outlined.Notifications,
                                     contentDescription = null,
-                                    tint = AccentElectricBlue,
+                                    tint = LocalLumaAppearance.current.accentPrimary,
                                     modifier = Modifier.size(22.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -394,7 +386,7 @@ fun EventDetailSheet(
                                         Icon(
                                             imageVector = Icons.Outlined.Description,
                                             contentDescription = null,
-                                            tint = AccentElectricBlue,
+                                            tint = LocalLumaAppearance.current.accentPrimary,
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -466,8 +458,8 @@ fun EventDetailSheet(
                             .background(
                                 Brush.verticalGradient(
                                     listOf(
-                                        CanvasNavy.copy(alpha = 0.96f),
-                                        CanvasBlack.copy(alpha = 0.98f)
+                                        LocalLumaAppearance.current.canvasMid.copy(alpha = 0.96f),
+                                        LocalLumaAppearance.current.canvasBase.copy(alpha = 0.98f)
                                     )
                                 )
                             )
@@ -475,8 +467,8 @@ fun EventDetailSheet(
                                 width = 1.dp,
                                 brush = Brush.linearGradient(
                                     listOf(
-                                        GlassBorderBright.copy(alpha = 0.55f),
-                                        GlassBorderSubtle,
+                                        LocalLumaAppearance.current.borderBright.copy(alpha = 0.55f),
+                                        LocalLumaAppearance.current.borderSubtle,
                                         CategorySpecial.copy(alpha = 0.25f)
                                     ),
                                     start = Offset(0f, 0f),
@@ -611,8 +603,8 @@ private fun DeleteDialogActionButton(
     } else {
         Brush.verticalGradient(
             colors = listOf(
-                GlassSurfaceHighlight.copy(alpha = if (isPressed) 0.35f else 0.20f),
-                GlassSurfaceDefault.copy(alpha = if (isPressed) 0.20f else 0.10f)
+                LocalLumaAppearance.current.surfaceHighlight.copy(alpha = if (isPressed) 0.35f else 0.20f),
+                LocalLumaAppearance.current.surfaceDefault.copy(alpha = if (isPressed) 0.20f else 0.10f)
             )
         )
     }
@@ -627,8 +619,8 @@ private fun DeleteDialogActionButton(
     } else {
         Brush.linearGradient(
             listOf(
-                GlassBorderBright.copy(alpha = 0.40f),
-                GlassBorderSubtle
+                LocalLumaAppearance.current.borderBright.copy(alpha = 0.40f),
+                LocalLumaAppearance.current.borderSubtle
             )
         )
     }

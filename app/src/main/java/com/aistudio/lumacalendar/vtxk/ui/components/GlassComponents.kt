@@ -65,20 +65,10 @@ import com.aistudio.lumacalendar.vtxk.data.holiday.Holiday
 import com.aistudio.lumacalendar.vtxk.util.CalendarType
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentCyan
 import com.aistudio.lumacalendar.vtxk.ui.theme.AccentDeepViolet
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentElectricBlue
-import com.aistudio.lumacalendar.vtxk.ui.theme.AccentRoyalViolet
 import com.aistudio.lumacalendar.vtxk.ui.theme.AmbientGlowCyan
 import com.aistudio.lumacalendar.vtxk.ui.theme.AmbientGlowIndigo
 import com.aistudio.lumacalendar.vtxk.ui.theme.AmbientGlowPurple
 import com.aistudio.lumacalendar.vtxk.ui.theme.AmbientGlowRose
-import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasBlack
-import com.aistudio.lumacalendar.vtxk.ui.theme.CanvasNavy
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderBright
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassBorderSubtle
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceDefault
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceHighlight
-import com.aistudio.lumacalendar.vtxk.ui.theme.GlassSurfaceUltraLight
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteMuted
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhitePrimary
 import com.aistudio.lumacalendar.vtxk.ui.theme.TextWhiteSecondary
@@ -86,6 +76,7 @@ import com.aistudio.lumacalendar.vtxk.util.CalendarDay
 import com.aistudio.lumacalendar.vtxk.util.LocalAppStrings
 import com.aistudio.lumacalendar.vtxk.util.LocalCalendarType
 import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
+import com.aistudio.lumacalendar.vtxk.ui.theme.LocalLumaAppearance
 
 /**
  * Atmospheric deep-space background with layered ambient glow orbs behind translucent glass.
@@ -93,40 +84,42 @@ import com.aistudio.lumacalendar.vtxk.util.LocalizationManager
 @Composable
 fun AmbientBackground(
     modifier: Modifier = Modifier,
-    accentGlow: Color = AccentRoyalViolet,
-    isOled: Boolean = false,
     content: @Composable BoxScope.() -> Unit
 ) {
+    // Captured here: the Canvas draw lambda is NOT composable, so the appearance must be
+    // read once in composition and closed over (FR-012, contracts section 3).
+    val appearance = LocalLumaAppearance.current
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(CanvasBlack)
+            .background(appearance.canvasBase)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val canvasW = size.width
             val canvasH = size.height
 
-            // Base deep navy-black atmospheric gradient (or pure black for OLED)
+            // Layered gradient backdrop. OLED Deep reads flat because its canvasMid resolves
+            // to the same near-black as canvasBase, so no separate branch is needed.
             drawRect(
                 brush = Brush.verticalGradient(
-                    colors = if (isOled) listOf(
-                        CanvasBlack,
-                        CanvasBlack,
-                        CanvasBlack
-                    ) else listOf(
-                        CanvasBlack,
-                        CanvasNavy.copy(alpha = 0.85f),
-                        CanvasBlack
+                    colors = listOf(
+                        appearance.canvasBase,
+                        appearance.canvasMid.copy(alpha = 0.85f),
+                        appearance.canvasBase
                     )
                 )
             )
 
-            // Top-right ethereal violet light source
+            val accentGlow = appearance.accentPrimary
+            val glow = appearance.glowIntensity
+            val glowScale = appearance.glowScale
+
+            // Top-right ethereal light source in the selected accent
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        accentGlow.copy(alpha = if (isOled) 0.18f else 0.35f),
-                        AmbientGlowPurple.copy(alpha = if (isOled) 0.08f else 0.15f),
+                        accentGlow.copy(alpha = glow),
+                        AmbientGlowPurple.copy(alpha = 0.15f * glowScale),
                         Color.Transparent
                     ),
                     center = Offset(canvasW * 0.85f, canvasH * 0.15f),
@@ -138,8 +131,8 @@ fun AmbientBackground(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        AmbientGlowCyan.copy(alpha = if (isOled) 0.14f else 0.28f),
-                        AmbientGlowCyan.copy(alpha = if (isOled) 0.04f else 0.08f),
+                        AmbientGlowCyan.copy(alpha = 0.28f * glowScale),
+                        AmbientGlowCyan.copy(alpha = 0.08f * glowScale),
                         Color.Transparent
                     ),
                     center = Offset(canvasW * 0.1f, canvasH * 0.48f),
@@ -151,8 +144,8 @@ fun AmbientBackground(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        AmbientGlowIndigo.copy(alpha = if (isOled) 0.15f else 0.30f),
-                        AmbientGlowRose.copy(alpha = if (isOled) 0.05f else 0.10f),
+                        AmbientGlowIndigo.copy(alpha = 0.30f * glowScale),
+                        AmbientGlowRose.copy(alpha = 0.10f * glowScale),
                         Color.Transparent
                     ),
                     center = Offset(canvasW * 0.75f, canvasH * 0.82f),
@@ -172,8 +165,8 @@ fun AmbientBackground(
 fun GlassCard(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 20.dp,
-    surfaceColor: Color = GlassSurfaceDefault,
-    borderColor: Color = GlassBorderDefault,
+    surfaceColor: Color = LocalLumaAppearance.current.surfaceDefault,
+    borderColor: Color = LocalLumaAppearance.current.borderDefault,
     borderWidth: Dp = 1.dp,
     onClick: (() -> Unit)? = null,
     testTag: String = "glass_card",
@@ -190,7 +183,7 @@ fun GlassCard(
     val shape = RoundedCornerShape(cornerRadius)
     val borderBrush = Brush.linearGradient(
         colors = listOf(
-            GlassBorderBright.copy(alpha = 0.45f),
+            LocalLumaAppearance.current.borderBright.copy(alpha = 0.45f),
             borderColor.copy(alpha = 0.25f),
             Color(0x0DFFFFFF)
         ),
@@ -250,15 +243,15 @@ fun GlassButton(
     val bgBrush = if (isPrimary) {
         Brush.horizontalGradient(
             colors = listOf(
-                AccentRoyalViolet,
-                AccentElectricBlue
+                LocalLumaAppearance.current.accentSecondary,
+                LocalLumaAppearance.current.accentPrimary
             )
         )
     } else {
         Brush.verticalGradient(
             colors = listOf(
-                GlassSurfaceHighlight.copy(alpha = if (isPressed) 0.35f else 0.20f),
-                GlassSurfaceDefault.copy(alpha = if (isPressed) 0.20f else 0.10f)
+                LocalLumaAppearance.current.surfaceHighlight.copy(alpha = if (isPressed) 0.35f else 0.20f),
+                LocalLumaAppearance.current.surfaceDefault.copy(alpha = if (isPressed) 0.20f else 0.10f)
             )
         )
     }
@@ -267,14 +260,14 @@ fun GlassButton(
         Brush.linearGradient(
             listOf(
                 Color.White.copy(alpha = 0.6f),
-                AccentElectricBlue.copy(alpha = 0.3f)
+                LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.3f)
             )
         )
     } else {
         Brush.linearGradient(
             listOf(
-                GlassBorderBright.copy(alpha = 0.4f),
-                GlassBorderSubtle
+                LocalLumaAppearance.current.borderBright.copy(alpha = 0.4f),
+                LocalLumaAppearance.current.borderSubtle
             )
         )
     }
@@ -406,15 +399,15 @@ fun FloatingGlassActionButton(
             .shadow(
                 elevation = 16.dp,
                 shape = CircleShape,
-                ambientColor = AccentRoyalViolet.copy(alpha = 0.6f),
-                spotColor = AccentElectricBlue.copy(alpha = 0.8f)
+                ambientColor = LocalLumaAppearance.current.accentSecondary.copy(alpha = 0.6f),
+                spotColor = LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.8f)
             )
             .clip(CircleShape)
             .background(
                 Brush.linearGradient(
                     colors = listOf(
-                        AccentRoyalViolet.copy(alpha = 0.95f),
-                        AccentElectricBlue.copy(alpha = 0.95f)
+                        LocalLumaAppearance.current.accentSecondary.copy(alpha = 0.95f),
+                        LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.95f)
                     ),
                     start = Offset(0f, 0f),
                     end = Offset(100f, 100f)
@@ -503,8 +496,8 @@ fun CalendarCell(
                         .background(
                             Brush.radialGradient(
                                 listOf(
-                                    AccentRoyalViolet.copy(alpha = 0.45f),
-                                    AccentElectricBlue.copy(alpha = 0.25f)
+                                    LocalLumaAppearance.current.accentSecondary.copy(alpha = 0.45f),
+                                    LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.25f)
                                 )
                             ),
                             shape = RoundedCornerShape(12.dp)
@@ -514,7 +507,7 @@ fun CalendarCell(
                             Brush.linearGradient(
                                 listOf(
                                     Color.White.copy(alpha = 0.7f),
-                                    AccentElectricBlue.copy(alpha = 0.5f)
+                                    LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.5f)
                                 )
                             ),
                             shape = RoundedCornerShape(12.dp)
@@ -523,7 +516,7 @@ fun CalendarCell(
                     day.isToday -> Modifier
                         .border(
                             1.dp,
-                            AccentElectricBlue.copy(alpha = 0.8f),
+                            LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.8f),
                             shape = RoundedCornerShape(12.dp)
                         )
 
@@ -544,7 +537,7 @@ fun CalendarCell(
                         if (day.isToday && !day.isSelected) {
                             Modifier
                                 .clip(CircleShape)
-                                .background(AccentRoyalViolet)
+                                .background(LocalLumaAppearance.current.accentSecondary)
                         } else Modifier
                     ),
                 contentAlignment = Alignment.Center
@@ -571,12 +564,15 @@ fun CalendarCell(
 
             Spacer(modifier = Modifier.height(2.dp))
 
-            // Event and holiday indicator dots beneath date
-            val displayDots = remember(day.isHoliday, hasEvents, eventColors) {
+            // Event and holiday indicator dots beneath date. The accent fallback is read in
+            // composition and keyed so an accent change re-derives this instead of serving a
+            // stale cached color (FR-012, T026).
+            val fallbackAccent = LocalLumaAppearance.current.accentPrimary
+            val displayDots = remember(day.isHoliday, hasEvents, eventColors, fallbackAccent) {
                 when {
                     day.isHoliday && hasEvents -> listOf(holidayRed) + eventColors.take(2)
                     day.isHoliday -> listOf(holidayRed)
-                    hasEvents -> eventColors.take(3).ifEmpty { listOf(AccentElectricBlue) }
+                    hasEvents -> eventColors.take(3).ifEmpty { listOf(fallbackAccent) }
                     else -> emptyList()
                 }
             }
@@ -616,7 +612,7 @@ fun EventCard(
     val categoryColor = try {
         Color(android.graphics.Color.parseColor(event.colorHex))
     } catch (e: Exception) {
-        AccentRoyalViolet
+        LocalLumaAppearance.current.accentSecondary
     }
 
     val strings = LocalAppStrings.current
@@ -627,7 +623,7 @@ fun EventCard(
     GlassCard(
         modifier = modifier.fillMaxWidth(),
         cornerRadius = 16.dp,
-        surfaceColor = GlassSurfaceDefault,
+        surfaceColor = LocalLumaAppearance.current.surfaceDefault,
         borderColor = categoryColor.copy(alpha = 0.35f),
         onClick = onClick,
         testTag = testTag
@@ -757,7 +753,7 @@ fun HolidayCard(
     GlassCard(
         modifier = modifier.fillMaxWidth(),
         cornerRadius = 16.dp,
-        surfaceColor = GlassSurfaceDefault,
+        surfaceColor = LocalLumaAppearance.current.surfaceDefault,
         borderColor = holidayRed.copy(alpha = 0.45f),
         onClick = onClick,
         testTag = "holiday_card_${holiday.id}"
@@ -869,13 +865,13 @@ fun GlassInput(
             .testTag(testTag)
             .fillMaxWidth()
             .clip(shape)
-            .background(GlassSurfaceDefault)
+            .background(LocalLumaAppearance.current.surfaceDefault)
             .border(
                 1.dp,
                 Brush.linearGradient(
                     listOf(
-                        GlassBorderBright.copy(alpha = 0.35f),
-                        GlassBorderSubtle
+                        LocalLumaAppearance.current.borderBright.copy(alpha = 0.35f),
+                        LocalLumaAppearance.current.borderSubtle
                     )
                 ),
                 shape
@@ -885,7 +881,7 @@ fun GlassInput(
             color = TextWhitePrimary,
             fontWeight = FontWeight.Medium
         ),
-        cursorBrush = SolidColor(AccentElectricBlue),
+        cursorBrush = SolidColor(LocalLumaAppearance.current.accentPrimary),
         singleLine = singleLine,
         maxLines = maxLines,
         keyboardOptions = keyboardOptions,
@@ -948,8 +944,8 @@ fun CategoryChip(
     } else {
         Brush.linearGradient(
             listOf(
-                GlassSurfaceDefault,
-                GlassSurfaceUltraLight
+                LocalLumaAppearance.current.surfaceDefault,
+                LocalLumaAppearance.current.surfaceUltraLight
             )
         )
     }
@@ -964,7 +960,7 @@ fun CategoryChip(
     } else {
         Brush.linearGradient(
             listOf(
-                GlassBorderSubtle,
+                LocalLumaAppearance.current.borderSubtle,
                 Color.Transparent
             )
         )
@@ -1023,8 +1019,8 @@ fun GlassTabBar(
             .shadow(
                 elevation = 20.dp,
                 shape = shape,
-                ambientColor = CanvasBlack.copy(alpha = 0.8f),
-                spotColor = AccentRoyalViolet.copy(alpha = 0.4f)
+                ambientColor = LocalLumaAppearance.current.canvasBase.copy(alpha = 0.8f),
+                spotColor = LocalLumaAppearance.current.accentSecondary.copy(alpha = 0.4f)
             )
             .clip(shape)
             .background(
@@ -1067,8 +1063,8 @@ fun GlassTabBar(
                                     .background(
                                         Brush.radialGradient(
                                             listOf(
-                                                AccentRoyalViolet.copy(alpha = 0.35f),
-                                                AccentElectricBlue.copy(alpha = 0.15f)
+                                                LocalLumaAppearance.current.accentSecondary.copy(alpha = 0.35f),
+                                                LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.15f)
                                             )
                                         )
                                     )
@@ -1077,7 +1073,7 @@ fun GlassTabBar(
                                         Brush.linearGradient(
                                             listOf(
                                                 Color.White.copy(alpha = 0.4f),
-                                                AccentElectricBlue.copy(alpha = 0.2f)
+                                                LocalLumaAppearance.current.accentPrimary.copy(alpha = 0.2f)
                                             )
                                         ),
                                         itemShape
@@ -1095,7 +1091,7 @@ fun GlassTabBar(
                         Icon(
                             imageVector = item.second,
                             contentDescription = item.first,
-                            tint = if (isSelected) AccentElectricBlue else TextWhiteMuted,
+                            tint = if (isSelected) LocalLumaAppearance.current.accentPrimary else TextWhiteMuted,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.height(3.dp))
@@ -1124,7 +1120,7 @@ fun GlassToggle(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    activeColor: Color = AccentElectricBlue,
+    activeColor: Color = LocalLumaAppearance.current.accentPrimary,
     testTag: String = "glass_toggle"
 ) {
     val thumbOffset by animateFloatAsState(
@@ -1144,7 +1140,7 @@ fun GlassToggle(
                     Brush.horizontalGradient(
                         listOf(
                             activeColor,
-                            AccentRoyalViolet
+                            LocalLumaAppearance.current.accentSecondary
                         )
                     )
                 } else {
@@ -1204,7 +1200,7 @@ fun SectionHeader(
             Text(
                 text = actionText,
                 style = MaterialTheme.typography.labelMedium.copy(
-                    color = AccentElectricBlue,
+                    color = LocalLumaAppearance.current.accentPrimary,
                     fontWeight = FontWeight.Medium
                 ),
                 modifier = Modifier

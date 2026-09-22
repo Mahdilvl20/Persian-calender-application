@@ -35,6 +35,17 @@ object NotificationPreferences {
     const val MIN_SNOOZE_MINUTES = 15
     const val MAX_SNOOZE_MINUTES = 480
 
+    private const val KEY_ACCENT_COLOR_INDEX = "accent_color_index"
+    private const val KEY_FIRST_DAY_MONDAY = "first_day_monday"
+    private const val KEY_SHOW_WEEK_NUMBERS = "show_week_numbers"
+    private const val KEY_THEME_NAME = "theme_name"
+    private const val KEY_CATEGORY_PERSONAL_VISIBLE = "category_personal_visible"
+    private const val KEY_CATEGORY_WORK_VISIBLE = "category_work_visible"
+    private const val KEY_CATEGORY_HOLIDAYS_VISIBLE = "category_holidays_visible"
+
+    const val DEFAULT_ACCENT_COLOR_INDEX = 0
+    const val DEFAULT_THEME_NAME = "Liquid Glass (Dark)"
+
     /**
      * Controls the snooze duration for the daily notification (in minutes).
      * Defaults to 60, range clamped between 15 and 480 minutes.
@@ -47,6 +58,62 @@ object NotificationPreferences {
     fun setSnoozeMinutes(context: Context, minutes: Int) {
         val clamped = minutes.coerceIn(MIN_SNOOZE_MINUTES, MAX_SNOOZE_MINUTES)
         preferences(context).edit().putInt(KEY_SNOOZE_MINUTES, clamped).apply()
+    }
+
+    /**
+     * Appearance settings. Each returns the stored value or the documented default,
+     * and each setter persists immediately — same contract as getSnoozeMinutes.
+     */
+    fun getAccentColorIndex(context: Context): Int =
+        preferences(context).getInt(KEY_ACCENT_COLOR_INDEX, DEFAULT_ACCENT_COLOR_INDEX)
+
+    fun setAccentColorIndex(context: Context, index: Int) {
+        preferences(context).edit().putInt(KEY_ACCENT_COLOR_INDEX, index).apply()
+    }
+
+    fun getFirstDayMonday(context: Context): Boolean =
+        preferences(context).getBoolean(KEY_FIRST_DAY_MONDAY, false)
+
+    fun setFirstDayMonday(context: Context, value: Boolean) {
+        preferences(context).edit().putBoolean(KEY_FIRST_DAY_MONDAY, value).apply()
+    }
+
+    fun getShowWeekNumbers(context: Context): Boolean =
+        preferences(context).getBoolean(KEY_SHOW_WEEK_NUMBERS, false)
+
+    fun setShowWeekNumbers(context: Context, value: Boolean) {
+        preferences(context).edit().putBoolean(KEY_SHOW_WEEK_NUMBERS, value).apply()
+    }
+
+    fun getThemeName(context: Context): String =
+        preferences(context).getString(KEY_THEME_NAME, DEFAULT_THEME_NAME) ?: DEFAULT_THEME_NAME
+
+    fun setThemeName(context: Context, name: String) {
+        preferences(context).edit().putString(KEY_THEME_NAME, name).apply()
+    }
+
+    /**
+     * Category visibility for the calendar views. Defaults to all visible (SP-002).
+     */
+    fun getCategoryPersonalVisible(context: Context): Boolean =
+        preferences(context).getBoolean(KEY_CATEGORY_PERSONAL_VISIBLE, true)
+
+    fun setCategoryPersonalVisible(context: Context, value: Boolean) {
+        preferences(context).edit().putBoolean(KEY_CATEGORY_PERSONAL_VISIBLE, value).apply()
+    }
+
+    fun getCategoryWorkVisible(context: Context): Boolean =
+        preferences(context).getBoolean(KEY_CATEGORY_WORK_VISIBLE, true)
+
+    fun setCategoryWorkVisible(context: Context, value: Boolean) {
+        preferences(context).edit().putBoolean(KEY_CATEGORY_WORK_VISIBLE, value).apply()
+    }
+
+    fun getCategoryHolidaysVisible(context: Context): Boolean =
+        preferences(context).getBoolean(KEY_CATEGORY_HOLIDAYS_VISIBLE, true)
+
+    fun setCategoryHolidaysVisible(context: Context, value: Boolean) {
+        preferences(context).edit().putBoolean(KEY_CATEGORY_HOLIDAYS_VISIBLE, value).apply()
     }
 
     /**
